@@ -332,7 +332,14 @@ mod tests {
         assert!(load(&aff, &big).unwrap_err().contains("too large"));
         // A directory, and on Unix an endless device, are not dictionary files. (No clock: a
         // reader that read `/dev/zero` would never return, so the error itself is the proof.)
-        assert!(load(&aff, &dir).unwrap_err().contains("not a regular file"));
+        // On Windows `File::open` of a directory fails with access denied before the file-type
+        // check; either way a directory is never accepted as a dictionary.
+        let refused = load(&aff, &dir).unwrap_err();
+        if cfg!(windows) {
+            assert!(!refused.is_empty(), "a directory is refused as a dictionary: {refused}");
+        } else {
+            assert!(refused.contains("not a regular file"), "a directory is refused as a dictionary: {refused}");
+        }
         #[cfg(unix)]
         assert!(load(&aff, Path::new("/dev/zero")).unwrap_err().contains("not a regular file"));
         // Turkish reads through the same reader.
