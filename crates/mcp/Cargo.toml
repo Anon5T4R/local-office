@@ -1,0 +1,17 @@
+[package]
+name = "localoffice-mcp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "LocalOffice MCP server: every command as a tool, headless or bridged to the running app"
+
+[lints]
+workspace = true
+
+[dependencies]
+localoffice-doc = { workspace = true }
+localoffice-engine = { workspace = true }
+localoffice-render = { workspace = true }
+localoffice-control-key = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }

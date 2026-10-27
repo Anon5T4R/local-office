@@ -1,0 +1,80 @@
+name: Release
+
+# Tag vX.Y.Z -> builda Windows (MSI + portable), Linux (AppImage, deb, rpm, tar.gz, cli)
+# e valida o PKGBUILD do Arch; publica tudo na GitHub Release da tag.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Fontes CJK/árabe/etc. vendored
+        run: 'echo "CRAFT_FONTS_DIR=$env:GITHUB_WORKSPACE\assets\craft-fonts" >> $env:GITHUB_ENV'
+      - name: WiX Toolset (v5 + extensões UI/Util, como packaging/windows/package.ps1 espera)
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.UI.wixext/5.0.2
+          wix extension add -g WixToolset.Util.wixext/5.0.2
+      - name: Aceite da EULA WiX (OSMF; fee só para orgs com receita >= US$10k/ano)
+        run: wix eula accept wix7
+      - name: Build e pacote
+        run: powershell -ExecutionPolicy Bypass -File packaging/windows/package.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/release/*
+
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Fontes CJK/árabe/etc. vendored
+        run: echo "CRAFT_FONTS_DIR=$GITHUB_WORKSPACE/assets/craft-fonts" >> "$GITHUB_ENV"
+      - name: Dependências de empacotamento
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb1-dev libxrandr-dev libxi-dev libxcursor-dev \
+            libxkbcommon-dev libgtk-3-dev libfontconfig1-dev libfreetype-dev ninja-build \
+            mesa-vulkan-drivers
+          curl -sSfL https://github.com/goreleaser/nfpm/releases/download/v2.48.0/nfpm_2.48.0_amd64.deb -o /tmp/nfpm.deb
+          sudo dpkg -i /tmp/nfpm.deb
+      - name: Build e pacote
+        run: packaging/linux/package.sh --formats "appimage deb rpm tar"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/release/*
+
+  publish:
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Publica a release
+        run: |
+          set -euo pipefail
+          gh release create "${GITHUB_REF_NAME}" dist/windows/* dist/linux/* \
+            --title "LocalOffice ${GITHUB_REF_NAME}" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

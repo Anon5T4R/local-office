@@ -1,0 +1,21 @@
+[package]
+name = "localoffice-zotero"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "LocalOffice Zotero integration: Zotero's word-processor wire protocol, answered against an engine Session"
+
+[lints]
+workspace = true
+
+[dependencies]
+localoffice-doc = { workspace = true }
+localoffice-engine = { workspace = true }
+localoffice-formats = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+
+[dev-dependencies]
+localoffice-docx = { workspace = true }
+proptest = { workspace = true }

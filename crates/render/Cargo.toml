@@ -1,0 +1,22 @@
+[package]
+name = "localoffice-render"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "LocalOffice rasteriser: pages and thumbnails from the layout display list (vello_cpu), PNG/JPEG export"
+
+[lints]
+workspace = true
+
+[dependencies]
+localoffice-geom = { workspace = true, features = ["image"] }
+localoffice-doc = { workspace = true }
+localoffice-fonts = { workspace = true }
+localoffice-layout = { workspace = true }
+localoffice-metafile = { workspace = true }
+vello_cpu = { workspace = true }
+image = { workspace = true }
+log = { workspace = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+vello_cpu = { workspace = true, features = ["multithreading"] }

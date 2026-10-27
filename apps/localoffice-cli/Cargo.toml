@@ -1,0 +1,23 @@
+[package]
+name = "localoffice-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "LocalOffice command line: convert, inspect, render, run commands, MCP server"
+
+[[bin]]
+name = "localoffice-cli"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+localoffice-doc = { workspace = true }
+localoffice-engine = { workspace = true }
+localoffice-render = { workspace = true }
+localoffice-mcp = { workspace = true }
+localoffice-zotero = { workspace = true }
+serde_json = { workspace = true }
+sys-locale = "0.3"
