@@ -67,7 +67,10 @@ mod tests {
 
     #[test]
     fn the_store_path_lives_under_the_apps_folder() {
-        assert!(store_path().unwrap().ends_with(r"LocalOffice\ai-connections.json"));
+        // Path separators differ per OS; the identity folder and file name are what matter.
+        let path = store_path().unwrap();
+        assert!(path.to_string_lossy().contains("LocalOffice"));
+        assert!(path.ends_with("ai-connections.json"));
     }
 
     #[test]
