@@ -8,9 +8,7 @@ pub fn open(ext: &str, bytes: &[u8], page: &localoffice_doc::SectionProps) -> Op
     // A text file that holds a ZIP (a `.docx` renamed `.md`, say) opens as the document it is,
     // not as markdown/plain text showing the raw bytes. Only text extensions: `.odt` and other
     // ZIP-based formats have their own readers and start with the same `PK` signature.
-    if matches!(ext, "md" | "markdown" | "txt" | "text" | "tex" | "latex" | "ltx" | "html" | "htm")
-        && bytes.starts_with(b"PK\x03\x04")
-    {
+    if matches!(ext, "md" | "markdown" | "txt" | "text" | "tex" | "latex" | "ltx" | "html" | "htm") && bytes.starts_with(b"PK\x03\x04") {
         return Some(localoffice_docx::read(bytes).map_err(|e| e.to_string()));
     }
     match ext {
