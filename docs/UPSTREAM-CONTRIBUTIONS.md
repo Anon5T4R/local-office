@@ -6,4 +6,6 @@ abrimos Issue/PR no upstream (em inglês, seguindo o estilo deles) e registramos
 | Data | Nosso commit | PR upstream | Bug | Status |
 |------|--------------|-------------|-----|--------|
 | 2026-10-28 | 3f4586a | #4616 (open) | IME epoch test depende de IDs de documento globais (teste racy) | aberto |
-| 2026-10-28 | — | — | Backport de segurança: links seguidos parseados antes de abrir (#4652) | aplicar no upstream se ainda não estiver |
+| 2026-10-28 | 6d884792 | #4670 (open) | Janela restaurada maximizada no Windows + DX12 + AMD perde o device antes do primeiro frame (processo vivo, janela nunca aparece) | aberto |
+| 2026-10-28 | 6d884792 | #4671 (open) | Um `.md` que contém um ZIP (um `.docx` renomeado `.md`) mostra os bytes binários crus em vez de abrir como o documento Word que é | aberto |
+| 2026-10-28 | 6d884792 | #4672 (open) | Cursor "+" do outline expand/collapse é branco puro, invisível na página branca | aberto |
