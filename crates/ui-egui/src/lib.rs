@@ -22,6 +22,7 @@ macro_rules! tl {
 
 pub mod a11y;
 pub mod a11y_pane;
+pub mod ai_ui;
 pub mod async_saves;
 pub mod autoscroll;
 pub mod backstage;
@@ -695,6 +696,8 @@ pub struct WordApp {
     pub(crate) outline_prev_tab: Option<String>,
     /// Zotero commands in flight (`ui.zotero.*`).
     pub zotero: zotero::ZoteroLink,
+    /// The AI assistant panel (`ui.ai`): connections, model and chat, in the UI only.
+    pub ai: ai_ui::AiState,
     /// The egui context, once the first frame has run (background work wakes the UI with it).
     pub(crate) ctx: Option<egui::Context>,
     /// Whether the current command was entered by an input method's own transaction. The engine
@@ -867,6 +870,7 @@ impl WordApp {
             quit_requested: false,
             autosave: true,
             zotero: zotero::ZoteroLink::default(),
+            ai: ai_ui::AiState::default(),
             ctx: None,
             ime_origin: false,
             read_aloud_error: None,
@@ -2064,6 +2068,16 @@ impl WordApp {
                         .into(),
                 ));
             }
+            // Home ▸ AI: `value` true or false opens or closes the assistant panel; no value
+            // toggles it. The panel's own state never reaches the document or the saved settings.
+            "ui.ai" => {
+                match p.get("value") {
+                    None => self.ai.open = !self.ai.open,
+                    Some(Value::Bool(on)) => self.ai.open = *on,
+                    Some(_) => return Some(Err("`value` must be true or false".into())),
+                }
+                json!({"open": self.ai.open})
+            }
             "ui.caretAnimation" => {
                 // File › Options › Advanced › Animation: `value` true or false turns the caret's
                 // glide and fading blink on or off; no value reads it.
@@ -2956,6 +2970,7 @@ impl WordApp {
         colors::show(self, ctx);
         zotero::show_alert(self, ctx);
         read_aloud::show(self, ctx);
+        crate::ai_ui::show(self, ctx);
         crate::keytips::show(self, ctx, ui);
         if moved(self) {
             return;

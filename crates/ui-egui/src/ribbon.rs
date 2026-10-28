@@ -1358,6 +1358,11 @@ fn home(app: &mut WordApp, ui: &mut Ui) {
     group(ui, "Editor", None, app, |ui, app| {
         big(ui, app, "editor", "Editor", "review.spelling", json!({}), false);
     });
+    group(ui, "AI", None, app, |ui, app| {
+        // The assistant window: the user's own provider key, the model they pick and a chat over
+        // this document (no server in between).
+        big(ui, app, "researcher", "AI\nAssistant", "ui.ai", json!({}), false);
+    });
 }
 
 fn insert(app: &mut WordApp, ui: &mut Ui) {

@@ -229,6 +229,7 @@ fn controls(tab: &str) -> Vec<Control> {
             m("Select", "select.all"),
             c("Dictate", "tools.dictate"),
             c("Editor", "review.spelling"),
+            c("AI Assistant", "ui.ai"),
         ],
         "Insert" => vec![
             m("Cover Page", "insert.coverPage"),

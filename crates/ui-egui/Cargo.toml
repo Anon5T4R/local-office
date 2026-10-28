@@ -24,6 +24,8 @@ localoffice-layout = { workspace = true }
 localoffice-render = { workspace = true }
 localoffice-engine = { workspace = true }
 localoffice-zotero = { workspace = true }
+# BYOK AI (the suite's shared client): connections panel, model picker and chat over the document.
+localoffice-ai = { workspace = true }
 egui = { workspace = true, features = ["default_fonts", "monochrome_emoji_fonts"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
