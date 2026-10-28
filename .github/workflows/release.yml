@@ -26,8 +26,6 @@ jobs:
           dotnet tool install --global wix --version 5.0.2
           wix extension add -g WixToolset.UI.wixext/5.0.2
           wix extension add -g WixToolset.Util.wixext/5.0.2
-      - name: Aceite da EULA WiX (OSMF; fee só para orgs com receita >= US$10k/ano)
-        run: wix eula accept wix7
       - name: Build e pacote
         run: powershell -ExecutionPolicy Bypass -File packaging/windows/package.ps1
       - uses: actions/upload-artifact@v4
