@@ -5,6 +5,11 @@ use localoffice_doc::Document;
 /// Open a format other than plain text / JSON; files that give no page size (Markdown, HTML)
 /// start on `page`.
 pub fn open(ext: &str, bytes: &[u8], page: &localoffice_doc::SectionProps) -> Option<Result<Document, String>> {
+    // A `.md`/`.markdown` file that holds a ZIP (a `.docx` renamed `.md`, say) opens as the
+    // document it is, not as markdown text.
+    if bytes.starts_with(b"PK\x03\x04") {
+        return Some(localoffice_docx::read(bytes).map_err(|e| e.to_string()));
+    }
     match ext {
         "docx" | "docm" | "dotx" | "dotm" => Some(localoffice_docx::read(bytes).map_err(|e| e.to_string())),
         "doc" | "dot" => Some(localoffice_docbin::read(bytes).map_err(|e| e.to_string())),

@@ -1,0 +1,134 @@
+# Mapeamento de caminhos para sincronização com o upstream (storytold/gridcraft → LocalSheets)
+#
+# Cada entrada traduz um caminho do upstream para o caminho neste repo.
+# Arquivos ausentes deste mapa = "não tentar aplicar automaticamente".
+#
+# strategy:
+#   apply   - o script tenta aplicar via git diff/apply sem revisão de conteúdo
+#   review  - o script baixa o diff, mas um humano deve revisar antes de aplicar
+#   skip    - o script ignora este arquivo (conflito garantido ou escopo diferente)
+
+# ===== Segurança / links seguidos (mesma vulnerabilidade do wordcraft #4652) ====
+[[map]]
+upstream = "crates/doc/src/link.rs"
+local = "crates/core/src/link.rs"      # no gridcraft o crate de documento se chama core
+strategy = "review"
+note = "segurança de links seguidos; pode trazer nova dep (url) — parar e avaliar"
+
+[[map]]
+upstream = "crates/doc/Cargo.toml"
+local = "crates/core/Cargo.toml"
+strategy = "review"
+note = "dependências do crate core; nova dep = decisão do local-deps"
+
+# ===== Interface / abertura de links (Ctrl/⌘+click) ====
+[[map]]
+upstream = "crates/ui-egui/src/canvas.rs"
+local = "crates/ui-egui/src/canvas.rs"
+strategy = "review"
+note = "abertura de links; no gridcraft está em ui-egui/src/canvas.rs (mesmo caminho)"
+
+[[map]]
+upstream = "crates/ui-egui/src/lib.rs"
+local = "crates/ui-egui/src/lib.rs"
+strategy = "review"
+note = "se o gridcraft colocar lógica de link no lib.rs em vez de canvas.rs"
+
+# ===== Corretor ortográfico (mesma melhoria do wordcraft #4632) ====
+[[map]]
+upstream = "crates/proof/src/affix.rs"
+local = "crates/core/src/proof/affix.rs"   # ajustar se o gridcraft tiver proof separado
+strategy = "apply"
+note = "cap de REP entries; sem risco de marca/dep"
+
+# ===== Nunca aplicar automaticamente ====
+[[map]]
+upstream = "Cargo.toml"
+local = "Cargo.toml"
+strategy = "skip"
+note = "nomes de crate diferem (gridcraft-* vs localsheets-*) e dependências próprias"
+
+[[map]]
+upstream = "packaging/windows/gridcraft.wxs"
+local = "packaging/windows/localsheets.wxs"
+strategy = "skip"
+note = "nosso packaging é independente do upstream"
+
+[[map]]
+upstream = "packaging/linux/ai.storyteller.gridcraft.*"
+local = "packaging/linux/com.local.localsheets.*"
+strategy = "skip"
+note = "packaging específico de cada app"
+
+[[map]]
+upstream = ".github/workflows/*"
+local = ".github/workflows/*"
+strategy = "skip"
+note = "nosso CI é próprio; não puxar workflows da org storytold"
+
+[[map]]
+upstream = "docs/brand/**"
+local = "docs/brand/**"
+strategy = "skip"
+note = "marca ArtCraft; removida no rebrand"
+
+[[map]]
+upstream = "ROADMAP.md"
+local = "ROADMAP.md"
+strategy = "skip"
+note = "roadmap do GridCraft; não aplica ao LocalSheets"
+
+[[map]]
+upstream = "docs/gaps.md"
+local = "docs/gaps.md"
+strategy = "skip"
+note = "gaps do GridCraft vs Excel"
+
+[[map]]
+upstream = "craft-i18n.rev"
+local = "i18n/locales/"
+strategy = "skip"
+note = "catálogos são in-repo, não mais um repo externo"
+
+# ===== Crates específicos do gridcraft que não existem no wordcraft ====
+[[map]]
+upstream = "crates/calc/**"
+local = "crates/calc/**"
+strategy = "review"
+note = "cálculo de planilha — específico do gridcraft, revisar antes de aplicar"
+
+[[map]]
+upstream = "crates/chart/**"
+local = "crates/chart/**"
+strategy = "review"
+note = "gráficos — específico do gridcraft"
+
+[[map]]
+upstream = "crates/formula/**"
+local = "crates/formula/**"
+strategy = "review"
+note = "fórmulas de planilha — específico do gridcraft"
+
+[[map]]
+upstream = "crates/numfmt/**"
+local = "crates/numfmt/**"
+strategy = "review"
+note = "formatação numérica — específico do gridcraft"
+
+[[map]]
+upstream = "crates/xlsx/**"
+local = "crates/xlsx/**"
+strategy = "review"
+note = "leitura/escrita XLSX — específico do gridcraft"
+
+[[map]]
+upstream = "apps/gridcraft-cli/**"
+local = "apps/localsheets-cli/**"
+strategy = "skip"
+note = "CLI renomeada; aplicar apenas se houver mudança de comportamento relevante"
+
+[[map]]
+upstream = "apps/gridcraft-web/**"
+local = "apps/localsheets-web/**"
+strategy = "skip"
+note = "build wasm renomeado; aplicar apenas se houver mudança de comportamento relevante"

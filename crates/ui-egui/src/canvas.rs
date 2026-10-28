@@ -6350,7 +6350,7 @@ mod tests {
     #[test]
     fn only_web_and_email_links_are_followed() {
         for ok in ["https://example.com/a?b#c", "http://example.com", "HTTPS://EXAMPLE.COM", "mailto:someone@example.com"] {
-            assert!(is_followable_link(ok), "{ok}");
+            assert!(is_followable_link(ok).is_some(), "{ok}");
         }
         for bad in [
             "file:///etc/passwd",
@@ -6366,7 +6366,7 @@ mod tests {
             "",
             "example.com",
         ] {
-            assert!(!is_followable_link(bad), "{bad:?}");
+            assert!(is_followable_link(bad).is_none(), "{bad:?}");
         }
     }
 
