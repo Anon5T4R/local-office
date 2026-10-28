@@ -172,6 +172,17 @@ impl<'a> Exempt<'a> {
         if let Some(sugg) = app.canvas.context_issue.as_ref().and_then(|i| i.get("suggestions")).and_then(Value::as_array) {
             names.extend(sugg.iter().filter_map(Value::as_str).map(str::to_string));
         }
+        // The AI panel's setup (Home ▸ AI): the connection names and models the user picked, and
+        // the providers' brand names, which the shared crate lists untranslated by design.
+        for c in &app.ai.connections {
+            names.insert(c.label.clone());
+            names.insert(c.model.clone());
+            if let Some(p) = localoffice_ai::provider(&c.provider) {
+                names.insert(p.label.to_owned());
+                names.insert(format!("{} — {}", c.label, p.label));
+            }
+        }
+        names.extend(localoffice_ai::PROVIDERS.iter().map(|p| p.label.to_owned()));
         Exempt { body: app.session.doc.plain_text(localoffice_doc::StoryRef::Body), names, math: math_placeholders }
     }
 
