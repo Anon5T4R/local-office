@@ -137,8 +137,7 @@ impl WindowGeometry {
 
     /// Open the window at this size, position and maximized state.
     pub fn apply(self, builder: egui::ViewportBuilder) -> egui::ViewportBuilder {
-        let builder = builder.with_inner_size([self.width, self.height])
-            .with_maximized(self.maximized && cfg!(target_os = "macos"));
+        let builder = builder.with_inner_size([self.width, self.height]).with_maximized(self.maximized && cfg!(target_os = "macos"));
         match self.position {
             Some(p) => builder.with_position(p),
             None => builder,

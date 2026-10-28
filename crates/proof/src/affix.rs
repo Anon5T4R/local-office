@@ -295,31 +295,6 @@ fn cap_try(s: &str) -> String {
 /// produce a dictionary word.
 const MAX_REP_ENTRIES: usize = 4096;
 
-/// Reads `REP` rows from one `.aff` line iterator, capped at [`MAX_REP_ENTRIES`]. Each row is
-/// `(wrong, right)` with underscores turned back into spaces.
-fn read_rep<'a, I>(lines: I, rules: &mut Rules)
-where
-    I: Iterator<Item = &'a str>,
-{
-    let mut seen = 0;
-    for line in lines {
-        if seen >= MAX_REP_ENTRIES {
-            break;
-        }
-        let f: Vec<&str> = line.split_whitespace().collect();
-        if f.len() < 3 {
-            continue;
-        }
-        let from = f[1].replace('_', " ");
-        let to = f[2].replace('_', " ");
-        if from.is_empty() || from.len() > MAX_WORD_BYTES || to.len() > MAX_WORD_BYTES {
-            continue;
-        }
-        rules.rep.push((from, to));
-        seen += 1;
-    }
-}
-
 /// `0` means empty in Hunspell's strip and append fields.
 fn zero_empty(s: &str) -> String {
     if s == "0" { String::new() } else { s.to_string() }
@@ -382,8 +357,7 @@ fn parse_aff(aff: &str) -> Result<Rules, String> {
                 } else if f.len() >= 3 && rep_count < MAX_REP_ENTRIES {
                     let from = at(1).replace('_', " ");
                     let to = at(2).replace('_', " ");
-                    if !from.is_empty() && from.len() <= MAX_WORD_BYTES && to.len() <= MAX_WORD_BYTES
-                    {
+                    if !from.is_empty() && from.len() <= MAX_WORD_BYTES && to.len() <= MAX_WORD_BYTES {
                         r.rep.push((from, to));
                         rep_count += 1;
                     }
@@ -1013,8 +987,7 @@ impl AffixDict {
                     if rep_count < MAX_REP_ENTRIES {
                         let from = at(1).replace('_', " ");
                         let to = at(2).replace('_', " ");
-                        if !from.is_empty() && from.len() <= MAX_WORD_BYTES && to.len() <= MAX_WORD_BYTES
-                        {
+                        if !from.is_empty() && from.len() <= MAX_WORD_BYTES && to.len() <= MAX_WORD_BYTES {
                             rules.rep.push((from, to));
                             rep_count += 1;
                         }
