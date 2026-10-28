@@ -2753,8 +2753,8 @@ fn mouse(app: &mut WordApp, ui: &Ui, resp: &egui::Response, rects: &[Rect], layo
                 if app.run("edit.goto", json!({"bookmark": name})).is_ok() {
                     let _ = app.run("select.collapse", json!({}));
                 }
-            } else if is_followable_link(&link) {
-                app.canvas.open_url = Some(link);
+            } else if let Some(opened) = is_followable_link(&link) {
+                app.canvas.open_url = Some(opened);
             } else {
                 app.status(tl!("Only web (http, https) and email (mailto) links can be followed"));
             }
@@ -3689,10 +3689,9 @@ fn is_generated_bookmark_link(link: &str) -> bool {
     link.strip_prefix("#_").is_some()
 }
 
-/// Whether Ctrl/⌘+click may hand a document's hyperlink to the system: web and email links only,
-/// so a document can't launch `file:` paths, programs or custom-scheme handlers.
-fn is_followable_link(url: &str) -> bool {
-    localoffice_doc::link::is_web_or_mail_link(url)
+/// The URL Ctrl/⌘+click may hand to the system: parsed, normalised, safe to pass to the OS opener.
+fn is_followable_link(url: &str) -> Option<String> {
+    localoffice_doc::link::followable_url(url)
 }
 
 #[cfg(test)]

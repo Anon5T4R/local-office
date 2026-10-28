@@ -1,0 +1,81 @@
+# Mapeamento de caminhos para sincronização com o upstream (storytold/wordcraft)
+#
+# Cada entrada traduz um caminho do upstream para o caminho neste repo.
+# Arquivos ausentes deste mapa = "não tentar aplicar automaticamente".
+#
+# strategy:
+#   apply   - o script tenta aplicar via git diff/apply sem revisão de conteúdo
+#   review  - o script baixa o diff, mas um humano deve revisar antes de aplicar
+#   skip    - o script ignora este arquivo (conflito garantido ou escopo diferente)
+
+[[map]]
+upstream = "crates/doc/src/link.rs"
+local = "crates/doc/src/link.rs"
+strategy = "review"
+note = "segurança de links seguidos; pode trazer nova dep (url) — parar e avaliar"
+
+[[map]]
+upstream = "crates/doc/Cargo.toml"
+local = "crates/doc/Cargo.toml"
+strategy = "review"
+note = "dependências do crate doc; nova dep = decisão do local-deps"
+
+[[map]]
+upstream = "crates/ui-egui/src/canvas.rs"
+local = "crates/ui-egui/src/canvas.rs"
+strategy = "review"
+note = "abertura de links (Ctrl/⌘+click); está em lib.rs no wordcraft, canvas.rs aqui"
+
+[[map]]
+upstream = "crates/proof/src/affix.rs"
+local = "crates/proof/src/affix.rs"
+strategy = "apply"
+note = "cap de REP entries (performance do corretor ortográfico), sem risco de marca/dep"
+
+[[map]]
+upstream = "Cargo.toml"
+local = "Cargo.toml"
+strategy = "skip"
+note = "nomes de crate e bundle id diferem (wordcraft-* vs localoffice-*)"
+
+[[map]]
+upstream = "packaging/windows/wordcraft.wxs"
+local = "packaging/windows/localoffice.wxs"
+strategy = "skip"
+note = "nosso packaging é independente do upstream"
+
+[[map]]
+upstream = "packaging/linux/com.local.localpdf.*"
+local = "packaging/linux/com.local.localoffice.*"
+strategy = "skip"
+note = "packaging específico de cada app"
+
+[[map]]
+upstream = ".github/workflows/*"
+local = ".github/workflows/*"
+strategy = "skip"
+note = "nosso CI é próprio; não puxar workflows da org storytold"
+
+[[map]]
+upstream = "docs/brand/**"
+local = "docs/brand/**"
+strategy = "skip"
+note = "marca ArtCraft; removida no rebrand"
+
+[[map]]
+upstream = "ROADMAP.md"
+local = "ROADMAP.md"
+strategy = "skip"
+note = "roadmap do WordCraft; não aplica ao LocalOffice"
+
+[[map]]
+upstream = "docs/gaps.md"
+local = "docs/gaps.md"
+strategy = "skip"
+note = "gaps do WordCraft vs Word"
+
+[[map]]
+upstream = "craft-i18n.rev"
+local = "i18n/locales/"
+strategy = "skip"
+note = "catálogos agora são in-repo, não mais um repo externo"

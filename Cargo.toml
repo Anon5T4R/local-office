@@ -47,6 +47,10 @@ unicode-script = "0.5"
 regex = { version = "1", default-features = false, features = ["std", "unicode", "perf"] }
 regex-automata = { version = "0.4", default-features = false, features = ["std", "syntax", "meta", "nfa-pikevm", "unicode"] }
 
+# Desktop only: followed links are parsed before they reach the opener (#3732); already in the
+# desktop tree through webbrowser and reqwest.
+url = "2.5"
+
 # text / rendering / formats
 skrifa = "0.47"
 harfrust = "0.13"

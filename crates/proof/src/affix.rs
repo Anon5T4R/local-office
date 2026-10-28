@@ -288,6 +288,38 @@ fn cap_try(s: &str) -> String {
     out
 }
 
+/// Most `REP` entries kept; every suggestion round tries each one at every place it matches, so
+/// a `.aff` with a huge or oversized `REP` section can make each suggestion take seconds or
+/// hundreds of MB. Keeps the first [`MAX_REP_ENTRIES`] entries and skips any whose `from` is
+/// empty or whose `from` or `to` is longer than [`MAX_WORD_BYTES`]: such an entry can never
+/// produce a dictionary word.
+const MAX_REP_ENTRIES: usize = 4096;
+
+/// Reads `REP` rows from one `.aff` line iterator, capped at [`MAX_REP_ENTRIES`]. Each row is
+/// `(wrong, right)` with underscores turned back into spaces.
+fn read_rep<'a, I>(lines: I, rules: &mut Rules)
+where
+    I: Iterator<Item = &'a str>,
+{
+    let mut seen = 0;
+    for line in lines {
+        if seen >= MAX_REP_ENTRIES {
+            break;
+        }
+        let f: Vec<&str> = line.split_whitespace().collect();
+        if f.len() < 3 {
+            continue;
+        }
+        let from = f[1].replace('_', " ");
+        let to = f[2].replace('_', " ");
+        if from.is_empty() || from.len() > MAX_WORD_BYTES || to.len() > MAX_WORD_BYTES {
+            continue;
+        }
+        rules.rep.push((from, to));
+        seen += 1;
+    }
+}
+
 /// `0` means empty in Hunspell's strip and append fields.
 fn zero_empty(s: &str) -> String {
     if s == "0" { String::new() } else { s.to_string() }
@@ -304,6 +336,7 @@ fn parse_aff(aff: &str) -> Result<Rules, String> {
     let mut cross: HashMap<(bool, char), bool> = HashMap::new();
     let mut map_header = false;
     let mut rep_header = false;
+    let mut rep_count = 0;
     for (n, line) in aff.lines().enumerate() {
         let f: Vec<&str> = line.split_whitespace().collect();
         let Some(&dir) = f.first() else { continue };
@@ -346,8 +379,14 @@ fn parse_aff(aff: &str) -> Result<Rules, String> {
             "REP" => {
                 if !rep_header && f.len() == 2 && at(1).parse::<usize>().is_ok() {
                     rep_header = true;
-                } else if f.len() >= 3 {
-                    r.rep.push((at(1).replace('_', " "), at(2).replace('_', " ")));
+                } else if f.len() >= 3 && rep_count < MAX_REP_ENTRIES {
+                    let from = at(1).replace('_', " ");
+                    let to = at(2).replace('_', " ");
+                    if !from.is_empty() && from.len() <= MAX_WORD_BYTES && to.len() <= MAX_WORD_BYTES
+                    {
+                        r.rep.push((from, to));
+                        rep_count += 1;
+                    }
                 }
             }
             "PFX" | "SFX" => {
@@ -958,6 +997,7 @@ impl AffixDict {
         }
         let mut rules = Rules::default();
         let mut comments = Vec::new();
+        let mut rep_count = 0;
         for line in lines {
             if let Some(c) = line.strip_prefix("# ") {
                 comments.push(c.to_string());
@@ -969,7 +1009,17 @@ impl AffixDict {
                 "TRY" => rules.try_chars = cap_try(at(1)),
                 "KEY" => rules.key = at(1).to_string(),
                 "MAP" => rules.map.push(at(1).chars().collect()),
-                "REP" => rules.rep.push((at(1).replace('_', " "), at(2).replace('_', " "))),
+                "REP" => {
+                    if rep_count < MAX_REP_ENTRIES {
+                        let from = at(1).replace('_', " ");
+                        let to = at(2).replace('_', " ");
+                        if !from.is_empty() && from.len() <= MAX_WORD_BYTES && to.len() <= MAX_WORD_BYTES
+                        {
+                            rules.rep.push((from, to));
+                            rep_count += 1;
+                        }
+                    }
+                }
                 directive @ ("FORBIDDENWORD" | "NOSUGGEST") => {
                     let mut it = at(1).chars();
                     match (it.next(), it.next()) {
@@ -1094,6 +1144,34 @@ pub(crate) mod tests {
         let raw = format!("{MAGIC}\nTRY {many}{many}\nWORDS\n\0kot\n");
         let bytes = miniz_oxide::deflate::compress_to_vec(raw.as_bytes(), 6);
         assert_eq!(AffixDict::from_bytes(&bytes).unwrap().try_chars(), want);
+    }
+
+    #[test]
+    fn rep_table_is_capped_and_drops_oversized_entries() {
+        let big: String = "x".repeat(1024 * 1024);
+        let aff = format!(
+            "SET UTF-8\nREP 200003\nREP rz ż\nREP {} {}\n{}\nPFX X Y 1\nPFX X 0 pre .\n",
+            big,
+            "a",
+            (0..200_000).map(|i| format!("REP s{i} t{i}")).collect::<Vec<_>>().join("\n")
+        );
+        let d = AffixDict::from_hunspell(&aff, "1\nrz\n", &[]).unwrap();
+        // The real entry is kept first; the oversized ones are dropped.
+        assert_eq!(d.rep().len(), MAX_REP_ENTRIES, "REP table is capped at 4096");
+        assert_eq!(d.rep()[0], ("rz".to_string(), "ż".to_string()), "real entry stays first");
+        assert!(d.rep().iter().all(|(f, t)| !f.is_empty() && f.len() <= MAX_WORD_BYTES && t.len() <= MAX_WORD_BYTES), "no oversized entry");
+
+        // Same cap after a round trip through the compact format.
+        let compact = AffixDict::from_bytes(&d.to_bytes()).unwrap();
+        assert_eq!(compact.rep().len(), MAX_REP_ENTRIES, "compact reader keeps the cap");
+        assert_eq!(compact.rep()[0], ("rz".to_string(), "ż".to_string()), "compact keeps the real entry first");
+
+        // The compact reader drops an oversized line on its own.
+        let oversized = format!("{MAGIC}\nREP {}\nREP rz ż\nWORDS\n\0rz\n", "x".repeat(200));
+        let bytes = miniz_oxide::deflate::compress_to_vec(oversized.as_bytes(), 6);
+        let compact2 = AffixDict::from_bytes(&bytes).unwrap();
+        assert_eq!(compact2.rep().len(), 1, "compact reader drops oversized REP line");
+        assert_eq!(compact2.rep()[0], ("rz".to_string(), "ż".to_string()));
     }
 
     /// Shared hand-written fixture: collectors must reject every path to NOSUGGEST forms.

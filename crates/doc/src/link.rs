@@ -1,12 +1,33 @@
 //! Which hyperlink targets may leave the document: followed by the OS, or written into an
 //! exported HTML/Markdown file where a browser would run them.
 
-/// Whether Ctrl/⌘+click may hand a document's hyperlink to the system: web and email links only,
+/// The URL Ctrl/⌘+click may hand to the system, if any: a web link with a host or an email link,
 /// so a document can't launch `file:` paths, programs or custom-scheme handlers. Exact: a leading
-/// space or a control character makes it not a link.
-pub fn is_web_or_mail_link(url: &str) -> bool {
-    let Some((scheme, _)) = url.split_once(':') else { return false };
-    ["http", "https", "mailto"].iter().any(|s| scheme.eq_ignore_ascii_case(s))
+/// space or a control character makes it not a link. Returns what must be opened (see
+/// `opened_form`).
+pub fn followable_url(url: &str) -> Option<String> {
+    let (scheme, _) = url.split_once(':')?;
+    if !["http", "https", "mailto"].iter().any(|s| scheme.eq_ignore_ascii_case(s)) {
+        return None;
+    }
+    opened_form(url)
+}
+
+/// Web build: the browser's `window.open` reads the link itself and never opens a local file.
+#[cfg(target_arch = "wasm32")]
+fn opened_form(url: &str) -> Option<String> {
+    Some(url.to_string())
+}
+
+/// Desktop: the parsed, normalised URL, with a host for http/https. The opener (`webbrowser`)
+/// reads any string `url` can't parse, such as `https://host:99999/`, as a local file path (#3732).
+#[cfg(not(target_arch = "wasm32"))]
+fn opened_form(url: &str) -> Option<String> {
+    let parsed = url::Url::parse(url).ok()?;
+    let ok = parsed.scheme() == "mailto" || parsed.host_str().is_some_and(|h| !h.is_empty());
+    // `webbrowser` on WSL runs `cmd.exe /c start <url>`, escaping only `^` and `&`, and `url`
+    // leaves `|` as it is: a raw `|` would pipe into another command there.
+    ok.then(|| parsed.as_str().replace('|', "%7C"))
 }
 
 /// Whether a hyperlink may be written as an `href` (or Markdown destination, RTF `HYPERLINK`
@@ -46,7 +67,7 @@ mod tests {
     #[test]
     fn only_web_and_mail_links_are_followable() {
         for ok in ["https://example.com/a?b#c", "http://example.com", "HTTPS://EXAMPLE.COM", "mailto:someone@example.com"] {
-            assert!(is_web_or_mail_link(ok), "{ok}");
+            assert!(followable_url(ok).is_some(), "{ok}");
         }
         for bad in [
             "file:///etc/passwd",
@@ -59,8 +80,16 @@ mod tests {
             "",
             "example.com",
             "#top",
+            // Invalid port / empty host / malformed: `url` can't parse, so we refuse rather than
+            // let `webbrowser` treat it as a local file path (#3732).
+            "https://example.com:99999/",
+            "https://example.com:abc/",
+            "https://",
+            "http:",
+            "https:// example.com",
+            "https://[::1",
         ] {
-            assert!(!is_web_or_mail_link(bad), "{bad:?}");
+            assert!(followable_url(bad).is_none(), "{bad:?}");
         }
     }
 
