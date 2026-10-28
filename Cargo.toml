@@ -29,6 +29,7 @@ localoffice-zotero = { path = "crates/zotero" }
 localoffice-control-key = { path = "crates/control-key" }
 localoffice-ui-egui = { path = "crates/ui-egui" }
 localoffice-metafile = { path = "crates/metafile" }
+localoffice-ai = { path = "crates/ai" }
 
 # foundation
 kurbo = { version = "0.13", features = ["serde"] }
@@ -66,6 +67,10 @@ image = { version = "0.25", default-features = false, features = ["png", "jpeg",
 # Vendored craft-libs (rev b926b5c03e256c86ca10934f58d03f628810b5b7) under libs/.
 craft-pdf = { path = "libs/craft-libs/crates/pdf/", default-features = false, features = ["write"] }
 craft-update = { path = "libs/craft-libs/crates/update/", features = ["egui"] }
+# BYOK AI shared by the suite's apps (rev 7340a2ba7fc30952a4c2e8aa32210fde29a7a47c) under libs/:
+# one OpenAI-compatible client for every provider, keys in the OS keychain. `crates/ai` gives it
+# LocalOffice's identity (config folder, keychain service, OpenRouter headers).
+local-ai = { path = "libs/local-ai" }
 quick-xml = "0.41"
 zip = { version = "3", default-features = false, features = ["deflate"] }
 # zlib streams (compressed metafile pictures in `.doc` drawings); already in the lock as a dependency of other crates.

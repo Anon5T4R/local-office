@@ -1,0 +1,15 @@
+[package]
+name = "localoffice-ai"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository = "https://github.com/Anon5T4R/local-office"
+description = "BYOK AI for LocalOffice: OpenAI-compatible providers, OS-keychain keys, models list and chat"
+publish = false
+
+[dependencies]
+local-ai = { workspace = true }
+
+[lints]
+workspace = true
