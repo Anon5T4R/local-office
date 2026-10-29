@@ -752,6 +752,18 @@ pub fn write_file(path: &str, bytes: &[u8]) -> Result<(), String> {
     safe_save::write(std::path::Path::new(path), bytes).map_err(|e| format!("{path}: {e}"))
 }
 
+/// Create a directory and all parent directories. Checked file access applies to the path.
+pub fn create_dir_all(path: &std::path::Path) -> Result<(), String> {
+    crate::file_access::check_write(path.to_str().ok_or("invalid path")?)?;
+    std::fs::create_dir_all(path).map_err(|e| format!("{}: {e}", path.display()))
+}
+
+/// Remove a file. Checked file access applies to the path.
+pub fn remove_file(path: &std::path::Path) -> Result<(), String> {
+    crate::file_access::check_write(path.to_str().ok_or("invalid path")?)?;
+    std::fs::remove_file(path).map_err(|e| format!("{}: {e}", path.display()))
+}
+
 #[cfg(target_arch = "wasm32")]
 pub fn write_file(path: &str, _bytes: &[u8]) -> Result<(), String> {
     Err(format!("{path}: files are saved through the browser on the web"))
