@@ -1,10 +1,15 @@
-//! Hunspell dictionaries installed on the system, read at runtime.
+//! Hunspell dictionaries: the suite's bundled ones (extracted once) and any installed on the
+//! system, read at runtime.
 //!
-//! LocalOffice doesn't bundle large spelling dictionaries. For languages with an affix dictionary
-//! (Polish, Russian), it reads the standard Hunspell `.aff`/`.dic` pair installed by the operating system,
-//! a package manager or LibreOffice, with [`crate::affix::AffixDict::from_hunspell`]. When none is
-//! installed the language has no spelling check (no marks, no errors), like Word without the
-//! language's proofing tools.
+//! LocalOffice ships the main dictionaries (Brazilian Portuguese — VERO — and Spanish as spoken
+//! in Spain — RLA-ES; their licenses travel with the files in `assets/dictionaries`). They are
+//! extracted once into a directory the search below already visits, so spelling works out of the
+//! box, and a dictionary the user (or their package manager) puts there first wins. For other
+//! languages with an affix dictionary (Polish, Russian), it reads the standard Hunspell
+//! `.aff`/`.dic` pair installed by the operating system, a package manager or LibreOffice, with
+//! [`crate::affix::AffixDict::from_hunspell`]. When none is installed and none is bundled the
+//! language has no spelling check (no marks, no errors), like Word without the language's
+//! proofing tools.
 //!
 //! Search order: the directory in `LOCALOFFICE_DICTIONARIES` (or one set with
 //! [`set_dictionary_dir`]), then the usual system locations. On the web there are none.
@@ -16,6 +21,59 @@ use crate::affix::AffixDict;
 
 /// Largest `.aff` or `.dic` file read (real ones are a few MB).
 const MAX_FILE: u64 = 64 << 20;
+
+/// The bundled Brazilian Portuguese pair (VERO, LGPL-3.0/MPL — see `assets/dictionaries`).
+static PT_BR_AFF: &[u8] = include_bytes!("../../../assets/dictionaries/pt_BR.aff");
+static PT_BR_DIC: &[u8] = include_bytes!("../../../assets/dictionaries/pt_BR.dic");
+/// The bundled Spanish (Spain) pair (RLA-ES, GPL-3.0/LGPL-3.0/MPL). Written under the plain
+/// `es` name as well: every Spanish variety's fallback list ends with `es`.
+static ES_AFF: &[u8] = include_bytes!("../../../assets/dictionaries/es_ES.aff");
+static ES_DIC: &[u8] = include_bytes!("../../../assets/dictionaries/es_ES.dic");
+
+/// The directory the bundled dictionaries are extracted into: one the [`search_dirs`] list
+/// already visits, so no search order changes. `None` where that place isn't known (no `HOME`).
+fn bundled_dir() -> Option<PathBuf> {
+    let home = std::env::var_os("HOME").filter(|v| !v.is_empty()).map(PathBuf::from);
+    if cfg!(target_os = "macos") {
+        home.map(|h| h.join("Library/Spelling"))
+    } else if cfg!(target_family = "unix") {
+        home.map(|h| h.join(".local/share/hunspell"))
+    } else {
+        // Windows: `%APPDATA%\LocalOffice\dictionaries`, one of the two variants `search_dirs`
+        // visits (`LOCALAPPDATA` is its sibling, not `LocalOffice`'s own).
+        std::env::var_os("APPDATA").filter(|v| !v.is_empty()).map(|d| PathBuf::from(d).join("LocalOffice").join("dictionaries"))
+    }
+}
+
+/// Extract the bundled dictionaries into `dir` (see [`bundled_dir`]): each pair is written when
+/// its files aren't there yet, so anything the user or their system put in first stays.
+fn extract_bundled_into(dir: &Path) -> Result<(), String> {
+    let write = |name: &str, bytes: &[u8]| -> Result<(), String> {
+        let path = dir.join(name);
+        if path.is_file() {
+            return Ok(());
+        }
+        std::fs::write(&path, bytes).map_err(|e| format!("{}: {e}", path.display()))
+    };
+    write("pt_BR.aff", PT_BR_AFF)?;
+    write("pt_BR.dic", PT_BR_DIC)?;
+    write("es_ES.aff", ES_AFF)?;
+    write("es_ES.dic", ES_DIC)?;
+    write("es.aff", ES_AFF)?;
+    write("es.dic", ES_DIC)?;
+    Ok(())
+}
+
+/// Extract the suite's bundled dictionaries (Brazilian Portuguese and Spanish) into the
+/// directory the dictionary search already visits, so those languages check spelling out of
+/// the box. Files that are already there win: the user's own dictionary is never overwritten.
+/// The desktop app calls this once, before any spelling. Errors are returned, not fatal: the
+/// languages simply keep reading whatever the system has.
+pub fn ensure_bundled() -> Result<(), String> {
+    let Some(dir) = bundled_dir() else { return Ok(()) };
+    std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+    extract_bundled_into(&dir)
+}
 
 /// An extra directory searched first (a setting), set by the front end.
 static EXTRA_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
@@ -238,6 +296,33 @@ pub fn decode(aff: &[u8], dic: &[u8]) -> Result<(String, String), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The bundled dictionaries (Brazilian Portuguese — VERO — and Spanish — RLA-ES) extract
+    /// into the directory and load with the real parser: real files, real affix rules. A pair
+    /// the user already has is never overwritten.
+    #[test]
+    fn the_bundled_dictionaries_extract_and_load() {
+        let dir = std::env::temp_dir().join(format!("localoffice-bundled-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        // A pair the user already has: the extraction must keep it.
+        std::fs::write(dir.join("es.aff"), b"SET UTF-8\n").unwrap();
+        std::fs::write(dir.join("es.dic"), b"1\nhola\n").unwrap();
+        extract_bundled_into(&dir).unwrap();
+        let (aff, dic) = find_in(&dir, &["pt_BR", "pt"]).unwrap();
+        let pt = load(&aff, &dic).unwrap();
+        assert!(pt.check("coração"), "a real Portuguese word, accents and all");
+        assert!(!pt.check("coraçao"), "the accent matters");
+        let (aff, dic) = find_in(&dir, &["es_ES", "es-ES", "es_ANY", "es"]).unwrap();
+        assert!(aff.ends_with("es_ES.aff"), "the Spain pair is the bundled one, not the user's plain `es`");
+        let es = load(&aff, &dic).unwrap();
+        assert!(es.check("ciencia"));
+        assert!(es.check("también"), "a real Spanish word with its accent");
+        assert!(!es.check("tambien"), "the accent matters");
+        // The plain `es` pair kept the user's own file.
+        let plain = std::fs::read_to_string(dir.join("es.dic")).unwrap();
+        assert!(plain.contains("hola"), "the user's dictionary is never overwritten");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 
     #[test]
     fn decodes_latin2_and_utf8() {

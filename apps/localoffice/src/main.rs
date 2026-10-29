@@ -393,6 +393,12 @@ fn main() -> eframe::Result {
     // First, so the panic hook and every start-up warning are recorded (`logging`).
     let logger = logging::install();
     logging::install_panic_hook();
+    // The suite's bundled spelling dictionaries (Brazilian Portuguese and Spanish) extract into
+    // the directory the dictionary search already visits; anything already there wins. A failure
+    // only leaves those languages without spelling, so a warning is all it gets.
+    if let Err(e) = localoffice_proof::hunspell::ensure_bundled() {
+        log::warn!("bundled dictionaries: {e}");
+    }
     let mut control_port: Option<u16> = std::env::var("LOCALOFFICE_CONTROL_PORT").ok().and_then(|p| p.parse().ok());
     let mut files = Vec::new();
     let mut sample = false;
