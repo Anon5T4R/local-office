@@ -99,6 +99,10 @@ Manufacturer="LocalOffice contributors"
         </File>
 
         <RegistryValue Root="HKMU" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\localoffice.exe" Value="[#LocalOfficeExe]" Type="string" />
+        <!-- Where this MSI installed the app. The app's own updater reads it (HKLM here) under the
+             suite's key to know this is an MSI install, so it updates with the new MSI rather than
+             the portable zip. -->
+        <RegistryValue Root="HKLM" Key="Software\Anon5T4R\LocalOffice" Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
       </Component>
 
       <!-- File associations (#295). Each document type gets a LocalOffice ProgId (name, icon, open
