@@ -9,6 +9,7 @@ Manter o `local-office` próximo do `storytold/wordcraft` (upstream) sem perder 
 3. **Mapeamento de renames é explícito.** Todo nome/caminho do wordcraft que difere do local-office fica registrado em `docs/UPSTREAM-MAP.toml` (ver abaixo) para que um script tente aplicar sozinho e pare onde não conseguir.
 4. **Puxamos apenas o que é nosso.** Não puxamos branding, nomes de marca, links `getartcraft.com`, Discord, `docs/brand/`, ou CI que dependa de workflows compartilhados da org `storytold`.
 5. **Contribuímos de volta.** Quando resolvemos um bug que também existe upstream, abrimos Issue/PR no `storytold/wordcraft` (em inglês, como eles usam). Registramos em `UPSTREAM-CONTRIBUTIONS.md`.
+6. **Independência de conteúdo (regra da suíte, PLANO-REBRAND §4.6).** Feature upstream que baixa conteúdo do servidor deles (dicionários, revisores, modelos locais de filtro/OCR/voz, fontes) não entra como está: ou o conteúdo vem embutido no repo (`assets/`), ou com fetch com checksum fixado no build, ou a feature é removida. Download de runtime, se inevitável, só das nossas releases do GitHub com digest validado. Nada aponta pra `storytold`/`getartcraft` em runtime.
 
 ## O que puxar vs o que não puxar
 
