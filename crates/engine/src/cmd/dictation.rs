@@ -33,10 +33,7 @@ const RECORD_DURATION_SECS: u64 = 5;
 /// Ensures the STT model is available locally, downloading if necessary.
 /// Returns the path to the model file.
 fn ensure_stt_model() -> Result<PathBuf, String> {
-    let data_dir = dirs::data_dir()
-        .ok_or("could not determine data directory")?
-        .join("LocalOffice")
-        .join(STT_MODEL_DIR);
+    let data_dir = dirs::data_dir().ok_or("could not determine data directory")?.join("LocalOffice").join(STT_MODEL_DIR);
 
     io::create_dir_all(&data_dir)?;
 
@@ -78,10 +75,7 @@ fn download_model(path: &Path, url: &str, _expected_sha256: &str) -> Result<(), 
         return Err(format!("download failed with status: {}", resp.status()));
     }
 
-    let total_size = resp.headers().get("content-length")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.parse::<u64>().ok())
-        .unwrap_or(0);
+    let total_size = resp.headers().get("content-length").and_then(|v| v.to_str().ok()).and_then(|v| v.parse::<u64>().ok()).unwrap_or(0);
     let mut reader = resp.body_mut().as_reader();
     log::info!("Downloading model ({:.1} MB)...", total_size as f64 / 1_000_000.0);
 
@@ -122,8 +116,7 @@ struct WhisperRecognizer {
 impl WhisperRecognizer {
     fn new(model_path: &Path) -> Result<Self, String> {
         let params = WhisperContextParameters::default();
-        let ctx = WhisperContext::new_with_params(model_path, params)
-            .map_err(|e| format!("failed to load whisper model: {e}"))?;
+        let ctx = WhisperContext::new_with_params(model_path, params).map_err(|e| format!("failed to load whisper model: {e}"))?;
         Ok(Self { ctx: Arc::new(Mutex::new(ctx)) })
     }
 
@@ -180,9 +173,7 @@ fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
     use std::sync::atomic::{AtomicBool, Ordering};
 
     let host = cpal::default_host();
-    let device = host
-        .default_input_device()
-        .ok_or("no input device available")?;
+    let device = host.default_input_device().ok_or("no input device available")?;
 
     let config = device.default_input_config().map_err(|e| format!("failed to get input config: {e}"))?;
 
