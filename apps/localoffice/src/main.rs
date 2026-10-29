@@ -63,7 +63,10 @@ impl eframe::App for App {
         // centre of the one the host reports for it, leaving full screen if it was on the
         // dead one (a full-screen window cannot be moved).
         if let Some(native) = frame.winit_window() {
-            let scale = native.scale_factor() as f32;
+            // The window's rectangles arrive in egui points — the OS scale times the UI zoom
+            // (egui-winit's `pixels_per_point`), so the monitor rectangles must be divided by
+            // the same pair or a zoomed interface misreads where the window is.
+            let scale = native.scale_factor() as f32 * ctx.zoom_factor();
             // winit reports monitors in physical pixels of the desktop space the window's outer
             // rectangle (points) also lives in; the window's own scale converts the two.
             let monitors: Vec<egui::Rect> = native
