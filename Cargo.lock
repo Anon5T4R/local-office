@@ -3099,7 +3099,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "arboard",
  "chrono",
@@ -3134,14 +3134,14 @@ dependencies = [
 
 [[package]]
 name = "localoffice-ai"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "local-ai",
 ]
 
 [[package]]
 name = "localoffice-cli"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "localoffice-doc",
  "localoffice-engine",
@@ -3154,11 +3154,11 @@ dependencies = [
 
 [[package]]
 name = "localoffice-control-key"
-version = "0.11.7"
+version = "0.11.8"
 
 [[package]]
 name = "localoffice-doc"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "base64 0.23.1",
  "localoffice-geom",
@@ -3173,7 +3173,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-docbin"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "cfb",
  "chrono",
@@ -3190,7 +3190,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-docx"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "aes",
  "base64 0.23.1",
@@ -3214,7 +3214,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-engine"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "cfb",
  "chrono",
@@ -3246,7 +3246,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-fonts"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "brotli-decompressor",
  "harfrust 0.13.3",
@@ -3260,7 +3260,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-formats"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "cfb",
  "chardetng",
@@ -3278,7 +3278,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-geom"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "image",
  "serde",
@@ -3286,7 +3286,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-layout"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "image",
  "js-sys",
@@ -3306,7 +3306,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-mcp"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "localoffice-control-key",
  "localoffice-doc",
@@ -3318,7 +3318,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-metafile"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "kurbo",
  "thiserror 2.0.21",
@@ -3326,7 +3326,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-pdf"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "chrono",
  "craft-pdf",
@@ -3347,7 +3347,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-proof"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "log",
  "miniz_oxide 0.9.1",
@@ -3357,7 +3357,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-render"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "image",
  "localoffice-doc",
@@ -3371,7 +3371,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-ui-egui"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "cfb",
  "chrono",
@@ -3403,7 +3403,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-web"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "eframe",
  "egui",
@@ -3422,7 +3422,7 @@ dependencies = [
 
 [[package]]
 name = "localoffice-zotero"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "localoffice-doc",
  "localoffice-docx",
@@ -7440,7 +7440,7 @@ checksum = "9440ea3e5aeabb0ac63af70daf835274065238cdd0cec83418f417eae38bacee"
 
 [[package]]
 name = "xtask"
-version = "0.11.7"
+version = "0.11.8"
 dependencies = [
  "serde_json",
 ]
