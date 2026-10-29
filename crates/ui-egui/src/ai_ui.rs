@@ -133,6 +133,110 @@ fn capped(mut text: String) -> String {
     text
 }
 
+/// How one run of an assistant answer is marked up.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum MdStyle {
+    /// The text as it came.
+    Plain,
+    /// A `**…**` pair.
+    Bold,
+    /// A single `*` pair.
+    Italic,
+    /// Between backticks.
+    Code,
+}
+
+/// A run of an answer's line, cut where its marking changes.
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct MdSeg {
+    text: String,
+    style: MdStyle,
+}
+
+/// One line of an answer: ordinary text, a list item (`- `) or a heading (`# s`).
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum MdLine {
+    Text(Vec<MdSeg>),
+    Item(Vec<MdSeg>),
+    Heading(Vec<MdSeg>),
+}
+
+/// The light markdown over assistant answers: `- ` opens a list item, a run of `#`s and a space
+/// a heading, and the inline pairs (`**bold**`, `*italic*`, backticks) cut their runs apart
+/// ([`md_segs`]). Just enough to read an answer at a glance: links, tables and fences are none
+/// of its business, and the user's turns are always drawn as they typed them.
+fn md(text: &str) -> Vec<MdLine> {
+    text.split('\n')
+        .map(|line| {
+            let hashes = line.chars().take_while(|&c| c == '#').count();
+            // `#` is ASCII, so the character count of the opening run is its width in bytes.
+            if hashes > 0
+                && let Some(rest) = line[hashes..].strip_prefix(' ')
+            {
+                return MdLine::Heading(md_segs(rest));
+            }
+            if let Some(rest) = line.strip_prefix("- ") {
+                return MdLine::Item(md_segs(rest));
+            }
+            MdLine::Text(md_segs(line))
+        })
+        .collect()
+}
+
+/// The runs of one line: `**bold**`, `*italic*` and `` `code` ``, plain text apart from those.
+/// A marker without its pair later on the line is literal text, so `2 * 3` draws as typed, and
+/// runs don't nest: each opener closes at the first pair that answers it.
+fn md_segs(line: &str) -> Vec<MdSeg> {
+    let cs: Vec<char> = line.chars().collect();
+    let mut out: Vec<MdSeg> = Vec::new();
+    let mut plain = String::new();
+    let mut i = 0;
+    while i < cs.len() {
+        // A styled run when the marker at `i` finds its pair: (style, run, first byte past it).
+        let run = if cs[i] == '`'
+            && let Some(end) = (i + 1..cs.len()).find(|&k| cs[k] == '`')
+        {
+            Some((MdStyle::Code, i + 1, end, end + 1))
+        } else if cs[i] == '*'
+            && let Some(run) = md_star_pair(&cs, i)
+        {
+            Some(run)
+        } else {
+            None
+        };
+        match run {
+            Some((style, start, end, next)) => {
+                if !plain.is_empty() {
+                    out.push(MdSeg { text: std::mem::take(&mut plain), style: MdStyle::Plain });
+                }
+                if start < end {
+                    out.push(MdSeg { text: cs[start..end].iter().collect(), style });
+                }
+                i = next;
+            }
+            None => {
+                plain.push(cs[i]);
+                i += 1;
+            }
+        }
+    }
+    if !plain.is_empty() {
+        out.push(MdSeg { text: plain, style: MdStyle::Plain });
+    }
+    out
+}
+
+/// What the `*` at index `i` opens: a `**` pair (bold) with where it closes, or the next single
+/// `*` (italic). `None` when the rest of the line has no closer, leaving the `*` literal text.
+fn md_star_pair(cs: &[char], i: usize) -> Option<(MdStyle, usize, usize, usize)> {
+    if cs.get(i + 1) == Some(&'*') {
+        let end = (i + 2..cs.len()).find(|&k| cs[k] == '*' && cs.get(k + 1) == Some(&'*'))?;
+        return Some((MdStyle::Bold, i + 2, end, end + 2));
+    }
+    let end = (i + 1..cs.len()).find(|&k| cs[k] == '*')?;
+    Some((MdStyle::Italic, i + 1, end, end + 1))
+}
+
 /// The system turn: who the assistant is helping, and the document text it reads.
 fn system_turn(app: &WordApp, framing: &str) -> Msg {
     let name = app.prompt_name();
@@ -375,6 +479,75 @@ fn model_row(app: &mut WordApp, ui: &mut egui::Ui) {
     });
 }
 
+/// Whether Clear is offered: with turns above and the panel quiet, since an answer still in
+/// flight must keep its chat to land beside the question that asked for it.
+fn clear_ready(ai: &AiState) -> bool {
+    !ai.chat.is_empty() && ai.job.is_none()
+}
+
+/// The chat row's Clear, the small icons (the `chrome::small_icon` drawing) with the enabled
+/// state greyed and detached while there is nothing to clear or a request is running.
+fn clear_button(ui: &mut egui::Ui, enabled: bool) -> bool {
+    let t = Tokens::get(ui.ctx());
+    let (r, _) = ui.allocate_exact_size(egui::vec2(18.0, 18.0), egui::Sense::hover());
+    let resp = ui.interact(r, clear_button_id(), if enabled { egui::Sense::click() } else { egui::Sense::hover() });
+    if enabled && resp.hovered() {
+        ui.painter().rect_filled(r, 3.0, t.hover);
+    }
+    let c = if enabled { t.icon } else { t.text_disabled };
+    crate::icons::paint(ui.painter(), r.shrink(3.0), "clearChat", c, t.accent);
+    resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, tl!("Clear the conversation")));
+    resp.on_hover_text(tl!("Clear the conversation")).clicked()
+}
+
+/// The Clear button's id, so tests can reach it where the row puts it.
+fn clear_button_id() -> egui::Id {
+    egui::Id::unique("ai-clear-chat")
+}
+
+/// An assistant turn drawn as light markdown: one wrapped block with the [`MdLine`]s back in
+/// order — a heading a size up in the semibold face, list items behind a dim bullet, bold in
+/// the house semibold, italic slanted, inline code in the monospace face over the house accent.
+/// Plain prose wraps as one run, like any label.
+fn show_assistant_turn(ui: &mut egui::Ui, text: &str, t: &Tokens) {
+    let mut job = egui::text::LayoutJob::default();
+    for (n, line) in md(text).into_iter().enumerate() {
+        if n > 0 {
+            job.append("\n", 0.0, egui::text::TextFormat::simple(theme::regular(13.0), t.text));
+        }
+        let (segs, heading) = match &line {
+            MdLine::Item(segs) => {
+                job.append("•  ", 0.0, egui::text::TextFormat::simple(theme::regular(13.0), t.text_dim));
+                (segs, false)
+            }
+            MdLine::Heading(segs) => (segs, true),
+            MdLine::Text(segs) => (segs, false),
+        };
+        for seg in segs {
+            if seg.text.is_empty() {
+                continue;
+            }
+            let format = match (heading, seg.style) {
+                (_, MdStyle::Code) => egui::text::TextFormat::simple(egui::FontId::monospace(12.0), t.accent_text),
+                (_, MdStyle::Bold) => egui::text::TextFormat::simple(theme::semibold(if heading { 15.0 } else { 13.0 }), t.text),
+                (true, _) => egui::text::TextFormat::simple(theme::semibold(15.0), t.text),
+                (false, MdStyle::Italic) => {
+                    egui::text::TextFormat { font_id: theme::regular(13.0), color: t.text, italics: true, ..egui::text::TextFormat::default() }
+                }
+                (false, MdStyle::Plain) => egui::text::TextFormat::simple(theme::regular(13.0), t.text),
+            };
+            job.append(&seg.text, 0.0, format);
+        }
+    }
+    if job.text.is_empty() {
+        return;
+    }
+    job.wrap.max_width = ui.available_width();
+    let galley = ui.painter().layout_job(job);
+    let (rect, _) = ui.allocate_exact_size(galley.size(), egui::Sense::hover());
+    ui.painter().galley(rect.min, galley, t.text);
+}
+
 /// The conversation, scrolled to the bottom.
 fn chat_area(app: &mut WordApp, ui: &mut egui::Ui, t: &Tokens) {
     ui.horizontal(|ui| {
@@ -393,6 +566,12 @@ fn chat_area(app: &mut WordApp, ui: &mut egui::Ui, t: &Tokens) {
         if busy {
             ui.add(egui::Spinner::new().size(14.0));
         }
+        // On the row's right end, out of the reading line: Clear, when it applies.
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if clear_button(ui, clear_ready(&app.ai)) {
+                app.ai.chat.clear();
+            }
+        });
     });
     ui.add_space(4.0);
     // A capped area: without it the chat asks for the whole screen while sizing and the window
@@ -416,7 +595,7 @@ fn chat_area(app: &mut WordApp, ui: &mut egui::Ui, t: &Tokens) {
                         ui.label(egui::RichText::new(tl!("You")).color(t.text_dim).small());
                     }
                     Turn::Assistant(text) => {
-                        ui.label(egui::RichText::new(text).font(theme::regular(13.0)));
+                        show_assistant_turn(ui, text, t);
                         ui.label(egui::RichText::new(tl!("Assistant")).color(t.text_dim).small());
                         ui.separator();
                     }
@@ -465,6 +644,38 @@ mod tests {
 
     fn app() -> WordApp {
         WordApp::new(localoffice_engine::Session::new(localoffice_engine::sample::sample_document()), crate::Services::default())
+    }
+
+    /// Visual QA (ignored in CI): renders the assistant panel with a markdown answer to a PNG
+    /// for the vision pass, the pdf's pipeline. Run with
+    /// `cargo test -p localoffice-ui-egui --lib ai_ui::tests::renders_the_panel_for_visual_qa -- --ignored`.
+    #[test]
+    #[ignore = "visual QA: renders the AI panel to a PNG for review"]
+    fn renders_the_panel_for_visual_qa() {
+        let mut a = app();
+        // Hermetic: don't read the user's real connections; a saved answer with markdown.
+        a.ai.loaded = true;
+        a.ai.open = true;
+        a.ai.chat = vec![
+            Turn::User("resuma".into()),
+            Turn::Assistant("The **Open Studio Handbook** in *plain* words:\n\n- **Objective:** a shared atelier.\n- `Rule`: clean as you go.\n\n### Notes\nAnyone can join.".into()),
+        ];
+        let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1280.0, 800.0)).with_accessibility_check(false).build_ui_state(
+            |ui, app: &mut WordApp| {
+                let ctx = ui.ctx().clone();
+                ctx.set_theme(egui::Theme::Dark);
+                app.logic(&ctx);
+                app.ui(ui);
+            },
+            a,
+        );
+        for _ in 0..8 {
+            h.step();
+        }
+        let img = h.render().expect("render");
+        let out = std::env::temp_dir().join("localoffice-ai-markdown.png");
+        img.save(&out).expect("save png");
+        eprintln!("saved {}", out.display());
     }
 
     /// Home ▸ AI is a UI command: no value toggles the panel, `value` opens or closes it, and a
@@ -551,5 +762,87 @@ mod tests {
         assert_eq!(a.ai.input, "o que este documento pede?", "the question stays in the box");
         assert!(matches!(a.ai.chat.first(), Some(Turn::Failed(_))), "the reason shows as a turn");
         assert!(a.ai.job.is_none(), "nothing was sent");
+    }
+
+    /// The light markdown an assistant answer parses: the inline pairs split their runs, `- `
+    /// opens a marker, `### ` a heading, an empty line is the paragraph break, and a marker
+    /// without its pair stays literal text (`2 * 3` draws as typed).
+    #[test]
+    fn assistant_answers_take_light_markdown() {
+        let s = |text: &str, style: MdStyle| MdSeg { text: text.into(), style };
+        assert_eq!(
+            md_segs("Pano: **feito**, *rascunho*, `código`, 2 * 3"),
+            vec![
+                s("Pano: ", MdStyle::Plain),
+                s("feito", MdStyle::Bold),
+                s(", ", MdStyle::Plain),
+                s("rascunho", MdStyle::Italic),
+                s(", ", MdStyle::Plain),
+                s("código", MdStyle::Code),
+                s(", 2 * 3", MdStyle::Plain),
+            ],
+            "the pairs split off, the stray `*` keeps its text"
+        );
+        assert_eq!(md_segs("a ** b ` c"), vec![s("a ** b ` c", MdStyle::Plain)], "an unclosed pair is not markup");
+        assert_eq!(
+            md_segs("um `code` e `outro`"),
+            vec![s("um ", MdStyle::Plain), s("code", MdStyle::Code), s(" e ", MdStyle::Plain), s("outro", MdStyle::Code)]
+        );
+        assert_eq!(
+            md("- **Objetivo:** sair cedo"),
+            vec![MdLine::Item(vec![s("Objetivo:", MdStyle::Bold), s(" sair cedo", MdStyle::Plain)])],
+            "the `- ` marker is read off and the run under it stays marked up"
+        );
+        assert_eq!(md("### Panorama"), vec![MdLine::Heading(vec![s("Panorama", MdStyle::Plain)])]);
+        assert_eq!(md("## *Primeiro*"), vec![MdLine::Heading(vec![s("Primeiro", MdStyle::Italic)])]);
+        assert_eq!(md("###no"), vec![MdLine::Text(vec![s("###no", MdStyle::Plain)])], "no space, no heading");
+        assert_eq!(md("two hashes and no room"), vec![MdLine::Text(vec![s("two hashes and no room", MdStyle::Plain)])]);
+        assert_eq!(
+            md("um\n\ndois"),
+            vec![MdLine::Text(vec![s("um", MdStyle::Plain)]), MdLine::Text(vec![]), MdLine::Text(vec![s("dois", MdStyle::Plain)])],
+            "an empty line is a paragraph break"
+        );
+    }
+
+    /// Clear only applies when the chat has turns and the panel is quiet: the answer of a
+    /// request still in flight must arrive beside the question that asked for it.
+    #[test]
+    fn clear_waits_for_a_resting_nonempty_chat() {
+        let mut a = app();
+        assert!(!clear_ready(&a.ai), "an empty chat has nothing to clear");
+        a.ai.chat.push(Turn::Assistant("**Feito**. `um`".into()));
+        assert!(clear_ready(&a.ai), "turns above: Clear applies");
+        a.ai.job = Some(Job::spawn(|| Ok("still coming".into())));
+        assert!(!clear_ready(&a.ai), "not while the answer is in flight");
+        wait_polled(&mut a);
+        assert!(clear_ready(&a.ai), "and the panel is quiet again");
+    }
+
+    /// The Clear button, drawn on the actions row's right end, takes the whole conversation
+    /// when clicked, and offers no click any more over an empty chat.
+    #[test]
+    fn the_clear_button_empties_the_chat() {
+        use egui_kittest::kittest::Queryable;
+        let mut a = app();
+        a.ai.open = true;
+        a.ai.chat = vec![Turn::User("o que este documento pede?".into()), Turn::Assistant("### Panorama\n- **Objetivo:** revisar `-` e `a*`".into())];
+        // The panel's combos name themselves through their `selected_text`, not a label, and
+        // this check is what `chrome.rs`' harnesses pay for its chrome; off here.
+        let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(900.0, 750.0)).with_accessibility_check(false).build_ui_state(
+            |ui, app: &mut WordApp| {
+                // The panel's TextFormats name the app's families: install them like `WordApp`
+                // does (the egui test root needs the faces declared to draw anything).
+                let ctx = ui.ctx().clone();
+                crate::theme::install_fonts(&ctx);
+                crate::theme::apply(&ctx, crate::theme::Appearance::Light);
+                show(app, &ctx);
+            },
+            a,
+        );
+        h.run_steps(3);
+        h.get_by_label("Clear the conversation").click();
+        h.run_steps(3);
+        assert!(h.state().ai.chat.is_empty(), "clearing drops every turn, user's and assistant's alike");
+        assert!(!clear_ready(&h.state().ai), "and the button is not offered again");
     }
 }

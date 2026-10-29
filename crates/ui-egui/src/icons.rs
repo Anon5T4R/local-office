@@ -908,6 +908,13 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
             pen.circle(13.5, 16.1, 1.8, a);
             pen.line_c(&[(15.0, 17.1), (15.8, 18.0)], a);
         }
+        // Clearing the chat: the conversation bubble with an ✕ over it, in the panel's accent
+        // (not the comment-delete red: it drops the turns, without touching anything else).
+        "clearChat" => {
+            pen.closed(&[(2.5, 3.5), (17.5, 3.5), (17.5, 13.5), (9.0, 13.5), (5.0, 17.0), (5.0, 13.5), (2.5, 13.5)], c);
+            pen.line_c(&[(7.5, 6.0), (12.5, 11.0)], a);
+            pen.line_c(&[(12.5, 6.0), (7.5, 11.0)], a);
+        }
         "deleteComment" => {
             pen.closed(&[(2.5, 3.5), (17.5, 3.5), (17.5, 13.5), (9.0, 13.5), (5.0, 17.0), (5.0, 13.5), (2.5, 13.5)], c);
             pen.line_c(&[(7.5, 6.0), (12.5, 11.0)], red);
