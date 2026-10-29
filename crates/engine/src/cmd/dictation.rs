@@ -91,7 +91,7 @@ fn download_model(path: &Path, url: &str, _expected_sha256: &str) -> Result<(), 
         data.extend_from_slice(&buffer[..n]);
         downloaded += n as u64;
 
-        if downloaded % (10 * 1024 * 1024) == 0 {
+        if downloaded.is_multiple_of(10 * 1024 * 1024) {
             log::info!("Downloaded {:.1} MB...", downloaded as f64 / 1_000_000.0);
         }
     }
@@ -122,7 +122,7 @@ impl WhisperRecognizer {
 
     /// Transcribe audio samples (16-bit PCM, 16kHz mono).
     pub fn transcribe(&self, audio: &[f32], language: Option<&str>) -> Result<String, String> {
-        let ctx = self.ctx.lock().unwrap();
+        let ctx = self.ctx.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         let mut state = ctx.create_state().map_err(|e| format!("failed to create whisper state: {e}"))?;
 
         let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
@@ -142,10 +142,10 @@ impl WhisperRecognizer {
         let mut text = String::new();
         let n_segments = state.full_n_segments();
         for i in 0..n_segments {
-            if let Some(segment) = state.get_segment(i) {
-                if let Ok(seg_text) = segment.to_str() {
-                    text.push_str(seg_text);
-                }
+            if let Some(segment) = state.get_segment(i)
+                && let Ok(seg_text) = segment.to_str()
+            {
+                text.push_str(seg_text);
             }
         }
 
@@ -185,13 +185,13 @@ fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
     let recording = Arc::new(AtomicBool::new(true));
     let recording_clone = Arc::clone(&recording);
 
-    let stream_config: cpal::StreamConfig = config.clone().into();
+    let stream_config: cpal::StreamConfig = config.into();
     let stream = device
         .build_input_stream(
             stream_config,
             move |data: &[f32], _: &cpal::InputCallbackInfo| {
                 if recording_clone.load(Ordering::Relaxed) {
-                    let mut samples = samples_clone.lock().unwrap();
+                    let mut samples = samples_clone.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
                     samples.extend_from_slice(data);
                 }
             },
@@ -209,7 +209,7 @@ fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
     drop(stream);
 
     // Resample to 16kHz mono
-    let raw_samples = samples.lock().unwrap().clone();
+    let raw_samples = samples.lock().unwrap_or_else(std::sync::PoisonError::into_inner).clone();
     let mono_samples = if channels > 1 {
         // Downmix to mono
         raw_samples.chunks(channels).map(|chunk| chunk.iter().sum::<f32>() / channels as f32).collect()
