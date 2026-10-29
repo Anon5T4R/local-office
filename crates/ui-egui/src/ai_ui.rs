@@ -300,6 +300,7 @@ fn connections_row(app: &mut WordApp, ui: &mut egui::Ui, t: &Tokens) {
         ui.collapsing(crate::i18n::fmt(tl!("{name} details"), &[("name", &name)]), |ui| {
             egui::Grid::new("ai-conn-details").num_columns(2).spacing([8.0, 4.0]).show(ui, |ui| {
                 ui.label(tl!("Provider"));
+                let provider_before = app.ai.connections[app.ai.selected].provider.clone();
                 egui::ComboBox::from_id_salt("ai-provider").selected_text(provider_label(&app.ai.connections[app.ai.selected].provider)).show_ui(
                     ui,
                     |ui| {
@@ -308,6 +309,9 @@ fn connections_row(app: &mut WordApp, ui: &mut egui::Ui, t: &Tokens) {
                         }
                     },
                 );
+                if app.ai.connections[app.ai.selected].provider != provider_before {
+                    app.ai.models.clear();
+                }
                 ui.end_row();
                 ui.label(tl!("Name"));
                 ui.add(egui::TextEdit::singleline(&mut app.ai.connections[app.ai.selected].label));
@@ -392,35 +396,41 @@ fn chat_area(app: &mut WordApp, ui: &mut egui::Ui, t: &Tokens) {
     });
     ui.add_space(4.0);
     // A capped area: without it the chat asks for the whole screen while sizing and the window
-    // grows past the user's resize.
+    // grows past the user's resize. Bottom-up: the newest turn sits just above the input and the
+    // rest scrolls upward, so a chat fills from the bottom of its box (the pdf's lesson).
     let chat_height = (ui.available_height() - 44.0).clamp(140.0, 460.0);
     egui::ScrollArea::vertical().auto_shrink([false, false]).stick_to_bottom(true).max_height(chat_height).show(ui, |ui| {
-        if app.ai.chat.is_empty() {
-            ui.label(egui::RichText::new(tl!("Ask about the document, or press Summarize.")).color(t.text_dim));
-        }
-        for turn in &app.ai.chat {
-            match turn {
-                Turn::User(text) => {
-                    ui.label(egui::RichText::new(tl!("You")).color(t.text_dim).small());
-                    ui.label(egui::RichText::new(text).font(theme::regular(13.0)));
-                }
-                Turn::Assistant(text) => {
-                    ui.separator();
-                    ui.label(egui::RichText::new(tl!("Assistant")).color(t.text_dim).small());
-                    ui.label(egui::RichText::new(text).font(theme::regular(13.0)));
-                }
-                Turn::Failed(text) => {
-                    ui.label(egui::RichText::new(format!("✗ {text}")).color(t.red).small());
+        ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
+            if app.ai.job.is_some() {
+                ui.horizontal(|ui| {
+                    ui.add(egui::Spinner::new().size(14.0));
+                    ui.label(egui::RichText::new(tl!("thinking…")).color(t.text_dim));
+                });
+                ui.add_space(6.0);
+            }
+            for turn in app.ai.chat.iter().rev() {
+                ui.add_space(6.0);
+                match turn {
+                    Turn::User(text) => {
+                        ui.label(egui::RichText::new(text).font(theme::regular(13.0)));
+                        ui.label(egui::RichText::new(tl!("You")).color(t.text_dim).small());
+                    }
+                    Turn::Assistant(text) => {
+                        ui.label(egui::RichText::new(text).font(theme::regular(13.0)));
+                        ui.label(egui::RichText::new(tl!("Assistant")).color(t.text_dim).small());
+                        ui.separator();
+                    }
+                    Turn::Failed(text) => {
+                        ui.label(egui::RichText::new(format!("✗ {text}")).color(t.red).small());
+                        ui.add_space(4.0);
+                    }
                 }
             }
-            ui.add_space(4.0);
-        }
-        if app.ai.job.is_some() {
-            ui.horizontal(|ui| {
-                ui.add(egui::Spinner::new().size(14.0));
-                ui.label(egui::RichText::new(tl!("thinking…")).color(t.text_dim));
-            });
-        }
+            if app.ai.chat.is_empty() && app.ai.job.is_none() {
+                ui.label(egui::RichText::new(tl!("Ask about the document, or press Summarize.")).color(t.text_dim));
+                ui.add_space(12.0);
+            }
+        });
     });
 }
 

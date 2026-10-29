@@ -734,6 +734,17 @@ pub(crate) fn small_icon(ui: &mut Ui, icon: &str, tip: &str) -> bool {
     resp.on_hover_text(tip).clicked()
 }
 
+pub(crate) fn icon_toggle(ui: &mut Ui, icon: &str, tip: &str, selected: bool) -> bool {
+    let t = Tokens::get(ui.ctx());
+    let (r, resp) = ui.allocate_exact_size(vec2(24.0, 24.0), Sense::click());
+    if resp.hovered() || selected {
+        ui.painter().rect_filled(r, 4.0, if selected { t.accent } else { t.hover });
+    }
+    let color = if selected { t.on_accent } else { t.icon };
+    icons::paint(ui.painter(), r.shrink(5.0), icon, color, t.accent);
+    resp.on_hover_text(tip).clicked()
+}
+
 impl WordApp {
     /// Word count, recomputed only when the document changes.
     pub fn cached_word_count(&mut self) -> usize {

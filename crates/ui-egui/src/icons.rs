@@ -1556,6 +1556,13 @@ fn shape(pen: &Pen, kind: &str) -> bool {
             pen.line(&[(4.0, 16.0), (14.5, 5.5)]);
             head((16.5, 3.5), (4.0, 16.0));
         }
+        "sparkles" => {
+            // A four-point sparkle plus a small companion one (the shape the AI button wears).
+            pen.frect(9.0, 2.0, 11.0, 19.0, c);
+            pen.frect(2.0, 9.5, 18.0, 11.5, c);
+            pen.frect(14.5, 3.0, 15.5, 6.0, c);
+            pen.frect(13.5, 4.0, 16.5, 5.0, c);
+        }
         "star" => {
             let pts: Vec<(f32, f32)> = (0..10)
                 .map(|i| {

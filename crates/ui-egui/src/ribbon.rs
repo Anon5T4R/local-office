@@ -332,7 +332,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                     let editing = crate::widgets::icon_text_button_width(ui, editing_label, regular(12.0), true, labels);
                     let comment = crate::widgets::icon_text_button_width(ui, comments, regular(12.0), false, labels);
                     // The gaps (6 + 4 + 8) and the strip's margin.
-                    spaced(share_button) + spaced(editing) + spaced(comment) + 18.0 + 12.0
+                    spaced(share_button) + spaced(editing) + spaced(comment) + 18.0 + 12.0 + 34.0
                 };
                 let button_levels = [button_widths(0), button_widths(1), button_widths(2)];
                 let labels: Vec<&str> = tabs.iter().map(|(tab, custom)| if *custom { tab.as_str() } else { tl!(tab) }).collect();
@@ -398,6 +398,11 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                         if comments_button.clicked() {
                             let _ = app.run("view.commentsPane", json!({}));
                         }
+                        ui.add_space(4.0);
+                        if crate::chrome::icon_toggle(ui, "sparkles", tl!("AI assistant"), app.ai.open) {
+                            let _ = app.run("ui.ai", json!({}));
+                        }
+                        ui.add_space(4.0);
                     });
                     ui.add_space(8.0);
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
