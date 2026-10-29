@@ -724,7 +724,7 @@ pub fn status_bar(app: &mut WordApp, ui: &mut Ui) {
         });
 }
 
-fn small_icon(ui: &mut Ui, icon: &str, tip: &str) -> bool {
+pub(crate) fn small_icon(ui: &mut Ui, icon: &str, tip: &str) -> bool {
     let t = Tokens::get(ui.ctx());
     let (r, resp) = ui.allocate_exact_size(vec2(18.0, 18.0), Sense::click());
     if resp.hovered() {

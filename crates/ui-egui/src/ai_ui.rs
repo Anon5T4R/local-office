@@ -87,22 +87,22 @@ impl AiState {
 }
 
 /// Poll the background jobs; called every frame before the window draws, open or not, so an
-/// answer that arrives while the panel is closed isn't lost.
+/// answer that arrives while the panel is closed isn't lost. One `poll` per job: the first
+/// `try_recv` takes the result out of the channel, so a second one would find nothing and
+/// swallow it — the answer and the model list both went missing that way.
 fn poll(app: &mut WordApp) {
-    if app.ai.models_job.as_ref().is_some_and(|j| j.poll().is_some()) {
-        let job = app.ai.models_job.take();
-        match job.and_then(|j| j.poll()) {
-            Some(Ok(models)) => app.ai.models = models,
-            Some(Err(e)) => app.ai.error = Some(e),
-            None => {}
+    if let Some(result) = app.ai.models_job.as_ref().and_then(|j| j.poll()) {
+        app.ai.models_job.take();
+        match result {
+            Ok(models) => app.ai.models = models,
+            Err(e) => app.ai.error = Some(e),
         }
     }
-    if app.ai.job.as_ref().is_some_and(|j| j.poll().is_some()) {
-        let job = app.ai.job.take();
-        match job.and_then(|j| j.poll()) {
-            Some(Ok(answer)) => app.ai.chat.push(Turn::Assistant(answer)),
-            Some(Err(e)) => app.ai.chat.push(Turn::Failed(e)),
-            None => {}
+    if let Some(result) = app.ai.job.as_ref().and_then(|j| j.poll()) {
+        app.ai.job.take();
+        match result {
+            Ok(answer) => app.ai.chat.push(Turn::Assistant(answer)),
+            Err(e) => app.ai.chat.push(Turn::Failed(e)),
         }
     }
 }
@@ -142,12 +142,10 @@ fn system_turn(app: &WordApp, framing: &str) -> Msg {
     ))
 }
 
-/// Send the chat input: the doc context as the system turn, then the conversation so far.
+/// Send the chat input: the doc context as the system turn, then the conversation so far. The
+/// connection is checked before the input is taken: with none ready the question stays in the
+/// box, ready to go once one is, instead of vanishing.
 fn send(app: &mut WordApp) {
-    let input = std::mem::take(&mut app.ai.input);
-    if input.trim().is_empty() {
-        return;
-    }
     let conn = match app.ai.ready() {
         Ok(c) => c,
         Err(e) => {
@@ -155,6 +153,10 @@ fn send(app: &mut WordApp) {
             return;
         }
     };
+    let input = std::mem::take(&mut app.ai.input);
+    if input.trim().is_empty() {
+        return;
+    }
     let mut history = vec![system_turn(app, "You help with a document the user has open in LocalOffice.")];
     for turn in &app.ai.chat {
         match turn {
@@ -202,7 +204,7 @@ pub fn show(app: &mut WordApp, ctx: &egui::Context) {
         .default_height(620.0);
     let shown = crate::window_close::window(ctx, window).show(ctx, |ui| {
         ui.set_min_width(440.0);
-        connections_row(app, ui);
+        connections_row(app, ui, &t);
         ui.add_space(6.0);
         model_row(app, ui);
         ui.add_space(6.0);
@@ -217,8 +219,9 @@ pub fn show(app: &mut WordApp, ctx: &egui::Context) {
     }
 }
 
-/// The connection combo and its buttons: key, new, delete.
-fn connections_row(app: &mut WordApp, ui: &mut egui::Ui) {
+/// The connection combo and its buttons: key, new, delete. The buttons are the house-style
+/// small icons (`chrome::small_icon`), with the key one showing a check once the key is set.
+fn connections_row(app: &mut WordApp, ui: &mut egui::Ui, t: &Tokens) {
     ui.horizontal(|ui| {
         ui.label(tl!("Connection"));
         let labels: Vec<String> = app.ai.connections.iter().map(|c| format!("{} — {}", c.label, provider_label(&c.provider))).collect();
@@ -229,14 +232,16 @@ fn connections_row(app: &mut WordApp, ui: &mut egui::Ui) {
             }
         });
         let has = app.ai.selected_conn().is_some();
-        let keyed = app.ai.selected_conn().is_some_and(localoffice_ai::has_key);
-        let key = ui.add_enabled(has, egui::Button::new(if keyed { "🔑 ✓" } else { "🔑" }));
-        if key.on_hover_text(tl!("Set the API key (kept in the OS keychain)")).clicked() {
-            app.ai.editing_key = !app.ai.editing_key;
-            app.ai.key_draft.clear();
+        if has {
+            let keyed = app.ai.selected_conn().is_some_and(localoffice_ai::has_key);
+            let key_tip =
+                if keyed { tl!("The key is set (in the OS keychain); click to change it") } else { tl!("Set the API key (kept in the OS keychain)") };
+            if crate::chrome::small_icon(ui, if keyed { "check" } else { "protect" }, key_tip) {
+                app.ai.editing_key = !app.ai.editing_key;
+                app.ai.key_draft.clear();
+            }
         }
-        let add = ui.add(egui::Button::new("＋"));
-        if add.on_hover_text(tl!("Add a connection")).clicked() {
+        if crate::chrome::small_icon(ui, "plus", tl!("Add a connection")) {
             let mut n = app.ai.connections.len() + 1;
             while app.ai.connections.iter().any(|c| c.id == format!("conn-{n}")) {
                 n += 1;
@@ -254,17 +259,24 @@ fn connections_row(app: &mut WordApp, ui: &mut egui::Ui) {
             app.ai.models.clear();
             app.ai.save();
         }
-        let delete = ui.add_enabled(has, egui::Button::new("🗑"));
-        if delete.on_hover_text(tl!("Delete this connection")).clicked() {
-            if let Some(c) = app.ai.selected_conn() {
-                let _ = localoffice_ai::clear_key(c);
+        if has {
+            let delete_tip = tl!("Delete this connection");
+            if crate::chrome::small_icon(ui, "close", delete_tip) {
+                if let Some(c) = app.ai.selected_conn() {
+                    let _ = localoffice_ai::clear_key(c);
+                }
+                app.ai.connections.remove(app.ai.selected);
+                app.ai.selected = app.ai.selected.saturating_sub(1);
+                app.ai.models.clear();
+                app.ai.save();
             }
-            app.ai.connections.remove(app.ai.selected);
-            app.ai.selected = app.ai.selected.saturating_sub(1);
-            app.ai.models.clear();
-            app.ai.save();
         }
     });
+    // Nothing set up yet: say what a connection is, so the panel never looks like it refuses to
+    // work.
+    if app.ai.connections.is_empty() {
+        ui.label(egui::RichText::new(tl!("No connection yet: press the add button beside Connection, choose a provider, paste its API key, then pick a model. The key stays in the OS keychain.")).color(t.text_dim).small());
+    }
     // The key editor and the connection's fields, under the row.
     if app.ai.selected_conn().is_some() && app.ai.editing_key {
         ui.horizontal(|ui| {
@@ -346,8 +358,9 @@ fn model_row(app: &mut WordApp, ui: &mut egui::Ui) {
                 }
             });
         }
-        let refresh = ui.add_enabled(!fetching && has, egui::Button::new("⟳"));
-        if refresh.on_hover_text(tl!("Fetch the provider's model list")).clicked()
+        if !fetching
+            && has
+            && crate::chrome::small_icon(ui, "update", tl!("Fetch the provider's model list"))
             && let Some(conn) = app.ai.selected_conn().cloned()
         {
             app.ai.models_job = Some(Job::spawn(move || localoffice_ai::list_models(&conn)));
@@ -483,5 +496,50 @@ mod tests {
         a.run("select.all", json!({})).unwrap();
         assert!(!reads_whole_document(&a), "a selection is read instead");
         assert!(!context_text(&a).is_empty());
+    }
+
+    /// One `poll` per job: the answer, the error and the model list each arrive once and are
+    /// kept. Polling twice drained the channel and swallowed them (#ai).
+    #[test]
+    fn polling_keeps_the_answer_the_error_and_the_models() {
+        let mut a = app();
+        a.ai.job = Some(Job::spawn(|| Ok("olá".into())));
+        wait_polled(&mut a);
+        assert_eq!(a.ai.chat, vec![Turn::Assistant("olá".into())], "the answer lands");
+        assert!(a.ai.job.is_none(), "the job is done");
+
+        a.ai.chat.clear();
+        a.ai.job = Some(Job::spawn(|| Err("provider down".into())));
+        wait_polled(&mut a);
+        assert_eq!(a.ai.chat.last(), Some(&Turn::Failed("provider down".into())), "the error lands too");
+
+        a.ai.models_job = Some(Job::spawn(|| Ok(vec!["gemini-2.5-flash".into()])));
+        wait_polled(&mut a);
+        assert_eq!(a.ai.models, vec!["gemini-2.5-flash".to_string()], "the model list lands");
+        assert!(a.ai.models_job.is_none(), "the fetch is done");
+        assert!(a.ai.error.is_none());
+    }
+
+    /// Poll until both jobs are done: the spawned thread needs a moment to hand its result over.
+    fn wait_polled(a: &mut WordApp) {
+        for _ in 0..500 {
+            poll(a);
+            if a.ai.job.is_none() && a.ai.models_job.is_none() {
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(2));
+        }
+    }
+
+    /// With no connection ready the typed question stays in the input box, not lost to a failed
+    /// send, and the reason shows as a failed turn.
+    #[test]
+    fn a_send_without_a_ready_connection_keeps_the_question() {
+        let mut a = app();
+        a.ai.input = "o que este documento pede?".into();
+        send(&mut a);
+        assert_eq!(a.ai.input, "o que este documento pede?", "the question stays in the box");
+        assert!(matches!(a.ai.chat.first(), Some(Turn::Failed(_))), "the reason shows as a turn");
+        assert!(a.ai.job.is_none(), "nothing was sent");
     }
 }
