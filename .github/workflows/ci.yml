@@ -60,11 +60,11 @@ jobs:
       - name: Clippy
         run: cargo clippy --locked --all-targets -- -D warnings
       - name: Build --locked
-        run: cargo build --locked
+        run: cargo build --locked --features dictation
       - name: Testes
         env:
           LOCALOFFICE_REQUIRE_WINRES: ${{ runner.os == 'Windows' && '1' || '' }}
-        run: cargo test --locked
+        run: cargo test --locked --features dictation
 
   arch:
     name: Arch Linux (makepkg)
@@ -79,7 +79,7 @@ jobs:
         run: |
           pacman -Syu --noconfirm rust clang lld cmake
       - name: Build --locked
-        run: cargo build --locked
+        run: cargo build --locked --features dictation
       - name: PKGBUILD válido (makepkg --printsrcinfo)
         run: |
           useradd -m builder

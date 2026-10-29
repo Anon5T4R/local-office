@@ -13,6 +13,8 @@ workspace = true
 # ever makes receipt classification fail closed. Never enable this for a production build; the
 # UI's dev-dependencies enable it for its tests.
 test-support = []
+# Local speech-to-text via whisper.cpp (MIT). Requires cmake + libclang at build time.
+dictation = ["dep:whisper-rs", "dep:cpal"]
 
 [dependencies]
 localoffice-geom = { workspace = true, features = ["image"] }
@@ -34,8 +36,11 @@ regex = { workspace = true }
 regex-automata = { workspace = true }
 image = { workspace = true }
 zeroize = { workspace = true }
-whisper-rs = { workspace = true }
+whisper-rs = { workspace = true, optional = true }
+cpal = { workspace = true, optional = true }
 dirs = { workspace = true }
+ureq = { workspace = true }
+sha2 = { workspace = true }
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 # The browser clock for `now_iso` (`SystemTime::now()` panics on wasm32-unknown-unknown).

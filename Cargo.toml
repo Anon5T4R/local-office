@@ -73,8 +73,12 @@ craft-update = { path = "libs/craft-libs/crates/update/", features = ["egui"] }
 local-ai = { path = "libs/local-ai" }
 # Local STT via whisper.cpp (MIT) - model medium (769 MB) for quality transcription:
 whisper-rs = "0.16"
+# Cross-platform audio I/O for microphone capture (STT).
+cpal = "0.18"
 # Cross-platform data directory resolution for STT model storage.
 dirs = "7"
+# HTTP client for model download (pure Rust, no native deps).
+ureq = { version = "3", default-features = false, features = ["rustls", "platform-verifier"] }
 quick-xml = "0.41"
 zip = { version = "3", default-features = false, features = ["deflate"] }
 # zlib streams (compressed metafile pictures in `.doc` drawings); already in the lock as a dependency of other crates.

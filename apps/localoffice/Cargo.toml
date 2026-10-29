@@ -12,7 +12,7 @@ workspace = true
 
 [dependencies]
 localoffice-doc = { workspace = true }
-localoffice-engine = { workspace = true }
+localoffice-engine = { workspace = true, features = ["dictation"] }
 localoffice-proof = { workspace = true }
 # Fonts the user added (#582) load from the settings folder at start-up.
 localoffice-fonts = { workspace = true }
