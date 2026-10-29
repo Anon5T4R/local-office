@@ -4,11 +4,10 @@
 //! The model (whisper-medium, 769 MB) is downloaded on first use with checksum verification
 //! and cached in the app's data directory for offline use.
 
-use std::fs;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use crate::io;
 use crate::{CmdError, CmdResult, CommandSpec, Session, p};
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
@@ -26,7 +25,7 @@ const STT_MODEL_URL: &str = "https://huggingface.co/ggerganov/whisper.cpp/resolv
 fn ensure_stt_model() -> Result<PathBuf, String> {
     let data_dir = dirs::data_dir().ok_or("could not determine data directory")?.join("LocalOffice").join(STT_MODEL_DIR);
 
-    fs::create_dir_all(&data_dir).map_err(|e| format!("failed to create model dir: {e}"))?;
+    io::create_dir_all(&data_dir)?;
 
     let model_path = data_dir.join(STT_MODEL_NAME);
 
@@ -36,7 +35,7 @@ fn ensure_stt_model() -> Result<PathBuf, String> {
             return Ok(model_path);
         } else {
             log::warn!("STT model checksum mismatch, re-downloading");
-            fs::remove_file(&model_path).map_err(|e| format!("failed to remove bad model: {e}"))?;
+            io::remove_file(&model_path)?;
         }
     }
 
@@ -49,23 +48,16 @@ fn ensure_stt_model() -> Result<PathBuf, String> {
 
 fn verify_sha256(path: &Path, expected: &str) -> Result<bool, String> {
     use sha2::{Digest, Sha256};
-    let mut file = fs::File::open(path).map_err(|e| format!("failed to open model for verification: {e}"))?;
+    let bytes = io::read_file(path.to_str().ok_or("invalid path")?)?;
     let mut hasher = Sha256::new();
-    let mut buffer = [0u8; 8192];
-    loop {
-        let n = std::io::Read::read(&mut file, &mut buffer).map_err(|e| format!("read error: {e}"))?;
-        if n == 0 {
-            break;
-        }
-        hasher.update(&buffer[..n]);
-    }
+    hasher.update(&bytes);
     let result = hasher.finalize();
     let actual = format!("{:x}", result);
     Ok(actual.eq_ignore_ascii_case(expected))
 }
 
-fn download_model(path: &Path, url: &str, expected_sha256: &str) -> Result<(), String> {
-    use std::io::{BufWriter, Read};
+fn download_model(path: &Path, url: &str, _expected_sha256: &str) -> Result<(), String> {
+    use std::io::Read;
 
     let client = reqwest::blocking::Client::builder()
         .timeout(std::time::Duration::from_secs(300))
@@ -81,19 +73,17 @@ fn download_model(path: &Path, url: &str, expected_sha256: &str) -> Result<(), S
     let total_size = resp.content_length().unwrap_or(0);
     log::info!("Downloading model ({:.1} MB)...", total_size as f64 / 1_000_000.0);
 
-    let mut file = fs::File::create(path).map_err(|e| format!("failed to create model file: {e}"))?;
-    let mut writer = BufWriter::new(&mut file);
-
     let mut downloaded = 0u64;
     let mut buffer = [0u8; 8192];
     let mut stream = resp;
+    let mut data = Vec::new();
 
     loop {
         let n = stream.read(&mut buffer).map_err(|e| format!("read error: {e}"))?;
         if n == 0 {
             break;
         }
-        writer.write_all(&buffer[..n]).map_err(|e| format!("write error: {e}"))?;
+        data.extend_from_slice(&buffer[..n]);
         downloaded += n as u64;
 
         if downloaded % (10 * 1024 * 1024) == 0 {
@@ -101,13 +91,11 @@ fn download_model(path: &Path, url: &str, expected_sha256: &str) -> Result<(), S
         }
     }
 
-    writer.flush().map_err(|e| format!("flush error: {e}"))?;
-    drop(writer);
-    drop(file);
+    io::write_file(path.to_str().ok_or("invalid path")?, &data)?;
 
     // Verify checksum
     if !verify_sha256(Path::new(path), STT_MODEL_SHA256)? {
-        fs::remove_file(path).ok();
+        io::remove_file(path).ok();
         return Err("model checksum verification failed after download".into());
     }
 
@@ -170,7 +158,7 @@ fn get_or_init_recognizer() -> Result<&'static WhisperRecognizer, String> {
 
 #[cfg(windows)]
 fn dictate(s: &mut Session, v: &Value) -> CmdResult {
-    let _ = p::bool(v, "start"); // TODO: implement start/stop toggle
+    let _ = p::bool(v, "start");
     Err(CmdError::Unimplemented("Dictate (STT) not yet implemented on Windows".into()))
 }
 

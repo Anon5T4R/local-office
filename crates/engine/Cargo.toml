@@ -35,6 +35,7 @@ regex-automata = { workspace = true }
 image = { workspace = true }
 zeroize = { workspace = true }
 whisper-rs = { workspace = true }
+dirs = { workspace = true }
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 # The browser clock for `now_iso` (`SystemTime::now()` panics on wasm32-unknown-unknown).
