@@ -9,3 +9,4 @@ abrimos Issue/PR no upstream (em inglês, seguindo o estilo deles) e registramos
 | 2026-10-28 | 6d884792 | #4670 (open) | Janela restaurada maximizada no Windows + DX12 + AMD perde o device antes do primeiro frame (processo vivo, janela nunca aparece) | aberto |
 | 2026-10-28 | 6d884792 | #4671 (open) | Um `.md` que contém um ZIP (um `.docx` renomeado `.md`) mostra os bytes binários crus em vez de abrir como o documento Word que é | aberto |
 | 2026-10-28 | 6d884792 | #4672 (open) | Cursor "+" do outline expand/collapse é branco puro, invisível na página branca | aberto |
+| 2026-10-29 | 90d9f5a8 | #4784 (open) | Janela restaurada em monitor que não existe mais (spacedesk/TV desplugada) abre fora da tela: processo vivo, janela em lugar nenhum; o resgate por tamanho de monitor não percebe quando os dois monitores têm o mesmo tamanho | aberto |
