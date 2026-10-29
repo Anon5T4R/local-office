@@ -44,9 +44,9 @@ echo "==> LocalOffice $VERSION for Linux $ARCH ($FORMATS)"
 
 if [[ "$SKIP_BUILD" = 0 ]]; then
   if [[ -n "${CROSS_TARGET:-}" ]]; then
-    (cd "$ROOT" && cargo build --release --locked -p localoffice -p localoffice-cli --target "$CROSS_TARGET" --features dictation)
+    (cd "$ROOT" && cargo build --release --locked -p localoffice -p localoffice-cli --target "$CROSS_TARGET" --features localoffice-engine/dictation)
   else
-    (cd "$ROOT" && cargo build --release --locked -p localoffice -p localoffice-cli --features dictation)
+    (cd "$ROOT" && cargo build --release --locked -p localoffice -p localoffice-cli --features localoffice-engine/dictation)
   fi
 fi
 BIN="$CARGO_TARGET_DIR/${CROSS_TARGET:+$CROSS_TARGET/}release"
