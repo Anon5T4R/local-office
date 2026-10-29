@@ -264,5 +264,5 @@ fn dictate(s: &mut Session, v: &Value) -> CmdResult {
 
 /// Command spec for the dictation feature.
 pub fn dictation_specs() -> Vec<CommandSpec> {
-    vec![CommandSpec::new("tools.dictate", "Dictate", "Tools ▸ Voice", dictate).key("Mod+Shift+D").params(r#"{"start"?: bool}"#).pure()]
+    vec![CommandSpec::new("tools.dictate", "Dictate", "Tools ▸ Voice", dictate).params(r#"{"start"?: bool}"#).pure()]
 }
