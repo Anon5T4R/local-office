@@ -19,6 +19,10 @@ jobs:
           persist-credentials: false
       - name: CMake (para whisper-rs-sys)
         uses: lukka/get-cmake@latest
+      - name: LLVM (libclang para whisper-rs-sys bindgen)
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "18"
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Fontes CJK/árabe/etc. vendored
@@ -50,7 +54,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libxcb1-dev libxrandr-dev libxi-dev libxcursor-dev \
             libxkbcommon-dev libgtk-3-dev libfontconfig1-dev libfreetype-dev ninja-build \
-            mesa-vulkan-drivers cmake
+            mesa-vulkan-drivers cmake clang libclang-dev
           curl -sSfL https://github.com/goreleaser/nfpm/releases/download/v2.48.0/nfpm_2.48.0_amd64.deb -o /tmp/nfpm.deb
           sudo dpkg -i /tmp/nfpm.deb
       - name: Build e pacote
