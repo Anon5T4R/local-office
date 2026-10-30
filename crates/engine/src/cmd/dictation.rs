@@ -24,7 +24,7 @@ const STT_MODEL_NAME: &str = "ggml-medium.bin";
 /// Expected SHA256 of the whisper-medium model (from whisper.cpp releases).
 const STT_MODEL_SHA256: &str = "6c14d5adee5f86394037b4e4e8b59f1673b6cee10e3cf0b11bbdbee79c156208";
 /// Download URL for the model (from whisper.cpp releases on Hugging Face).
-const STT_MODEL_URL: &str = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin";
+const STT_MODEL_URL: &str = "https://github.com/Anon5T4R/big-files-local/releases/download/v1.0.0/ggml-medium.bin";
 
 /// How long to record audio (in seconds).
 const RECORD_DURATION_SECS: u64 = 5;
