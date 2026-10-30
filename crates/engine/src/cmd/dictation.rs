@@ -236,12 +236,52 @@ fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
 }
 
 fn dictate(s: &mut Session, v: &Value) -> CmdResult {
-    let _ = p::bool(v, "start");
-    let text = record_and_transcribe(None).map_err(CmdError::Failed)?;
-    if !text.is_empty() {
-        super::type_text(s, &text).map_err(|e| CmdError::Failed(e.to_string()))?;
+    let start = p::bool(v, "start").unwrap_or(true);
+    if start {
+        // Start recording in background; return immediately.
+        start_dictation();
+        Ok(serde_json::json!({"status": "recording", "duration": RECORD_DURATION_SECS}))
+    } else {
+        // Stop and get result (blocking, with timeout).
+        for _ in 0..100 {
+            if let Some(result) = take_dictation_result() {
+                match result {
+                    Ok(text) => {
+                        if !text.is_empty() {
+                            super::type_text(s, &text).map_err(|e| CmdError::Failed(e.to_string()))?;
+                        }
+                        return Ok(serde_json::json!({"status": "done", "text": text}));
+                    }
+                    Err(e) => return Err(CmdError::Failed(e)),
+                }
+            }
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
+        Err(CmdError::Failed("transcription timed out".into()))
     }
-    Ok(serde_json::json!({"text": text}))
+}
+
+/// Global state for dictation: the background job's result.
+static DICTATION_RESULT: std::sync::Mutex<Option<Result<String, String>>> = std::sync::Mutex::new(None);
+
+/// Start dictation (recording + transcription) in a background thread.
+/// Returns immediately; the result is available via `dictation_result()`.
+pub fn start_dictation() {
+    *DICTATION_RESULT.lock().unwrap() = None;
+    std::thread::spawn(|| {
+        let result = record_and_transcribe(None);
+        *DICTATION_RESULT.lock().unwrap() = Some(result);
+    });
+}
+
+/// Check if dictation is in progress.
+pub fn is_dictating() -> bool {
+    DICTATION_RESULT.lock().unwrap().is_none()
+}
+
+/// Take the dictation result if available.
+pub fn take_dictation_result() -> Option<Result<String, String>> {
+    DICTATION_RESULT.lock().unwrap().take()
 }
 
 /// Command spec for the dictation feature.
