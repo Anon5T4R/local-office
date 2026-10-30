@@ -1358,7 +1358,21 @@ fn home(app: &mut WordApp, ui: &mut Ui) {
         });
     });
     group(ui, "Voice", None, app, |ui, app| {
-        big(ui, app, "dictate", "Dictate", "tools.dictate", json!({}), false);
+        // The button starts dictation and, while recording, stops it (the job then transcribes
+        // and the text is inserted). Without the feature the command isn't registered, so the
+        // button stays disabled.
+        #[cfg(feature = "dictation")]
+        let (icon, label, params) = {
+            use localoffice_engine::cmd::dictation::{self, DictationPhase};
+            if dictation::phase() == DictationPhase::Recording {
+                ("mediaStop", "Stop", json!({"start": false}))
+            } else {
+                ("dictate", "Dictate", json!({"start": true}))
+            }
+        };
+        #[cfg(not(feature = "dictation"))]
+        let (icon, label, params) = ("dictate", "Dictate", json!({}));
+        big(ui, app, icon, label, "tools.dictate", params, false);
     });
     group(ui, "Editor", None, app, |ui, app| {
         big(ui, app, "editor", "Editor", "review.spelling", json!({}), false);

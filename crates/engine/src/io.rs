@@ -657,6 +657,16 @@ pub fn read_file_head(path: &str, max: u64) -> Result<Vec<u8>, String> {
     Ok(head)
 }
 
+/// An incremental reader over the regular file at `path`, inside the automation read root when
+/// there is one: for commands that hash or inspect a large file in bounded chunks
+/// ([`read_file`] holds it all in memory). The file is opened and checked as
+/// [`read_file_capped`] opens one.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn open_reader(path: &std::path::Path) -> Result<impl std::io::Read, String> {
+    crate::file_access::check_read(&path.to_string_lossy())?;
+    Ok(open_regular_file(path)?.0)
+}
+
 /// An entry of [`list_dir`]: a file or folder (links followed).
 #[cfg(not(target_arch = "wasm32"))]
 #[derive(Clone, Debug)]
@@ -767,6 +777,26 @@ pub fn remove_file(path: &std::path::Path) -> Result<(), String> {
 #[cfg(target_arch = "wasm32")]
 pub fn write_file(path: &str, _bytes: &[u8]) -> Result<(), String> {
     Err(format!("{path}: files are saved through the browser on the web"))
+}
+
+/// A writer that creates (or truncates) the file at `path`, inside the automation write root
+/// when there is one: for commands that stream a large file to disk in chunks instead of
+/// holding all its bytes ([`write_file`] takes them whole). A file built this way goes live
+/// with [`replace_file`], once it is complete.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn open_writer(path: &std::path::Path) -> Result<impl std::io::Write, String> {
+    crate::file_access::check_write(&path.to_string_lossy())?;
+    std::fs::File::create(path).map_err(|e| format!("{}: {e}", path.display()))
+}
+
+/// Move a finished file onto `destination`, replacing it when there is one (a download's
+/// completed temporary file goes live only once it is whole and verified). Checked file access
+/// applies to both paths.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn replace_file(source: &std::path::Path, destination: &std::path::Path) -> Result<(), String> {
+    crate::file_access::check_write(&source.to_string_lossy())?;
+    crate::file_access::check_write(&destination.to_string_lossy())?;
+    std::fs::rename(source, destination).map_err(|e| format!("could not move {} to {}: {e}", source.display(), destination.display()))
 }
 
 #[cfg(target_arch = "wasm32")]

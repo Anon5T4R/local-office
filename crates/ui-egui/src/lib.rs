@@ -706,6 +706,9 @@ pub struct WordApp {
     /// Read Aloud: the start of the sentence the caret was last moved to, and the last error shown.
     pub(crate) read_aloud_at: Option<localoffice_engine::doc::Pos>,
     pub(crate) read_aloud_error: Option<String>,
+    /// Dictation: the running job's status text, kept in the status bar while it works.
+    #[cfg(feature = "dictation")]
+    pub dictation_status: Option<String>,
     /// The file the document was last explicitly saved to in this session; AutoSave writes only
     /// there. A file that was merely opened isn't rewritten until the user saves it: saving drops
     /// whatever LocalOffice can't represent (content controls, charts, macros…).
@@ -874,6 +877,8 @@ impl WordApp {
             ctx: None,
             ime_origin: false,
             read_aloud_error: None,
+            #[cfg(feature = "dictation")]
+            dictation_status: None,
             autosave_path: None,
             saves_in_flight: Vec::new(),
             font_generation: localoffice_fonts::FontDb::global().generation(),
@@ -2477,12 +2482,46 @@ impl WordApp {
         }
         options::sync(self);
         self.settle_async_saves();
-        // Dictation: poll for a finished transcription and insert it into the document.
+        // Dictation: mirror the background job's phase in the status bar, and take its finished
+        // result — the text goes into the document, an error shows like Read Aloud's.
         #[cfg(feature = "dictation")]
-        if let Some(Ok(text)) = localoffice_engine::cmd::dictation::take_dictation_result()
-            && !text.is_empty()
         {
-            let _ = self.session.run("text.insert", &json!({"text": text}));
+            use localoffice_engine::cmd::dictation::{self, DictationPhase};
+            match dictation::take_result() {
+                Some(Ok(text)) => {
+                    self.dictation_status = None;
+                    if !text.is_empty() {
+                        let _ = self.session.run("text.insert", &json!({"text": text}));
+                    }
+                }
+                Some(Err(e)) => {
+                    self.dictation_status = None;
+                    self.status(e);
+                }
+                None => {
+                    let mb = |b: u64| (b as f64 / 1_000_000.0).round().to_string();
+                    let status = match dictation::phase() {
+                        DictationPhase::Idle => None,
+                        DictationPhase::Recording => Some(tl!("Recording… click Dictate to stop").to_string()),
+                        DictationPhase::Transcribing => Some(tl!("Transcribing…").to_string()),
+                        DictationPhase::DownloadingModel { bytes_done, total } => Some(if total > 0 {
+                            crate::i18n::fmt(
+                                tl!("Downloading speech model… {done} MB / {total} MB"),
+                                &[("done", &mb(bytes_done)), ("total", &mb(total))],
+                            )
+                        } else {
+                            crate::i18n::fmt(tl!("Downloading speech model… {done} MB"), &[("done", &mb(bytes_done))])
+                        }),
+                    };
+                    // Refreshed every frame, so the message doesn't time out mid-job, and frames
+                    // keep coming, so the text tracks a running job without user input.
+                    if let Some(msg) = &status {
+                        self.status(msg.clone());
+                        ctx.request_repaint_after(std::time::Duration::from_millis(200));
+                    }
+                    self.dictation_status = status;
+                }
+            }
         }
         // Chinese text wants the Chinese face before the Japanese one (one glyph style per line).
         // An installed CJK font is read only once CJK text is shown (#241): a CJK interface, the

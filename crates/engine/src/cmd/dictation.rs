@@ -6,15 +6,21 @@
 //! The model (medium, 769 MB, 99 languages including pt-BR/pt-PT/en-US) is downloaded on first
 //! use with checksum verification and cached in the app's data directory for offline use.
 //!
-//! Microphone capture uses cpal (cross-platform). Audio is resampled to 16kHz mono before
-//! transcription. The model is loaded lazily (OnceLock) — it doesn't load until first use.
+//! Dictation is start/stop: `tools.dictate` with `{"start": true}` opens the microphone
+//! ([`begin`]), a second click with `{"start": false}` ends the capture ([`stop`]) and the job
+//! transcribes on its background thread. The UI polls [`phase`] for feedback and [`take_result`]
+//! for the finished text. A job refuses a second start, so repeated clicks never run concurrent
+//! jobs.
 
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex, MutexGuard};
+use std::time::Duration;
 
 use crate::io;
 use crate::{CmdError, CmdResult, CommandSpec, Session, p};
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
 /// The directory name for STT models in the app's data directory.
@@ -26,8 +32,174 @@ const STT_MODEL_SHA256: &str = "6c14d5adee5f86394037b4e4e8b59f1673b6cee10e3cf0b1
 /// Download URL for the model (from whisper.cpp releases on Hugging Face).
 const STT_MODEL_URL: &str = "https://github.com/Anon5T4R/big-files-local/releases/download/v1.0.0/ggml-medium.bin";
 
-/// How long to record audio (in seconds).
-const RECORD_DURATION_SECS: u64 = 5;
+/// Bytes read, written and hashed per step of the model download.
+const DOWNLOAD_CHUNK: usize = 8192;
+/// How much must arrive between download progress reports to the shared state.
+const DOWNLOAD_REPORT_STEP: u64 = 10 * 1024 * 1024;
+
+/// What a dictation job is doing; the UI polls this for feedback.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum DictationPhase {
+    /// No job is running.
+    #[default]
+    Idle,
+    /// The microphone stream is open and collecting samples.
+    Recording,
+    /// The whisper model is downloading (first use only): `bytes_done` of `total` bytes, with
+    /// `total` 0 when the server gave no length.
+    DownloadingModel { bytes_done: u64, total: u64 },
+    /// The captured audio is being transcribed.
+    Transcribing,
+}
+
+/// The shared dictation state: the running job's phase and its finished result.
+struct Dictation {
+    phase: DictationPhase,
+    result: Option<Result<String, String>>,
+}
+
+/// The state a fresh job starts from (a `const`, because `Mutex::new` is a `const fn`).
+const DICTATION_FRESH: Dictation = Dictation { phase: DictationPhase::Idle, result: None };
+
+/// The whole dictation state: at most one job runs at a time, guarded by the phase.
+static DICTATION: Mutex<Dictation> = Mutex::new(DICTATION_FRESH);
+
+/// Set while the UI wants the recording job to stop and transcribe.
+static STOP: AtomicBool = AtomicBool::new(false);
+
+/// The shared state; a panicked worker leaves it usable (`PoisonError::into_inner`).
+fn lock() -> MutexGuard<'static, Dictation> {
+    DICTATION.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+}
+
+/// Replace the shared phase (the finished result is left alone).
+fn set_phase(phase: DictationPhase) {
+    lock().phase = phase;
+}
+
+/// Start a dictation job: the microphone opens and captures until [`stop`], then the job
+/// transcribes in the background. Refused while a job runs, so repeated clicks never start
+/// concurrent jobs.
+pub fn begin() -> Result<(), String> {
+    {
+        let mut d = lock();
+        if d.phase != DictationPhase::Idle {
+            return Err("dictation already in progress".into());
+        }
+        d.result = None;
+        d.phase = DictationPhase::Recording;
+    }
+    STOP.store(false, Ordering::SeqCst);
+    std::thread::spawn(run_job);
+    Ok(())
+}
+
+/// Ask the recording job to stop and transcribe what it captured.
+pub fn stop() -> Result<(), String> {
+    let d = lock();
+    if d.phase != DictationPhase::Recording {
+        return Err("not recording".into());
+    }
+    STOP.store(true, Ordering::SeqCst);
+    Ok(())
+}
+
+/// The running job's phase, for the UI's feedback.
+pub fn phase() -> DictationPhase {
+    lock().phase
+}
+
+/// Take the finished job's result, if one is waiting.
+pub fn take_result() -> Option<Result<String, String>> {
+    lock().result.take()
+}
+
+/// The phase's name, for command results (scripts and MCP read these).
+fn phase_name(phase: DictationPhase) -> &'static str {
+    match phase {
+        DictationPhase::Idle => "idle",
+        DictationPhase::Recording => "recording",
+        DictationPhase::DownloadingModel { .. } => "downloading-model",
+        DictationPhase::Transcribing => "transcribing",
+    }
+}
+
+/// The background job: record until asked to stop, then transcribe. Any failure lands in the
+/// result and the phase returns to idle, ready for the next job.
+fn run_job() {
+    let result = record_and_transcribe();
+    let mut d = lock();
+    d.result = Some(result);
+    d.phase = DictationPhase::Idle;
+}
+
+/// Record from the default microphone until [`stop`] is asked, resample to 16 kHz mono and
+/// transcribe.
+fn record_and_transcribe() -> Result<String, String> {
+    let audio = record_until_stop()?;
+    set_phase(DictationPhase::Transcribing);
+    let recognizer = get_or_init_recognizer()?;
+    set_phase(DictationPhase::Transcribing);
+    log::info!("Transcribing {} samples...", audio.len());
+    recognizer.transcribe(&audio, None)
+}
+
+/// Capture the microphone until [`stop`] is asked. The stream's callback accumulates while the
+/// flag is clear; the worker sleeps in short steps and checks it, so the UI's stop arrives
+/// within one step and no thread ever blocks the UI.
+fn record_until_stop() -> Result<Vec<f32>, String> {
+    use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+
+    let host = cpal::default_host();
+    let device = host.default_input_device().ok_or("no input device available")?;
+    let config = device.default_input_config().map_err(|e| format!("failed to get input config: {e}"))?;
+    let sample_rate = config.sample_rate();
+    let channels = config.channels() as usize;
+
+    let samples = Arc::new(Mutex::new(Vec::new()));
+    let samples_clone = Arc::clone(&samples);
+    let stream_config: cpal::StreamConfig = config.into();
+    let stream = device
+        .build_input_stream(
+            stream_config,
+            move |data: &[f32], _: &cpal::InputCallbackInfo| {
+                if !STOP.load(Ordering::SeqCst) {
+                    samples_clone.lock().unwrap_or_else(std::sync::PoisonError::into_inner).extend_from_slice(data);
+                }
+            },
+            |err| log::error!("audio stream error: {err}"),
+            None,
+        )
+        .map_err(|e| format!("failed to build input stream: {e}"))?;
+    stream.play().map_err(|e| format!("failed to start recording: {e}"))?;
+
+    while !STOP.load(Ordering::SeqCst) {
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    drop(stream);
+
+    Ok(resample_16k_mono(&samples.lock().unwrap_or_else(std::sync::PoisonError::into_inner), sample_rate, channels))
+}
+
+/// Downmix the capture to mono and resample to 16 kHz, which whisper expects.
+fn resample_16k_mono(raw: &[f32], sample_rate: u32, channels: usize) -> Vec<f32> {
+    let mono = if channels > 1 { raw.chunks(channels).map(|chunk| chunk.iter().sum::<f32>() / channels as f32).collect() } else { raw.to_vec() };
+    let ratio = f64::from(sample_rate) / 16000.0;
+    if (ratio - 1.0).abs() < 0.001 {
+        return mono;
+    }
+    let new_len = (mono.len() as f64 / ratio) as usize;
+    (0..new_len)
+        .map(|i| {
+            let src = i as f64 * ratio;
+            let idx = src as usize;
+            let frac = src - idx as f64;
+            let s0 = mono.get(idx).copied().unwrap_or(0.0);
+            let s1 = mono.get(idx + 1).copied().unwrap_or(s0);
+            (s0 as f64 * (1.0 - frac) + s1 as f64 * frac) as f32
+        })
+        .collect()
+}
 
 /// Ensures the STT model is available locally, downloading if necessary.
 /// Returns the path to the model file.
@@ -40,12 +212,11 @@ fn ensure_stt_model() -> Result<PathBuf, String> {
 
     // If model exists, verify checksum
     if model_path.exists() {
-        if verify_sha256(&model_path, STT_MODEL_SHA256)? {
+        if sha256_matches(&model_path, STT_MODEL_SHA256)? {
             return Ok(model_path);
-        } else {
-            log::warn!("STT model checksum mismatch, re-downloading");
-            io::remove_file(&model_path)?;
         }
+        log::warn!("STT model checksum mismatch, re-downloading");
+        io::remove_file(&model_path)?;
     }
 
     // Download model
@@ -55,53 +226,80 @@ fn ensure_stt_model() -> Result<PathBuf, String> {
     Ok(model_path)
 }
 
-fn verify_sha256(path: &Path, expected: &str) -> Result<bool, String> {
-    use sha2::{Digest, Sha256};
-    let bytes = io::read_file(path.to_str().ok_or("invalid path")?)?;
-    let mut hasher = Sha256::new();
-    hasher.update(&bytes);
-    let result = hasher.finalize();
-    let actual = result.iter().map(|b| format!("{:02x}", b)).collect::<String>();
-    Ok(actual.eq_ignore_ascii_case(expected))
+/// The hex text of a SHA256 digest.
+fn hex(digest: &[u8]) -> String {
+    digest.iter().map(|b| format!("{:02x}", b)).collect()
 }
 
-fn download_model(path: &Path, url: &str, _expected_sha256: &str) -> Result<(), String> {
+/// Whether the file at `path` hashes to `expected` (hex, case-insensitive). Hashed in chunks:
+/// the 1.5 GB model never sits whole in memory.
+fn sha256_matches(path: &Path, expected: &str) -> Result<bool, String> {
     use std::io::Read;
 
-    let mut resp = ureq::get(url).call().map_err(|e| format!("download request failed: {e}"))?;
+    let mut file = io::open_reader(path)?;
+    let mut hasher = Sha256::new();
+    let mut buffer = [0u8; DOWNLOAD_CHUNK];
+    loop {
+        let n = file.read(&mut buffer).map_err(|e| format!("{}: {e}", path.display()))?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buffer[..n]);
+    }
+    Ok(hex(&hasher.finalize()).eq_ignore_ascii_case(expected))
+}
 
+/// Downloads the model to a temporary file beside `path` — streamed to disk in chunks and
+/// hashed on the way, so neither the bytes nor their checksum ever sit whole in memory — then
+/// verifies the checksum and moves the file into place. Progress goes to the shared phase for
+/// the UI.
+fn download_model(path: &Path, url: &str, expected_sha256: &str) -> Result<(), String> {
+    use std::io::{Read, Write};
+
+    let agent = ureq::Agent::new_with_config(
+        ureq::Agent::config_builder()
+            .timeout_connect(Some(Duration::from_secs(30)))
+            // Every read of the body must make progress; the 1.5 GB may legitimately take
+            // longer than any whole-call budget.
+            .timeout_per_read(Some(Duration::from_secs(120)))
+            .build(),
+    );
+    let mut resp = agent.get(url).call().map_err(|e| format!("download request failed: {e}"))?;
     if resp.status() != 200 {
         return Err(format!("download failed with status: {}", resp.status()));
     }
 
-    let total_size = resp.headers().get("content-length").and_then(|v| v.to_str().ok()).and_then(|v| v.parse::<u64>().ok()).unwrap_or(0);
+    let total = resp.headers().get("content-length").and_then(|v| v.to_str().ok()).and_then(|v| v.parse::<u64>().ok()).unwrap_or(0);
     let mut reader = resp.body_mut().as_reader();
-    log::info!("Downloading model ({:.1} MB)...", total_size as f64 / 1_000_000.0);
+    log::info!("Downloading model ({:.1} MB)...", total as f64 / 1_000_000.0);
 
+    set_phase(DictationPhase::DownloadingModel { bytes_done: 0, total });
+    let temp = path.with_extension("part");
+    let mut file = io::open_writer(&temp)?;
+    let mut hasher = Sha256::new();
+    let mut buffer = [0u8; DOWNLOAD_CHUNK];
     let mut downloaded = 0u64;
-    let mut buffer = [0u8; 8192];
-    let mut data = Vec::new();
-
+    let mut reported = 0u64;
     loop {
         let n = reader.read(&mut buffer).map_err(|e| format!("read error: {e}"))?;
         if n == 0 {
             break;
         }
-        data.extend_from_slice(&buffer[..n]);
+        hasher.update(&buffer[..n]);
+        file.write_all(&buffer[..n]).map_err(|e| format!("{}: {e}", temp.display()))?;
         downloaded += n as u64;
-
-        if downloaded.is_multiple_of(10 * 1024 * 1024) {
-            log::info!("Downloaded {:.1} MB...", downloaded as f64 / 1_000_000.0);
+        if downloaded - reported >= DOWNLOAD_REPORT_STEP {
+            reported = downloaded;
+            set_phase(DictationPhase::DownloadingModel { bytes_done: downloaded, total });
         }
     }
+    drop(file);
 
-    io::write_file(path.to_str().ok_or("invalid path")?, &data)?;
-
-    // Verify checksum
-    if !verify_sha256(Path::new(path), STT_MODEL_SHA256)? {
-        io::remove_file(path).ok();
+    if !hex(&hasher.finalize()).eq_ignore_ascii_case(expected_sha256) {
+        let _ = io::remove_file(&temp);
         return Err("model checksum verification failed after download".into());
     }
+    io::replace_file(&temp, path)?;
 
     log::info!("Model downloaded and verified successfully");
     Ok(())
@@ -166,122 +364,17 @@ fn get_or_init_recognizer() -> Result<&'static WhisperRecognizer, String> {
     STT_RECOGNIZER.get().ok_or_else(|| "failed to initialize recognizer".to_string())
 }
 
-/// Record audio from the default microphone for a fixed duration and transcribe it.
-fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
-    use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-    use std::sync::atomic::{AtomicBool, Ordering};
-
-    let host = cpal::default_host();
-    let device = host.default_input_device().ok_or("no input device available")?;
-
-    let config = device.default_input_config().map_err(|e| format!("failed to get input config: {e}"))?;
-
-    let sample_rate = config.sample_rate();
-    let channels = config.channels() as usize;
-
-    let samples = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
-    let samples_clone = std::sync::Arc::clone(&samples);
-    let recording = std::sync::Arc::new(AtomicBool::new(true));
-    let recording_clone = std::sync::Arc::clone(&recording);
-
-    let stream_config: cpal::StreamConfig = config.into();
-    let stream = device
-        .build_input_stream(
-            stream_config,
-            move |data: &[f32], _: &cpal::InputCallbackInfo| {
-                if recording_clone.load(Ordering::Relaxed) {
-                    let mut samples = samples_clone.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-                    samples.extend_from_slice(data);
-                }
-            },
-            |err| log::error!("audio stream error: {err}"),
-            None,
-        )
-        .map_err(|e| format!("failed to build input stream: {e}"))?;
-
-    stream.play().map_err(|e| format!("failed to start recording: {e}"))?;
-
-    log::info!("Recording for {} seconds...", RECORD_DURATION_SECS);
-    std::thread::sleep(std::time::Duration::from_secs(RECORD_DURATION_SECS));
-
-    recording.store(false, Ordering::Relaxed);
-    drop(stream);
-
-    // Resample to 16kHz mono
-    let raw_samples = samples.lock().unwrap_or_else(std::sync::PoisonError::into_inner).clone();
-    let mono_samples =
-        if channels > 1 { raw_samples.chunks(channels).map(|chunk| chunk.iter().sum::<f32>() / channels as f32).collect() } else { raw_samples };
-
-    let ratio = sample_rate as f64 / 16000.0;
-    let resampled: Vec<f32> = if (ratio - 1.0).abs() < 0.001 {
-        mono_samples
-    } else {
-        let new_len = (mono_samples.len() as f64 / ratio) as usize;
-        let mut result = Vec::with_capacity(new_len);
-        for i in 0..new_len {
-            let src_idx = i as f64 * ratio;
-            let idx = src_idx as usize;
-            let frac = src_idx - idx as f64;
-            let s0 = mono_samples.get(idx).copied().unwrap_or(0.0);
-            let s1 = mono_samples.get(idx + 1).copied().unwrap_or(s0);
-            result.push((s0 as f64 * (1.0 - frac) + s1 as f64 * frac) as f32);
-        }
-        result
-    };
-
-    log::info!("Transcribing {} samples...", resampled.len());
-
-    let recognizer = get_or_init_recognizer()?;
-    recognizer.transcribe(&resampled, None)
-}
-
-fn dictate(s: &mut Session, v: &Value) -> CmdResult {
+fn dictate(_s: &mut Session, v: &Value) -> CmdResult {
     let start = p::bool(v, "start").unwrap_or(true);
     if start {
-        // Start recording in background; return immediately.
-        start_dictation();
-        Ok(serde_json::json!({"status": "recording", "duration": RECORD_DURATION_SECS}))
+        // Start recording in the background; the result comes through `take_result`.
+        begin().map_err(CmdError::Failed)?;
+        Ok(serde_json::json!({"status": "recording", "phase": phase_name(phase())}))
     } else {
-        // Stop and get result (blocking, with timeout).
-        for _ in 0..100 {
-            if let Some(result) = take_dictation_result() {
-                match result {
-                    Ok(text) => {
-                        if !text.is_empty() {
-                            super::type_text(s, &text).map_err(|e| CmdError::Failed(e.to_string()))?;
-                        }
-                        return Ok(serde_json::json!({"status": "done", "text": text}));
-                    }
-                    Err(e) => return Err(CmdError::Failed(e)),
-                }
-            }
-            std::thread::sleep(std::time::Duration::from_millis(100));
-        }
-        Err(CmdError::Failed("transcription timed out".into()))
+        // Signal the stop; transcription continues in the background.
+        stop().map_err(CmdError::Failed)?;
+        Ok(serde_json::json!({"status": "stopping", "phase": phase_name(phase())}))
     }
-}
-
-/// Global state for dictation: the background job's result.
-static DICTATION_RESULT: std::sync::Mutex<Option<Result<String, String>>> = std::sync::Mutex::new(None);
-
-/// Start dictation (recording + transcription) in a background thread.
-/// Returns immediately; the result is available via `dictation_result()`.
-pub fn start_dictation() {
-    *DICTATION_RESULT.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = None;
-    std::thread::spawn(|| {
-        let result = record_and_transcribe(None);
-        *DICTATION_RESULT.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = Some(result);
-    });
-}
-
-/// Check if dictation is in progress.
-pub fn is_dictating() -> bool {
-    DICTATION_RESULT.lock().unwrap_or_else(std::sync::PoisonError::into_inner).is_none()
-}
-
-/// Take the dictation result if available.
-pub fn take_dictation_result() -> Option<Result<String, String>> {
-    DICTATION_RESULT.lock().unwrap_or_else(std::sync::PoisonError::into_inner).take()
 }
 
 /// Command spec for the dictation feature.
