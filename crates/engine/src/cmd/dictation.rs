@@ -11,7 +11,6 @@
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 use crate::io;
 use crate::{CmdError, CmdResult, CommandSpec, Session, p};
@@ -180,10 +179,10 @@ fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
     let sample_rate = config.sample_rate();
     let channels = config.channels() as usize;
 
-    let samples = Arc::new(Mutex::new(Vec::new()));
-    let samples_clone = Arc::clone(&samples);
-    let recording = Arc::new(AtomicBool::new(true));
-    let recording_clone = Arc::clone(&recording);
+    let samples = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let samples_clone = std::sync::Arc::clone(&samples);
+    let recording = std::sync::Arc::new(AtomicBool::new(true));
+    let recording_clone = std::sync::Arc::clone(&recording);
 
     let stream_config: cpal::StreamConfig = config.into();
     let stream = device
@@ -203,7 +202,7 @@ fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
     stream.play().map_err(|e| format!("failed to start recording: {e}"))?;
 
     log::info!("Recording for {} seconds...", RECORD_DURATION_SECS);
-    std::thread::sleep(Duration::from_secs(RECORD_DURATION_SECS));
+    std::thread::sleep(std::time::Duration::from_secs(RECORD_DURATION_SECS));
 
     recording.store(false, Ordering::Relaxed);
     drop(stream);
@@ -211,18 +210,15 @@ fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
     // Resample to 16kHz mono
     let raw_samples = samples.lock().unwrap_or_else(std::sync::PoisonError::into_inner).clone();
     let mono_samples = if channels > 1 {
-        // Downmix to mono
         raw_samples.chunks(channels).map(|chunk| chunk.iter().sum::<f32>() / channels as f32).collect()
     } else {
         raw_samples
     };
 
-    // Resample to 16kHz
     let ratio = sample_rate as f64 / 16000.0;
     let resampled: Vec<f32> = if (ratio - 1.0).abs() < 0.001 {
         mono_samples
     } else {
-        // Simple linear interpolation resampling
         let new_len = (mono_samples.len() as f64 / ratio) as usize;
         let mut result = Vec::with_capacity(new_len);
         for i in 0..new_len {
@@ -242,17 +238,6 @@ fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
     recognizer.transcribe(&resampled, None)
 }
 
-#[cfg(windows)]
-fn dictate(s: &mut Session, v: &Value) -> CmdResult {
-    let _ = p::bool(v, "start");
-    let text = record_and_transcribe(None).map_err(CmdError::Failed)?;
-    if !text.is_empty() {
-        super::type_text(s, &text).map_err(|e| CmdError::Failed(e.to_string()))?;
-    }
-    Ok(serde_json::json!({"text": text}))
-}
-
-#[cfg(not(target_os = "windows"))]
 fn dictate(s: &mut Session, v: &Value) -> CmdResult {
     let _ = p::bool(v, "start");
     let text = record_and_transcribe(None).map_err(CmdError::Failed)?;
