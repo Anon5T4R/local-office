@@ -209,11 +209,8 @@ fn record_and_transcribe(_language: Option<&str>) -> Result<String, String> {
 
     // Resample to 16kHz mono
     let raw_samples = samples.lock().unwrap_or_else(std::sync::PoisonError::into_inner).clone();
-    let mono_samples = if channels > 1 {
-        raw_samples.chunks(channels).map(|chunk| chunk.iter().sum::<f32>() / channels as f32).collect()
-    } else {
-        raw_samples
-    };
+    let mono_samples =
+        if channels > 1 { raw_samples.chunks(channels).map(|chunk| chunk.iter().sum::<f32>() / channels as f32).collect() } else { raw_samples };
 
     let ratio = sample_rate as f64 / 16000.0;
     let resampled: Vec<f32> = if (ratio - 1.0).abs() < 0.001 {
