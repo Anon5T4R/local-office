@@ -267,21 +267,21 @@ static DICTATION_RESULT: std::sync::Mutex<Option<Result<String, String>>> = std:
 /// Start dictation (recording + transcription) in a background thread.
 /// Returns immediately; the result is available via `dictation_result()`.
 pub fn start_dictation() {
-    *DICTATION_RESULT.lock().unwrap() = None;
+    *DICTATION_RESULT.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = None;
     std::thread::spawn(|| {
         let result = record_and_transcribe(None);
-        *DICTATION_RESULT.lock().unwrap() = Some(result);
+        *DICTATION_RESULT.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = Some(result);
     });
 }
 
 /// Check if dictation is in progress.
 pub fn is_dictating() -> bool {
-    DICTATION_RESULT.lock().unwrap().is_none()
+    DICTATION_RESULT.lock().unwrap_or_else(std::sync::PoisonError::into_inner).is_none()
 }
 
 /// Take the dictation result if available.
 pub fn take_dictation_result() -> Option<Result<String, String>> {
-    DICTATION_RESULT.lock().unwrap().take()
+    DICTATION_RESULT.lock().unwrap_or_else(std::sync::PoisonError::into_inner).take()
 }
 
 /// Command spec for the dictation feature.
