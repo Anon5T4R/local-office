@@ -19,10 +19,10 @@ use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextPar
 
 /// The directory name for STT models in the app's data directory.
 const STT_MODEL_DIR: &str = "stt-models";
-/// The whisper model to use: medium (769 MB, good quality).
+/// The whisper model to use: medium (1.5 GB, 99 languages, good quality).
 const STT_MODEL_NAME: &str = "ggml-medium.bin";
 /// Expected SHA256 of the whisper-medium model (from whisper.cpp releases).
-const STT_MODEL_SHA256: &str = "a80e1c8c8b8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8";
+const STT_MODEL_SHA256: &str = "6c14d5adee5f86394037b4e4e8b59f1673b6cee10e3cf0b11bbdbee79c156208";
 /// Download URL for the model (from whisper.cpp releases on Hugging Face).
 const STT_MODEL_URL: &str = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin";
 
