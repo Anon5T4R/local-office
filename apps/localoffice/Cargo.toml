@@ -16,7 +16,7 @@ localoffice-engine = { workspace = true, features = ["dictation"] }
 localoffice-proof = { workspace = true }
 # Fonts the user added (#582) load from the settings folder at start-up.
 localoffice-fonts = { workspace = true }
-localoffice-ui-egui = { workspace = true }
+localoffice-ui-egui = { workspace = true, features = ["dictation"] }
 # The control key file's location (shared with the MCP bridge).
 localoffice-control-key = { workspace = true }
 eframe = { workspace = true, features = ["default_fonts", "wgpu", "accesskit", "clipboard", "wayland", "x11", "links"] }

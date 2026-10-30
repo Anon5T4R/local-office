@@ -15,6 +15,7 @@ craft-ui = { path = "../../libs/craft-libs/crates/ui/" }
 # it). Same craft-libs rev as craft-ui; it brings lazy per-locale parsing
 # (storytold/craft-libs#247), ICU4X plural rules and bidi isolates around inserted values.
 craft-i18n = { path = "../../libs/craft-libs/crates/i18n/" }
+
 # One native window per open document: the window list, the Window menu and the egui viewports.
 craft-window = { path = "../../libs/craft-libs/crates/window/", features = ["egui"] }
 localoffice-geom = { workspace = true, features = ["image"] }
@@ -36,6 +37,10 @@ image = { workspace = true }
 # The system's preferred interface languages (#8) and region (#838). Native: OS APIs; wasm:
 # the browser's languages (`js`).
 sys-locale = { version = "0.3", features = ["js"] }
+
+[features]
+# Dictation (STT via whisper.cpp): forwards to the engine and lets the UI poll for results.
+dictation = ["localoffice-engine/dictation"]
 
 # Linux only, where winit reports no system theme: the desktop portal's light/dark answer (see
 # `desktop_theme.rs`). Already in the tree, with these features, through egui's own accessibility

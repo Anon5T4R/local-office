@@ -698,8 +698,6 @@ pub struct WordApp {
     pub zotero: zotero::ZoteroLink,
     /// The AI assistant panel (`ui.ai`): connections, model and chat, in the UI only.
     pub ai: ai_ui::AiState,
-    /// Dictation job (background recording + transcription).
-    pub dictation_job: Option<localoffice_ai::Job<String>>,
     /// The egui context, once the first frame has run (background work wakes the UI with it).
     pub(crate) ctx: Option<egui::Context>,
     /// Whether the current command was entered by an input method's own transaction. The engine
@@ -873,7 +871,6 @@ impl WordApp {
             autosave: true,
             zotero: zotero::ZoteroLink::default(),
             ai: ai_ui::AiState::default(),
-            dictation_job: None,
             ctx: None,
             ime_origin: false,
             read_aloud_error: None,
@@ -2481,10 +2478,11 @@ impl WordApp {
         options::sync(self);
         self.settle_async_saves();
         // Dictation: poll for a finished transcription and insert it into the document.
-        if let Some(Ok(text)) = localoffice_engine::cmd::dictation::take_dictation_result() {
-            if !text.is_empty() {
-                let _ = self.session.run("text.insert", &json!({"text": text}));
-            }
+        #[cfg(feature = "dictation")]
+        if let Some(Ok(text)) = localoffice_engine::cmd::dictation::take_dictation_result()
+            && !text.is_empty()
+        {
+            let _ = self.session.run("text.insert", &json!({"text": text}));
         }
         // Chinese text wants the Chinese face before the Japanese one (one glyph style per line).
         // An installed CJK font is read only once CJK text is shown (#241): a CJK interface, the
