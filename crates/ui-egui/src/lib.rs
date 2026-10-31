@@ -709,6 +709,11 @@ pub struct WordApp {
     /// Dictation: the running job's status text, kept in the status bar while it works.
     #[cfg(feature = "dictation")]
     pub dictation_status: Option<String>,
+    /// Whether THIS app started the dictation job: only it asks for the model picker when the job
+    /// parks in `needs-model` (the job's phase is process-wide, but the question belongs to the
+    /// window whose Dictate button was clicked — not to every open document).
+    #[cfg(feature = "dictation")]
+    pub(crate) dictation_armed: bool,
     /// The file the document was last explicitly saved to in this session; AutoSave writes only
     /// there. A file that was merely opened isn't rewritten until the user saves it: saving drops
     /// whatever LocalOffice can't represent (content controls, charts, macros…).
@@ -879,6 +884,8 @@ impl WordApp {
             read_aloud_error: None,
             #[cfg(feature = "dictation")]
             dictation_status: None,
+            #[cfg(feature = "dictation")]
+            dictation_armed: false,
             autosave_path: None,
             saves_in_flight: Vec::new(),
             font_generation: localoffice_fonts::FontDb::global().generation(),
@@ -1069,6 +1076,12 @@ impl WordApp {
         // part of it: saving and exporting go on without it (the refusal stays on the status
         // line), and replacing the document asks Save / Don't Save / Cancel about it.
         let refused = if flushes_comment_drafts(id, &params) { panes::flush_comment_drafts(self).err() } else { None };
+        // Dictation's job state is process-wide; arming here ties the model picker to the window
+        // whose command started it (`tools.dictate`), so it never pops up anywhere else.
+        #[cfg(feature = "dictation")]
+        if id == "tools.dictate" {
+            self.dictation_armed = true;
+        }
         if id == "file.recover" && params.as_object().is_none_or(|p| p.is_empty()) {
             self.ui.backstage = true;
             self.ui.backstage_page = "recover".into();
@@ -2523,7 +2536,11 @@ impl WordApp {
                     self.dictation_status = status;
                     // The first Dictate click found no model downloaded and none chosen yet:
                     // ask which one to fetch before anything else happens.
-                    if dictation::phase() == DictationPhase::NeedsModel {
+                    // The first Dictate click (from THIS window) found no model downloaded and none
+                    // chosen yet: ask which one to fetch before anything else happens. The job's
+                    // phase is process-wide, so the armed flag keeps other windows — and other test
+                    // harnesses sharing the process — from inheriting the question.
+                    if dictation::phase() == DictationPhase::NeedsModel && self.dictation_armed {
                         show_model_picker(self, ctx);
                     }
                 }
@@ -3317,10 +3334,12 @@ fn show_model_picker(app: &mut WordApp, ctx: &egui::Context) {
         });
     if let Some(model) = chosen {
         // Choosing also resumes the waiting job (download or recording starts here).
+        app.dictation_armed = false;
         if let Err(e) = dictation::choose_model(model) {
             app.status(e);
         }
     } else if cancelled || !open {
+        app.dictation_armed = false;
         dictation::cancel_model_choice();
     }
 }
