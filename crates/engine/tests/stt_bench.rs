@@ -116,7 +116,7 @@ fn load_wav(path: &Path) -> (Vec<f32>, u32, u16) {
     }
     assert_eq!(bits, 16, "only 16-bit PCM supported, got {bits}");
     let data = data.expect("no data chunk");
-    let frames: Vec<i16> = data.chunks_exact(2).map(|c| i16::from_le_bytes(c.try_into().unwrap())).collect();
+    let frames: Vec<i16> = data.chunks_exact(2).map(|c| i16::from_le_bytes([c[0], c[1]])).collect();
     (frames.into_iter().map(|s| f32::from(s) / 32_768.0).collect(), rate, channels)
 }
 
