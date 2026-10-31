@@ -2,15 +2,18 @@
 
 //! Local speech-to-text (STT) via whisper.cpp (MIT).
 //!
-//! This module provides local speech-to-text transcription using whisper.cpp (via whisper-rs).
-//! The model (medium, 769 MB, 99 languages including pt-BR/pt-PT/en-US) is downloaded on first
-//! use with checksum verification and cached in the app's data directory for offline use.
+//! Dictation runs on local whisper.cpp models (via whisper-rs), downloaded on first use with
+//! checksum verification and cached in the app's data directory for offline use. The first
+//! Dictate click opens the model picker ([`models_available`], [`choose_model`]): `small`
+//! (488 MB, recommended — near real-time on CPU) or `medium` (1.5 GB, more accurate but much
+//! slower without a GPU). The choice is remembered in a one-line file beside the models.
 //!
-//! Dictation is start/stop: `tools.dictate` with `{"start": true}` opens the microphone
-//! ([`begin`]), a second click with `{"start": false}` ends the capture ([`stop`]) and the job
-//! transcribes on its background thread. The UI polls [`phase`] for feedback and [`take_result`]
-//! for the finished text. A job refuses a second start, so repeated clicks never run concurrent
-//! jobs.
+//! Dictation is start/stop: `tools.dictate` with `{"start": true}` begins a job ([`begin`]), a
+//! second click with `{"start": false}` ends the capture ([`stop`]) and the job transcribes on
+//! its background thread. The model loads per job and is dropped as soon as the text is ready,
+//! so its weights never sit in RAM between dictations. The UI polls [`phase`] for feedback and
+//! [`take_result`] for the finished text. A job refuses a second start, so repeated clicks
+//! never run concurrent jobs.
 
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -25,17 +28,137 @@ use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextPar
 
 /// The directory name for STT models in the app's data directory.
 const STT_MODEL_DIR: &str = "stt-models";
-/// The whisper model to use: medium (1.5 GB, 99 languages, good quality).
-const STT_MODEL_NAME: &str = "ggml-medium.bin";
-/// Expected SHA256 of the whisper-medium model (from whisper.cpp releases).
-const STT_MODEL_SHA256: &str = "6c14d5adee5f86394037b4e4e8b59f1673b6cee10e3cf0b11bbdbee79c156208";
-/// Download URL for the model (from whisper.cpp releases on Hugging Face).
-const STT_MODEL_URL: &str = "https://github.com/Anon5T4R/big-files-local/releases/download/v1.0.0/ggml-medium.bin";
-
 /// Bytes read, written and hashed per step of the model download.
 const DOWNLOAD_CHUNK: usize = 8192;
 /// How much must arrive between download progress reports to the shared state.
 const DOWNLOAD_REPORT_STEP: u64 = 10 * 1024 * 1024;
+
+/// A whisper model Dictate can use: what it is called, where it downloads from and how big it is.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum SttModel {
+    /// `ggml-small.bin` (488 MB, multilingual): the recommended default — the fastest of the two
+    /// on CPU by far.
+    #[default]
+    Small,
+    /// `ggml-medium.bin` (1.5 GB, multilingual): more accurate, but far slower on CPU.
+    Medium,
+}
+
+impl SttModel {
+    /// The model file name inside the STT cache folder.
+    fn file_name(self) -> &'static str {
+        match self {
+            Self::Small => "ggml-small.bin",
+            Self::Medium => "ggml-medium.bin",
+        }
+    }
+
+    /// Download URL (big-files-local release assets).
+    fn url(self) -> &'static str {
+        match self {
+            Self::Small => "https://github.com/Anon5T4R/big-files-local/releases/download/v1.1.0/ggml-small.bin",
+            Self::Medium => "https://github.com/Anon5T4R/big-files-local/releases/download/v1.0.0/ggml-medium.bin",
+        }
+    }
+
+    /// Expected SHA256 of the model file (from whisper.cpp releases).
+    fn sha256(self) -> &'static str {
+        match self {
+            Self::Small => "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b",
+            Self::Medium => "6c14d5adee5f86394037b4e4e8b59f1673b6cee10e3cf0b11bbdbee79c156208",
+        }
+    }
+
+    /// Download size in MB, for the picker UI.
+    pub fn size_mb(self) -> u64 {
+        match self {
+            Self::Small => 488,
+            Self::Medium => 1533,
+        }
+    }
+
+    /// The label stored in the choice file (`small`/`medium`).
+    fn label(self) -> &'static str {
+        match self {
+            Self::Small => "small",
+            Self::Medium => "medium",
+        }
+    }
+
+    /// The model a choice-file label names; unknown labels fall back to the caller's default.
+    fn from_label(label: &str) -> Option<Self> {
+        match label {
+            "small" => Some(Self::Small),
+            "medium" => Some(Self::Medium),
+            _ => None,
+        }
+    }
+}
+
+/// The folder the models (and the choice file) live in.
+fn stt_dir() -> Result<PathBuf, String> {
+    Ok(dirs::data_dir().ok_or("could not determine data directory")?.join("LocalOffice").join(STT_MODEL_DIR))
+}
+
+/// Where the model file for `model` is cached.
+fn model_path(model: SttModel) -> Result<PathBuf, String> {
+    Ok(stt_dir()?.join(model.file_name()))
+}
+
+/// The sidecar that remembers a model passed its SHA256 verification, so the 1.5 GB file is not
+/// re-hashed on every job.
+fn sidecar_path(model_path: &Path) -> PathBuf {
+    let mut name = model_path.as_os_str().to_os_string();
+    name.push(".sha256.ok");
+    PathBuf::from(name)
+}
+
+/// Every model Dictate can use, each with whether it is already on disk — the model picker's
+/// rows.
+pub fn models_available() -> Vec<(SttModel, bool)> {
+    [SttModel::Small, SttModel::Medium].iter().map(|&m| (m, model_path(m).is_ok_and(|p| p.exists()))).collect()
+}
+
+/// Where the chosen model is remembered: a one-line label file beside the models. Dictation
+/// state is a process-wide static (the job runs on its own thread, with no `Session`), so the
+/// session preference store does not reach here; the file keeps the choice across restarts.
+fn choice_path() -> Result<PathBuf, String> {
+    Ok(stt_dir()?.join("choice.txt"))
+}
+
+/// The model the next job uses: the last one picked in the model picker, or `Small` (the
+/// recommended default) before any choice was made.
+fn load_choice() -> Result<SttModel, String> {
+    let path = choice_path()?;
+    let mut label = String::new();
+    if path.exists() {
+        use std::io::Read;
+        io::open_reader(&path)?.read_to_string(&mut label).map_err(|e| format!("{}: {e}", path.display()))?;
+    }
+    Ok(SttModel::from_label(label.trim()).unwrap_or_default())
+}
+
+/// Remember `model` as the Dictate model (the model picker's OK). While a job waits in
+/// [`DictationPhase::NeedsModel`] this also resumes it: the model downloads or recording starts
+/// at once, without the UI having to call [`begin`] again.
+pub fn choose_model(model: SttModel) -> Result<(), String> {
+    let path = choice_path()?;
+    io::create_dir_all(&stt_dir()?)?;
+    {
+        use std::io::Write;
+        io::open_writer(&path)?.write_all(model.label().as_bytes()).map_err(|e| format!("{}: {e}", path.display()))?;
+    }
+    if phase() == DictationPhase::NeedsModel {
+        start_job()?;
+    }
+    Ok(())
+}
+
+/// The shared dictation state: the running job's phase and its finished result.
+struct Dictation {
+    phase: DictationPhase,
+    result: Option<Result<String, String>>,
+}
 
 /// What a dictation job is doing; the UI polls this for feedback.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -43,6 +166,9 @@ pub enum DictationPhase {
     /// No job is running.
     #[default]
     Idle,
+    /// The first Dictate click found no model downloaded and none chosen yet: the UI asks which
+    /// one to fetch before the job can start.
+    NeedsModel,
     /// The microphone stream is open and collecting samples.
     Recording,
     /// The whisper model is downloading (first use only): `bytes_done` of `total` bytes, with
@@ -50,12 +176,6 @@ pub enum DictationPhase {
     DownloadingModel { bytes_done: u64, total: u64 },
     /// The captured audio is being transcribed.
     Transcribing,
-}
-
-/// The shared dictation state: the running job's phase and its finished result.
-struct Dictation {
-    phase: DictationPhase,
-    result: Option<Result<String, String>>,
 }
 
 /// The state a fresh job starts from (a `const`, because `Mutex::new` is a `const fn`).
@@ -77,21 +197,54 @@ fn set_phase(phase: DictationPhase) {
     lock().phase = phase;
 }
 
-/// Start a dictation job: the microphone opens and captures until [`stop`], then the job
-/// transcribes in the background. Refused while a job runs, so repeated clicks never start
-/// concurrent jobs.
+/// Start a dictation job: the model downloads if needed, then the microphone opens and captures
+/// until [`stop`], then the job transcribes in the background. With no model downloaded and none
+/// chosen yet the job waits in [`DictationPhase::NeedsModel`] for the model picker instead.
+/// Refused while a job runs, so repeated clicks never start concurrent jobs.
 pub fn begin() -> Result<(), String> {
-    {
+    start_job()
+}
+
+/// The phase logic [`begin`] and [`choose_model`] share: from the chosen model and the files on
+/// disk, either park the job at [`DictationPhase::NeedsModel`] (no model on disk, none chosen),
+/// or mark the phase and spawn the worker.
+fn start_job() -> Result<(), String> {
+    let (model, needs_download) = {
         let mut d = lock();
-        if d.phase != DictationPhase::Idle {
+        if !matches!(d.phase, DictationPhase::Idle | DictationPhase::NeedsModel) {
             return Err("dictation already in progress".into());
         }
-        d.result = None;
-        d.phase = DictationPhase::Recording;
-    }
+        let model = load_choice()?;
+        let downloaded = model_path(model).is_ok_and(|p| p.exists());
+        if downloaded {
+            d.result = None;
+            d.phase = DictationPhase::Recording;
+        } else if choice_path()?.exists() {
+            // Chosen before but not on disk (a fresh machine, a deleted cache): fetch it.
+            d.result = None;
+            d.phase = DictationPhase::DownloadingModel { bytes_done: 0, total: 0 };
+        } else {
+            d.phase = DictationPhase::NeedsModel;
+            return Ok(());
+        }
+        (model, !downloaded)
+    };
     STOP.store(false, Ordering::SeqCst);
-    std::thread::spawn(run_job);
+    std::thread::spawn(move || {
+        let result = if needs_download { ensure_model(model).map(|_| ()) } else { Ok(()) }.and_then(|()| record_and_transcribe(model));
+        let mut d = lock();
+        d.result = Some(result);
+        d.phase = DictationPhase::Idle;
+    });
     Ok(())
+}
+
+/// Back out of [`DictationPhase::NeedsModel`] (the model picker's Cancel): no job was running.
+pub fn cancel_model_choice() {
+    let mut d = lock();
+    if d.phase == DictationPhase::NeedsModel {
+        d.phase = DictationPhase::Idle;
+    }
 }
 
 /// Ask the recording job to stop and transcribe what it captured.
@@ -118,30 +271,25 @@ pub fn take_result() -> Option<Result<String, String>> {
 fn phase_name(phase: DictationPhase) -> &'static str {
     match phase {
         DictationPhase::Idle => "idle",
+        DictationPhase::NeedsModel => "needs-model",
         DictationPhase::Recording => "recording",
         DictationPhase::DownloadingModel { .. } => "downloading-model",
         DictationPhase::Transcribing => "transcribing",
     }
 }
 
-/// The background job: record until asked to stop, then transcribe. Any failure lands in the
-/// result and the phase returns to idle, ready for the next job.
-fn run_job() {
-    let result = record_and_transcribe();
-    let mut d = lock();
-    d.result = Some(result);
-    d.phase = DictationPhase::Idle;
-}
-
 /// Record from the default microphone until [`stop`] is asked, resample to 16 kHz mono and
-/// transcribe.
-fn record_and_transcribe() -> Result<String, String> {
+/// transcribe with `model`.
+fn record_and_transcribe(model: SttModel) -> Result<String, String> {
     let audio = record_until_stop()?;
     set_phase(DictationPhase::Transcribing);
-    let recognizer = get_or_init_recognizer()?;
-    set_phase(DictationPhase::Transcribing);
+    log::info!("Loading {}...", model.file_name());
+    let recognizer = WhisperRecognizer::new(&model_path(model)?)?;
     log::info!("Transcribing {} samples...", audio.len());
-    recognizer.transcribe(&audio, None)
+    let text = recognizer.transcribe(&audio, None);
+    // `recognizer` drops here: the model's weights (488 MB / 1.5 GB) leave RAM as soon as the
+    // text is ready, and the next job loads the file afresh.
+    text
 }
 
 /// Capture the microphone until [`stop`] is asked. The stream's callback accumulates while the
@@ -201,29 +349,53 @@ fn resample_16k_mono(raw: &[f32], sample_rate: u32, channels: usize) -> Vec<f32>
         .collect()
 }
 
-/// Ensures the STT model is available locally, downloading if necessary.
-/// Returns the path to the model file.
-fn ensure_stt_model() -> Result<PathBuf, String> {
-    let data_dir = dirs::data_dir().ok_or("could not determine data directory")?.join("LocalOffice").join(STT_MODEL_DIR);
-
-    io::create_dir_all(&data_dir)?;
-
-    let model_path = data_dir.join(STT_MODEL_NAME);
-
-    // If model exists, verify checksum
-    if model_path.exists() {
-        if sha256_matches(&model_path, STT_MODEL_SHA256)? {
-            return Ok(model_path);
+/// Makes sure the model file is on disk and matches its checksum, downloading it when missing
+/// or corrupted. Returns the path. A passed verification is remembered in a `.sha256.ok`
+/// sidecar so the multi-hundred-MB file is not re-hashed on every job; the sidecar is written
+/// again after each fresh download.
+fn ensure_model(model: SttModel) -> Result<PathBuf, String> {
+    let path = model_path(model)?;
+    io::create_dir_all(&stt_dir()?)?;
+    let sidecar = sidecar_path(&path);
+    if path.exists() {
+        if sidecar_content_equals(&sidecar, model.sha256()) {
+            return Ok(path);
+        }
+        if sha256_matches(&path, model.sha256())? {
+            write_sidecar(&sidecar, model.sha256());
+            return Ok(path);
         }
         log::warn!("STT model checksum mismatch, re-downloading");
-        io::remove_file(&model_path)?;
+        io::remove_file(&path)?;
+        let _ = io::remove_file(&sidecar);
     }
 
-    // Download model
-    log::info!("Downloading STT model ({})...", STT_MODEL_NAME);
-    download_model(&model_path, STT_MODEL_URL, STT_MODEL_SHA256)?;
+    log::info!("Downloading STT model ({})...", model.file_name());
+    download_model(&path, model.url(), model.sha256())?;
+    write_sidecar(&sidecar, model.sha256());
+    log::info!("Model downloaded and verified successfully");
+    Ok(path)
+}
 
-    Ok(model_path)
+/// Whether the sidecar names exactly `expected` (an absent or unreadable sidecar just means
+/// "verify again").
+fn sidecar_content_equals(sidecar: &Path, expected: &str) -> bool {
+    let mut content = String::new();
+    io::open_reader(sidecar)
+        .and_then(|mut r| {
+            use std::io::Read;
+            r.read_to_string(&mut content).map_err(|e| format!("{}: {e}", sidecar.display()))
+        })
+        .is_ok_and(|_| content.trim().eq_ignore_ascii_case(expected))
+}
+
+/// Remember that the model file at the sibling path passed verification.
+fn write_sidecar(sidecar: &Path, sha256: &str) {
+    // A cache marker: failing to write it only costs a re-hash on the next job.
+    let _ = io::open_writer(sidecar).map(|mut w| {
+        use std::io::Write;
+        w.write_all(sha256.as_bytes()).map_err(|e| format!("{}: {e}", sidecar.display()))
+    });
 }
 
 /// The hex text of a SHA256 digest.
@@ -232,15 +404,13 @@ fn hex(digest: &[u8]) -> String {
 }
 
 /// Whether the file at `path` hashes to `expected` (hex, case-insensitive). Hashed in chunks:
-/// the 1.5 GB model never sits whole in memory.
+/// the multi-hundred-MB models never sit whole in memory.
 fn sha256_matches(path: &Path, expected: &str) -> Result<bool, String> {
-    use std::io::Read;
-
     let mut file = io::open_reader(path)?;
     let mut hasher = Sha256::new();
     let mut buffer = [0u8; DOWNLOAD_CHUNK];
     loop {
-        let n = file.read(&mut buffer).map_err(|e| format!("{}: {e}", path.display()))?;
+        let n = std::io::Read::read(&mut file, &mut buffer).map_err(|e| format!("{}: {e}", path.display()))?;
         if n == 0 {
             break;
         }
@@ -259,7 +429,7 @@ fn download_model(path: &Path, url: &str, expected_sha256: &str) -> Result<(), S
     let agent = ureq::Agent::new_with_config(
         ureq::Agent::config_builder()
             .timeout_connect(Some(Duration::from_secs(30)))
-            // Every read of the body must make progress; the 1.5 GB may legitimately take
+            // Every read of the body must make progress; the model may legitimately take
             // longer than any whole-call budget.
             .timeout_per_read(Some(Duration::from_secs(120)))
             .build(),
@@ -301,28 +471,32 @@ fn download_model(path: &Path, url: &str, expected_sha256: &str) -> Result<(), S
     }
     io::replace_file(&temp, path)?;
 
-    log::info!("Model downloaded and verified successfully");
     Ok(())
 }
 
-/// Thread-safe wrapper for the Whisper context.
+/// The per-job whisper wrapper: the context owns the model's weights and frees them on drop.
 struct WhisperRecognizer {
-    ctx: Arc<Mutex<WhisperContext>>,
+    ctx: WhisperContext,
 }
 
 impl WhisperRecognizer {
     fn new(model_path: &Path) -> Result<Self, String> {
         let params = WhisperContextParameters::default();
         let ctx = WhisperContext::new_with_params(model_path, params).map_err(|e| format!("failed to load whisper model: {e}"))?;
-        Ok(Self { ctx: Arc::new(Mutex::new(ctx)) })
+        Ok(Self { ctx })
     }
 
-    /// Transcribe audio samples (16-bit PCM, 16kHz mono).
+    /// Transcribe audio samples (16 kHz mono `f32` PCM).
     pub fn transcribe(&self, audio: &[f32], language: Option<&str>) -> Result<String, String> {
-        let ctx = self.ctx.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-        let mut state = ctx.create_state().map_err(|e| format!("failed to create whisper state: {e}"))?;
+        let mut state = self.ctx.create_state().map_err(|e| format!("failed to create whisper state: {e}"))?;
 
         let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+        // Every logical core, not whisper.cpp's `min(4, cores)` default — the encoder scales
+        // with cores, and the bench (crates/engine/tests/stt_bench.rs) measured the default
+        // leaving the 12-thread machine mostly idle.
+        params.set_n_threads(std::thread::available_parallelism().map_or(4, |n| n.get() as i32));
+        // `None` keeps whisper's language auto-detect, which the bench measured at a real cost
+        // (one extra encoder pass), kept anyway: dictation is multilingual.
         params.set_language(language);
         params.set_print_special(false);
         params.set_print_progress(false);
@@ -350,26 +524,15 @@ impl WhisperRecognizer {
     }
 }
 
-/// The global STT recognizer (lazy-initialized on first use).
-static STT_RECOGNIZER: std::sync::OnceLock<WhisperRecognizer> = std::sync::OnceLock::new();
-
-fn get_or_init_recognizer() -> Result<&'static WhisperRecognizer, String> {
-    if let Some(r) = STT_RECOGNIZER.get() {
-        return Ok(r);
-    }
-    let model_path = ensure_stt_model()?;
-    let recognizer = WhisperRecognizer::new(&model_path)?;
-    // Race: another thread might have initialized first; that's fine, use theirs.
-    let _ = STT_RECOGNIZER.set(recognizer);
-    STT_RECOGNIZER.get().ok_or_else(|| "failed to initialize recognizer".to_string())
-}
-
 fn dictate(_s: &mut Session, v: &Value) -> CmdResult {
     let start = p::bool(v, "start").unwrap_or(true);
     if start {
-        // Start recording in the background; the result comes through `take_result`.
+        // Start the job in the background; the result comes through `take_result`. With no
+        // model chosen yet the job parks in `needs-model` for the UI's picker instead.
         begin().map_err(CmdError::Failed)?;
-        Ok(serde_json::json!({"status": "recording", "phase": phase_name(phase())}))
+        let phase = phase();
+        let status = if phase == DictationPhase::NeedsModel { "needs-model" } else { "recording" };
+        Ok(serde_json::json!({"status": status, "phase": phase_name(phase)}))
     } else {
         // Signal the stop; transcription continues in the background.
         stop().map_err(CmdError::Failed)?;

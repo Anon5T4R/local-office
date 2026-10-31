@@ -2502,6 +2502,7 @@ impl WordApp {
                     let mb = |b: u64| (b as f64 / 1_000_000.0).round().to_string();
                     let status = match dictation::phase() {
                         DictationPhase::Idle => None,
+                        DictationPhase::NeedsModel => None,
                         DictationPhase::Recording => Some(tl!("Recording… click Dictate to stop").to_string()),
                         DictationPhase::Transcribing => Some(tl!("Transcribing…").to_string()),
                         DictationPhase::DownloadingModel { bytes_done, total } => Some(if total > 0 {
@@ -2520,6 +2521,11 @@ impl WordApp {
                         ctx.request_repaint_after(std::time::Duration::from_millis(200));
                     }
                     self.dictation_status = status;
+                    // The first Dictate click found no model downloaded and none chosen yet:
+                    // ask which one to fetch before anything else happens.
+                    if dictation::phase() == DictationPhase::NeedsModel {
+                        show_model_picker(self, ctx);
+                    }
                 }
             }
         }
@@ -3264,6 +3270,59 @@ impl AutoSaveBlock {
 pub fn keeps_everything(name: &str) -> bool {
     let ext = std::path::Path::new(name).extension().map(|e| e.to_string_lossy().to_ascii_lowercase()).unwrap_or_default();
     matches!(ext.as_str(), "docx" | "docm" | "dotx" | "dotm" | "odt" | "rtf" | "json" | "xml")
+}
+
+/// The Dictate model picker: a modal asking which whisper model to download when the first
+/// Dictate click found none on disk and none chosen. Picking one remembers the choice and
+/// starts the job (the download shows in the status bar); Cancel backs out to idle. Follows
+/// the plain centered modal of the updates window (`updates_ui::show`).
+#[cfg(feature = "dictation")]
+fn show_model_picker(app: &mut WordApp, ctx: &egui::Context) {
+    use localoffice_engine::cmd::dictation::{self, SttModel};
+
+    // Sizes read like the picker sells them: MB under a gigabyte, GB above.
+    let mb = |m: SttModel| m.size_mb().to_string();
+    let gb = |m: SttModel| format!("{:.1}", m.size_mb() as f64 / 1024.0);
+    let row = |m: SttModel| match m {
+        SttModel::Small => crate::i18n::fmt(tl!("Small — {mb} MB — recommended"), &[("mb", &mb(m))]),
+        SttModel::Medium => crate::i18n::fmt(tl!("Medium — {gb} GB — more accurate, much slower on CPU"), &[("gb", &gb(m))]),
+    };
+
+    let mut open = true;
+    let mut chosen: Option<SttModel> = None;
+    let mut cancelled = false;
+    egui::Window::new(tl!("Choose a speech recognition model"))
+        .open(&mut open)
+        .resizable(false)
+        .collapsible(false)
+        .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+        .show(ctx, |ui| {
+            ui.label(tl!("Dictate runs offline on a speech model. Pick one to download:"));
+            ui.add_space(8.0);
+            for (model, downloaded) in dictation::models_available() {
+                ui.horizontal(|ui| {
+                    ui.label(row(model));
+                    let action = if downloaded { tl!("Use") } else { tl!("Download") };
+                    if ui.button(action).clicked() {
+                        chosen = Some(model);
+                    }
+                });
+            }
+            ui.add_space(8.0);
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if ui.button(tl!("Cancel")).clicked() {
+                    cancelled = true;
+                }
+            });
+        });
+    if let Some(model) = chosen {
+        // Choosing also resumes the waiting job (download or recording starts here).
+        if let Err(e) = dictation::choose_model(model) {
+            app.status(e);
+        }
+    } else if cancelled || !open {
+        dictation::cancel_model_choice();
+    }
 }
 
 /// The dialog a user-run command opens when it lacks the input it needs (scripts and agents get
