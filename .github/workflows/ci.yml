@@ -55,7 +55,10 @@ jobs:
         run: |
           files=$(git ls-files '*.rs' | grep -v -E '^libs/')
           rustfmt +nightly --edition 2024 --check $files
-      - uses: dtolnay/rust-toolchain@stable
+      # Diagnóstico dos 14 testes de input: pin do stable (CI flutuante foi para um rustc
+      # mais novo que o 1.97.0 local, onde a suíte passa). Se este run ficar verde, é
+      # regressão do compilador novo, não do código.
+      - uses: dtolnay/rust-toolchain@1.97.0
         with:
           components: rustfmt, clippy
       - name: Clippy
