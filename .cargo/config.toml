@@ -1,17 +1,2 @@
 [alias]
 xtask = "run --package xtask --"
-
-# whisper.cpp (via whisper-rs-sys 0.15) is compiled by the `cmake` crate, which on MSVC with the
-# Visual Studio generator replaces CMAKE_<lang>_FLAGS_RELEASE with the cc-crate flags MINUS every
-# /O* option ("let cmake deal with optimization"), clobbering CMake's own default of
-# `/MD /O2 /Ob1 /DNDEBUG` — whisper.cpp ended up built with NO optimization (measured ~10x slower
-# on STT; see crates/engine/tests/stt_bench.rs). whisper-rs-sys forwards every CMAKE_*/GGML_*
-# environment variable as a -D define, and the cmake crate skips its override when the variable
-# is already defined, so restoring CMake's defaults here fixes the optimization level.
-# 2. ggml defaults GGML_AVX2 to OFF when GGML_NATIVE=ON because it expects -march=native, which
-# MSVC does not support — the CPU backend would be baseline SSE2 only. GGML_AVX2=ON builds the
-# real SIMD kernels (/arch:AVX2 implies AVX+FMA+F16C on MSVC). Requires a 2013+ x86-64 CPU.
-[env]
-CMAKE_C_FLAGS_RELEASE = "/MD /O2 /Ob1 /DNDEBUG"
-CMAKE_CXX_FLAGS_RELEASE = "/MD /O2 /Ob1 /DNDEBUG"
-GGML_AVX2 = "ON"
