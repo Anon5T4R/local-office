@@ -140,7 +140,6 @@ Home|Editing|Go To|edit.goto
 Home|Editing|Select All|select.all
 Home|Editing|Select Objects|select.objects
 Home|Editing|Select Similar Formatting|select.similar
-Home|Voice|Dictate|tools.dictate
 Home|Editor|Editor|review.editor
 Insert|Pages|Cover Page|insert.coverPage
 Insert|Pages|Blank Page|insert.blankPage

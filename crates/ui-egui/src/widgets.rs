@@ -568,7 +568,6 @@ fn group_icon(title: &str) -> &'static str {
         "Paragraph" => "alignLeft",
         "Styles" => "styles",
         "Editing" => "find",
-        "Voice" => "dictate",
         "Tables" => "table",
         "Links" => "link",
         _ => "more",

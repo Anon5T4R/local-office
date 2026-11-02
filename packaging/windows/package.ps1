@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
   Build, sign and package LocalOffice for Windows.
 
@@ -66,7 +66,7 @@ if (-not $SkipBuild) {
   [Environment]::SetEnvironmentVariable($flagVar, '-C target-feature=+crt-static')
   # Fail the build (rather than warn) if the icon/VERSIONINFO can't be embedded.
   $env:LOCALOFFICE_REQUIRE_WINRES = '1'
-  Invoke-Native "cargo build ($Target)" { cargo build --release --locked -p localoffice -p localoffice-cli --target $Target --features localoffice-engine/dictation }
+  Invoke-Native "cargo build ($Target)" { cargo build --release --locked -p localoffice -p localoffice-cli --target $Target }
 }
 
 $Bin = Join-Path $TargetDir "$Target\release"

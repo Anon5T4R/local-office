@@ -706,14 +706,6 @@ pub struct WordApp {
     /// Read Aloud: the start of the sentence the caret was last moved to, and the last error shown.
     pub(crate) read_aloud_at: Option<localoffice_engine::doc::Pos>,
     pub(crate) read_aloud_error: Option<String>,
-    /// Dictation: the running job's status text, kept in the status bar while it works.
-    #[cfg(feature = "dictation")]
-    pub dictation_status: Option<String>,
-    /// Whether THIS app started the dictation job: only it asks for the model picker when the job
-    /// parks in `needs-model` (the job's phase is process-wide, but the question belongs to the
-    /// window whose Dictate button was clicked — not to every open document).
-    #[cfg(feature = "dictation")]
-    pub(crate) dictation_armed: bool,
     /// The file the document was last explicitly saved to in this session; AutoSave writes only
     /// there. A file that was merely opened isn't rewritten until the user saves it: saving drops
     /// whatever LocalOffice can't represent (content controls, charts, macros…).
@@ -882,10 +874,6 @@ impl WordApp {
             ctx: None,
             ime_origin: false,
             read_aloud_error: None,
-            #[cfg(feature = "dictation")]
-            dictation_status: None,
-            #[cfg(feature = "dictation")]
-            dictation_armed: false,
             autosave_path: None,
             saves_in_flight: Vec::new(),
             font_generation: localoffice_fonts::FontDb::global().generation(),
@@ -1076,12 +1064,6 @@ impl WordApp {
         // part of it: saving and exporting go on without it (the refusal stays on the status
         // line), and replacing the document asks Save / Don't Save / Cancel about it.
         let refused = if flushes_comment_drafts(id, &params) { panes::flush_comment_drafts(self).err() } else { None };
-        // Dictation's job state is process-wide; arming here ties the model picker to the window
-        // whose command started it (`tools.dictate`), so it never pops up anywhere else.
-        #[cfg(feature = "dictation")]
-        if id == "tools.dictate" {
-            self.dictation_armed = true;
-        }
         if id == "file.recover" && params.as_object().is_none_or(|p| p.is_empty()) {
             self.ui.backstage = true;
             self.ui.backstage_page = "recover".into();
@@ -2495,57 +2477,6 @@ impl WordApp {
         }
         options::sync(self);
         self.settle_async_saves();
-        // Dictation: mirror the background job's phase in the status bar, and take its finished
-        // result — the text goes into the document, an error shows like Read Aloud's.
-        #[cfg(feature = "dictation")]
-        {
-            use localoffice_engine::cmd::dictation::{self, DictationPhase};
-            match dictation::take_result() {
-                Some(Ok(text)) => {
-                    self.dictation_status = None;
-                    if !text.is_empty() {
-                        let _ = self.session.run("text.insert", &json!({"text": text}));
-                    }
-                }
-                Some(Err(e)) => {
-                    self.dictation_status = None;
-                    self.status(e);
-                }
-                None => {
-                    let mb = |b: u64| (b as f64 / 1_000_000.0).round().to_string();
-                    let status = match dictation::phase() {
-                        DictationPhase::Idle => None,
-                        DictationPhase::NeedsModel => None,
-                        DictationPhase::Recording => Some(tl!("Recording… click Dictate to stop").to_string()),
-                        DictationPhase::Transcribing => Some(tl!("Transcribing…").to_string()),
-                        DictationPhase::DownloadingModel { bytes_done, total } => Some(if total > 0 {
-                            crate::i18n::fmt(
-                                tl!("Downloading speech model… {done} MB / {total} MB"),
-                                &[("done", &mb(bytes_done)), ("total", &mb(total))],
-                            )
-                        } else {
-                            crate::i18n::fmt(tl!("Downloading speech model… {done} MB"), &[("done", &mb(bytes_done))])
-                        }),
-                    };
-                    // Refreshed every frame, so the message doesn't time out mid-job, and frames
-                    // keep coming, so the text tracks a running job without user input.
-                    if let Some(msg) = &status {
-                        self.status(msg.clone());
-                        ctx.request_repaint_after(std::time::Duration::from_millis(200));
-                    }
-                    self.dictation_status = status;
-                    // The first Dictate click found no model downloaded and none chosen yet:
-                    // ask which one to fetch before anything else happens.
-                    // The first Dictate click (from THIS window) found no model downloaded and none
-                    // chosen yet: ask which one to fetch before anything else happens. The job's
-                    // phase is process-wide, so the armed flag keeps other windows — and other test
-                    // harnesses sharing the process — from inheriting the question.
-                    if dictation::phase() == DictationPhase::NeedsModel && self.dictation_armed {
-                        show_model_picker(self, ctx);
-                    }
-                }
-            }
-        }
         // Chinese text wants the Chinese face before the Japanese one (one glyph style per line).
         // An installed CJK font is read only once CJK text is shown (#241): a CJK interface, the
         // language names in Options, or a file name the caption is drawing. A file opened later
@@ -3287,61 +3218,6 @@ impl AutoSaveBlock {
 pub fn keeps_everything(name: &str) -> bool {
     let ext = std::path::Path::new(name).extension().map(|e| e.to_string_lossy().to_ascii_lowercase()).unwrap_or_default();
     matches!(ext.as_str(), "docx" | "docm" | "dotx" | "dotm" | "odt" | "rtf" | "json" | "xml")
-}
-
-/// The Dictate model picker: a modal asking which whisper model to download when the first
-/// Dictate click found none on disk and none chosen. Picking one remembers the choice and
-/// starts the job (the download shows in the status bar); Cancel backs out to idle. Follows
-/// the plain centered modal of the updates window (`updates_ui::show`).
-#[cfg(feature = "dictation")]
-fn show_model_picker(app: &mut WordApp, ctx: &egui::Context) {
-    use localoffice_engine::cmd::dictation::{self, SttModel};
-
-    // Sizes read like the picker sells them: MB under a gigabyte, GB above.
-    let mb = |m: SttModel| m.size_mb().to_string();
-    let gb = |m: SttModel| format!("{:.1}", m.size_mb() as f64 / 1024.0);
-    let row = |m: SttModel| match m {
-        SttModel::Small => crate::i18n::fmt(tl!("Small — {mb} MB — recommended"), &[("mb", &mb(m))]),
-        SttModel::Medium => crate::i18n::fmt(tl!("Medium — {gb} GB — more accurate, much slower on CPU"), &[("gb", &gb(m))]),
-    };
-
-    let mut open = true;
-    let mut chosen: Option<SttModel> = None;
-    let mut cancelled = false;
-    egui::Window::new(tl!("Choose a speech recognition model"))
-        .open(&mut open)
-        .resizable(false)
-        .collapsible(false)
-        .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
-        .show(ctx, |ui| {
-            ui.label(tl!("Dictate runs offline on a speech model. Pick one to download:"));
-            ui.add_space(8.0);
-            for (model, downloaded) in dictation::models_available() {
-                ui.horizontal(|ui| {
-                    ui.label(row(model));
-                    let action = if downloaded { tl!("Use") } else { tl!("Download") };
-                    if ui.button(action).clicked() {
-                        chosen = Some(model);
-                    }
-                });
-            }
-            ui.add_space(8.0);
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.button(tl!("Cancel")).clicked() {
-                    cancelled = true;
-                }
-            });
-        });
-    if let Some(model) = chosen {
-        // Choosing also resumes the waiting job (download or recording starts here).
-        app.dictation_armed = false;
-        if let Err(e) = dictation::choose_model(model) {
-            app.status(e);
-        }
-    } else if cancelled || !open {
-        app.dictation_armed = false;
-        dictation::cancel_model_choice();
-    }
 }
 
 /// The dialog a user-run command opens when it lacks the input it needs (scripts and agents get

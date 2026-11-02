@@ -272,14 +272,9 @@ mod tests {
     #[test]
     fn groups_that_still_fit_are_given_back() {
         // A wide gallery group in the middle and big-button groups that don't shrink.
-        let gs = [
-            g("Font", 300.0, Some(250.0), Some(60.0)),
-            g("Styles", 500.0, Some(500.0), Some(60.0)),
-            g("Voice", 60.0, Some(60.0), Some(60.0)),
-            g("Editor", 60.0, Some(60.0), Some(60.0)),
-        ];
-        // 920 → 800: Styles collapses; Font, Voice and Editor stay as designed.
-        assert_eq!(plan(&gs, 800.0), vec![FULL, COLLAPSED, FULL, FULL]);
+        let gs = [g("Font", 300.0, Some(250.0), Some(60.0)), g("Styles", 500.0, Some(500.0), Some(60.0)), g("Editor", 60.0, Some(60.0), Some(60.0))];
+        // 920 → 800: Styles collapses; Font and Editor stay as designed.
+        assert_eq!(plan(&gs, 800.0), vec![FULL, COLLAPSED, FULL]);
     }
 
     /// #1285: the Home tab's shape at 1440 pt. The Styles gallery trimmed to fewer tiles (its
@@ -292,16 +287,15 @@ mod tests {
             g("Paragraph", 300.0, Some(280.0), Some(60.0)),
             g("Styles", 520.0, Some(290.0), Some(60.0)),
             g("Editing", 80.0, Some(40.0), Some(60.0)),
-            g("Voice", 60.0, Some(60.0), Some(60.0)),
         ];
-        let p = plan(&gs, 1250.0);
-        assert_eq!(p, vec![FULL, FULL, FULL, COMPACT, FULL, FULL]);
+        let p = plan(&gs, 1190.0);
+        assert_eq!(p, vec![FULL, FULL, FULL, COMPACT, FULL]);
         // Styles as designed (compact = full, the old behaviour) would have to fold.
         let mut wide = gs.clone();
         if let Some(s) = wide.get_mut(3) {
             s.widths[1] = Some(520.0);
         }
-        assert_eq!(plan(&wide, 1250.0).get(3), Some(&COLLAPSED));
+        assert_eq!(plan(&wide, 1190.0).get(3), Some(&COLLAPSED));
     }
 
     #[test]

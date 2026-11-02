@@ -198,10 +198,6 @@ impl WordApp {
             ai: _,
             ctx: _,
             read_aloud_error: _,
-            #[cfg(feature = "dictation")]
-                dictation_status: _,
-            #[cfg(feature = "dictation")]
-                dictation_armed: _,
             saves_in_flight: _,
             recovery_seen: _,
             no_document: _,

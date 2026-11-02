@@ -9,8 +9,6 @@ pub mod column;
 pub mod connectors;
 pub mod controls;
 pub mod design;
-#[cfg(feature = "dictation")]
-pub mod dictation;
 pub mod draw;
 pub mod edit;
 pub mod equation;
@@ -105,8 +103,6 @@ pub fn registry() -> Registry {
     v.extend(user_templates::specs());
     v.extend(protect::specs());
     v.extend(speech::specs());
-    #[cfg(feature = "dictation")]
-    v.extend(dictation::dictation_specs());
     v.extend(controls::specs());
     Registry::new(v)
 }
