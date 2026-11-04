@@ -20,6 +20,7 @@ pub const FIGCRAFT: App = App::new("figcraft", "FigCraft", "Interface design and
 pub const LOCALOFFICE: App = App {
     former_ids: &["wordcraft"],
     former_names: &["WordCraft"],
+    publisher: "LocalOffice contributors",
     ..App::new("localoffice", "LocalOffice", "Writing and document design", "Anon5T4R/local-office")
 };
 pub const SOUNDCRAFT: App = App::new("soundcraft", "SoundCraft", "Recording, editing and mixing audio", "storytold/soundcraft");
