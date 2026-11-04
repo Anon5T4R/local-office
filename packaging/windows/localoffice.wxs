@@ -96,6 +96,16 @@ Manufacturer="LocalOffice contributors"
           <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="LocalOffice"
               Description="LocalOffice word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
               Icon="LocalOfficeIcon.ico" IconIndex="0" />
+          <!-- Alias de busca: a busca do Windows casa o nome do atalho, e todo app da
+               suíte começa com Local — "word" puro não acharia nada. -->
+          <Shortcut Id="AliasShortcut" Directory="ProgramMenuFolder" Name="Word"
+              Description="LocalOffice word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+              Icon="LocalOfficeIcon.ico" IconIndex="0" />
+          <!-- Atalho no desktop (paridade com o resto da suíte; per-machine = desktop
+               comum, visível pra todos os usuários). -->
+          <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="LocalOffice"
+              Description="LocalOffice word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+              Icon="LocalOfficeIcon.ico" IconIndex="0" />
         </File>
 
         <RegistryValue Root="HKMU" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\localoffice.exe" Value="[#LocalOfficeExe]" Type="string" />
