@@ -2894,7 +2894,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 1 => crate::credits::contributors_ui(ui),
                 2 => crate::credits::models_ui(ui),
                 _ => {
-                    ui.label(egui::RichText::new(tl!("LocalOffice")).font(semibold(22.0)));
+                    ui.label(egui::RichText::new(tl!("Local Word")).font(semibold(22.0)));
                     let build = option_env!("LOCALOFFICE_BUILD_SHA").map(|s| s.get(..8).unwrap_or(s)).unwrap_or(tl!("development build"));
                     ui.label(crate::i18n::fmt(tl!("Version {version} ({build})"), &[("version", env!("CARGO_PKG_VERSION")), ("build", build)]));
                     ui.label(tl!("A free, open-source word processor written from scratch in Rust."));
@@ -2902,7 +2902,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                     ui.hyperlink_to(tl!("Source code: github.com/Anon5T4R/local-office"), "https://github.com/Anon5T4R/local-office");
                     ui.add_space(6.0);
                     ui.label(
-                        egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the LocalOffice contributors."))
+                        egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the Local Word contributors."))
                             .small()
                             .weak(),
                     );
@@ -3059,7 +3059,7 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             });
             ui.label(
                 egui::RichText::new(tl!(
-                    "Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password."
+                    "Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password."
                 ))
                 .small()
                 .weak(),

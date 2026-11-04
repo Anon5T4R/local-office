@@ -1,4 +1,4 @@
-# Français (fr) interface catalog for LocalOffice.
+# Français (fr) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -55,7 +55,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaBbCcDd
 	AaBbYyZz	AaBbYyZz
-	About LocalOffice	À propos de LocalOffice
+	About Local Word	À propos de Local Word
 	Above Chart	Au-dessus du graphique
 	Above the item	Au-dessus de l’élément
 	Absolute value cases	Valeur absolue par cas
@@ -211,7 +211,7 @@
 	Automatically Update Document Styles	Mettre à jour automatiquement les styles du document
 	Automatically update document styles	Mettre à jour automatiquement les styles du document
 	AutoSave	Enregistrement automatique
-	AutoSave documents you have saved in LocalOffice	Enregistrement automatique des documents que vous avez enregistrés dans LocalOffice
+	AutoSave documents you have saved in Local Word	Enregistrement automatique des documents que vous avez enregistrés dans Local Word
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Échec de l’enregistrement automatique : {error}. Enregistrez le document pour réactiver l’enregistrement automatique.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	L’enregistrement automatique n’est pas disponible dans le navigateur : il ne peut pas écrire dans vos fichiers. La commande Enregistrer télécharge une copie.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	L’enregistrement automatique ne prend en charge que les fichiers .docx, .odt et .rtf ; {name} ne peut pas conserver toute la mise en forme. Enregistrez au format .docx pour activer l’enregistrement automatique.
@@ -283,7 +283,7 @@
 	Breaks	Sauts
 	Breve	Brève
 	Bring Forward	Avancer d’un niveau
-	Browse in LocalOffice…	Parcourir dans LocalOffice…
+	Browse in Local Word…	Parcourir dans Local Word…
 	Building Block Gallery Content Control	Contrôle de contenu Galerie de blocs de construction
 	Built-In	Intégrées
 	Built-in style	Style intégré
@@ -495,7 +495,7 @@
 	Cosine Function	Cosinus
 	Cotangent Function	Cotangente
 	Couldn't download {name}: {error}	Impossible de télécharger {name} : {error}
-	Couldn't make LocalOffice the default: {error}	Impossible de faire de LocalOffice l’application par défaut : {error}
+	Couldn't make Local Word the default: {error}	Impossible de faire de Local Word l’application par défaut : {error}
 	Couldn't open {path}: {error}	Impossible d’ouvrir {path} : {error}
 	Count by:	Incrémenter de :
 	Count words in text boxes and notes	Compter les mots dans les zones de texte et les notes
@@ -976,7 +976,7 @@
 	Immersive	Immersif
 	Immersive Reader	Lecteur immersif
 	Immersive\nReader	Lecteur\nimmersif
-	In Default apps, choose LocalOffice for the document types you want it to open.	Dans Applications par défaut, choisissez LocalOffice pour les types de documents qu’il doit ouvrir.
+	In Default apps, choose Local Word for the document types you want it to open.	Dans Applications par défaut, choisissez Local Word pour les types de documents qu’il doit ouvrir.
 	In equations, typing a name after a backslash replaces it with its symbol.	Dans les équations, un nom saisi après une barre oblique inverse est remplacé par son symbole.
 	In Front of Text	Devant le texte
 	In Line with Text	Dans le texte
@@ -1099,7 +1099,7 @@
 	Keep Lines Together	Lignes solidaires
 	Keep lines together	Lignes solidaires
 	Keep Text Only	Conserver le texte uniquement
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Conservez le mot de passe en lieu sûr : sans lui, personne, LocalOffice inclus, ne peut ouvrir le document. Laissez les deux zones vides pour supprimer le mot de passe.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Conservez le mot de passe en lieu sûr : sans lui, personne, Local Word inclus, ne peut ouvrir le document. Laissez les deux zones vides pour supprimer le mot de passe.
 	Keep with Next	Paragraphes solidaires
 	Keep with next	Paragraphes solidaires
 	Keeps the fonts and formatting of the copied text.	Conserve les polices et la mise en forme du texte copié.
@@ -1232,7 +1232,7 @@ template	Letter	Lettre
 	Mail Merge	Publipostage
 	Mailings	Publipostage
 	Main entry:	Entrée principale :
-	Make LocalOffice the default for Word documents…	Faire de LocalOffice l’application par défaut pour les documents Word…
+	Make Local Word the default for Word documents…	Faire de Local Word l’application par défaut pour les documents Word…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Agrandit ou réduit le ruban, les menus et les boîtes de dialogue. Auto suit la mise à l’échelle d’affichage de votre système ; 100% correspond à un pixel d’écran par point. Le zoom du document est distinct.
 	Manage Sources	Gérer les sources
 	Manage Styles	Gérer les styles
@@ -1369,7 +1369,7 @@ template	Letter	Lettre
 	No Soft Edges	Sans bords adoucis
 	No sources yet.	Aucune source pour le moment.
 	No Spacing	Sans interligne
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Aucun dictionnaire orthographique pour {language} n'est installé, la langue n'est donc pas vérifiée. LocalOffice cherche le dictionnaire Hunspell {name} dans le dossier LOCALOFFICE_DICTIONARIES et aux emplacements système habituels.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Aucun dictionnaire orthographique pour {language} n'est installé, la langue n'est donc pas vérifiée. Local Word cherche le dictionnaire Hunspell {name} dans le dossier LOCALOFFICE_DICTIONARIES et aux emplacements système habituels.
 	No templates match your search.	Aucun modèle ne correspond à votre recherche.
 	No Transform	Aucune transformation
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Aucun mot pour l’instant. Utilisez Ajouter au dictionnaire sur un mot mal orthographié pour l’ajouter ici.
@@ -1439,7 +1439,7 @@ template	Letter	Lettre
 	Offset: Top Right	Décalage : en haut à droite
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Anciennes touches de menu : Alt, {keys}. Continuez la saisie ou appuyez sur Échap pour annuler.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Activé : le curseur glisse jusqu’à sa nouvelle position lorsque vous tapez ou utilisez les touches fléchées, et son clignotement s’estompe en douceur. Désactivé : il saute et clignote de façon nette.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Activé : LocalOffice s'ouvre sur Fichier › Accueil, avec un document vierge, les modèles et vos documents récents. Désactivé : il ouvre un document vierge.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Activé : Local Word s'ouvre sur Fichier › Accueil, avec un document vierge, les modèles et vos documents récents. Désactivé : il ouvre un document vierge.
 	One	Un
 	One half	Un demi
 	One label per recipient	Une étiquette par destinataire
@@ -1454,11 +1454,11 @@ template	Letter	Lettre
 	Only the allowed styles can be applied.	Seuls les styles autorisés peuvent être appliqués.
 	Only web (http, https) and email (mailto) links can be followed	Seuls les liens Web (http, https) et les liens de messagerie (mailto) peuvent être suivis
 	Open a document first	Ouvrez d'abord un document
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Ouvrir un fichier avec le navigateur de fichiers intégré à LocalOffice lorsque la boîte de dialogue de fichiers du système n’apparaît pas.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Ouvrir un fichier avec le navigateur de fichiers intégré à Local Word lorsque la boîte de dialogue de fichiers du système n’apparaît pas.
 	OpenDocument Text (*.odt)	Texte OpenDocument (*.odt)
 	Opening print dialog…	Ouverture de la boîte de dialogue d’impression…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Ouvre désormais les fichiers .docx, .doc, .rtf et .odt ainsi que les modèles Word avec LocalOffice.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Ouvre Paramètres › Applications par défaut, où vous choisissez LocalOffice pour .docx et les autres types de documents.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Ouvre désormais les fichiers .docx, .doc, .rtf et .odt ainsi que les modèles Word avec Local Word.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Ouvre Paramètres › Applications par défaut, où vous choisissez Local Word pour .docx et les autres types de documents.
 	Operator	Opérateur
 	Operator Structures	Structures d’opérateurs
 	Operators	Opérateurs
@@ -1717,7 +1717,7 @@ template	Letter	Lettre
 	Replay	Rejouer
 	Research	Recherche
 	Researcher	Chercheur
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Chercheur nécessite un service en ligne ; LocalOffice garde vos documents hors ligne.
+	Researcher needs an online service; Local Word keeps your documents offline.	Chercheur nécessite un service en ligne ; Local Word garde vos documents hors ligne.
 	Reset All…	Tout réinitialiser…
 	Reset Character Formatting	Réinitialiser la mise en forme des caractères
 	Reset Crop	Réinitialiser le rognage
@@ -1918,7 +1918,7 @@ template	Letter	Lettre
 	Show the equation on a line of its own	Afficher l’équation sur sa propre ligne
 	Show the mini toolbar when text is selected	Afficher la mini barre d’outils lors de la sélection de texte
 	Show the ribbon	Afficher le ruban
-	Show the Start screen when LocalOffice starts	Afficher l'écran d'accueil au démarrage de LocalOffice
+	Show the Start screen when Local Word starts	Afficher l'écran d'accueil au démarrage de Local Word
 	Show/Hide ¶	Afficher/Masquer ¶
 	Show\nComments	Afficher\nles commentaires
 	Showing the first {count} items.	Affichage des {count} premiers éléments.
@@ -2152,7 +2152,7 @@ template	Letter	Lettre
 	The recipient-list field that fills each part of an address block and greeting line.	Le champ de la liste des destinataires qui remplit chaque partie d’un bloc d’adresse et d’une ligne de salutation.
 	The spelling and grammar check is complete.	La vérification de l’orthographe et de la grammaire est terminée.
 	the Spike is empty	le pique-notes est vide
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	La boîte de dialogue de fichiers du système n’est pas disponible, LocalOffice affiche donc la sienne. Pour utiliser celle du système, installez un portail de sélection de fichiers (comme xdg-desktop-portal-gtk) ou zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	La boîte de dialogue de fichiers du système n’est pas disponible, Local Word affiche donc la sienne. Pour utiliser celle du système, installez un portail de sélection de fichiers (comme xdg-desktop-portal-gtk) ou zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Le texte au point d’insertion est marqué : Ne pas vérifier l’orthographe ni la grammaire.
 	The time right now	L’heure actuelle
 	Theme Colors	Couleurs du thème
@@ -2169,7 +2169,7 @@ template	Letter	Lettre
 	These merge fields aren't in the recipient list:	Ces champs de fusion ne figurent pas dans la liste des destinataires :
 	These settings will be used for new documents.	Ces paramètres seront utilisés pour les nouveaux documents.
 	Thick	Épaisse
-	this chart was made in another program: LocalOffice shows it but can't edit it	ce graphique a été créé dans un autre programme : LocalOffice l’affiche mais ne peut pas le modifier
+	this chart was made in another program: Local Word shows it but can't edit it	ce graphique a été créé dans un autre programme : Local Word l’affiche mais ne peut pas le modifier
 	This document	Ce document
 	This field has no options.	Ce champ n’a pas d’options.
 	This folder can't be read: {error}	Impossible de lire ce dossier : {error}
@@ -2179,7 +2179,7 @@ template	Letter	Lettre
 	This password type isn't supported.	Ce type de mot de passe n’est pas pris en charge.
 	This point forward	À partir de ce point
 	This section	Cette section
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	ce SmartArt a été créé dans un autre programme : LocalOffice l’affiche mais ne peut pas le modifier
+	this SmartArt was made in another program: Local Word shows it but can't edit it	ce SmartArt a été créé dans un autre programme : Local Word l’affiche mais ne peut pas le modifier
 	this text box is already linked: break the link first	cette zone de texte est déjà liée : rompez d’abord le lien
 	Three	Trois
 	Through	Au travers
@@ -2190,7 +2190,7 @@ preview	Title	Titre
 	Title Bar	Barre de titre
 	Title from the document properties	Titre indiqué dans les propriétés du document
 	Title:	Titre :
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Pour ouvrir les documents Word avec LocalOffice par défaut : sélectionnez-en un dans le Finder, choisissez Fichier › Lire les informations, choisissez LocalOffice sous « Ouvrir avec », puis cliquez sur « Tout modifier ».
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Pour ouvrir les documents Word avec Local Word par défaut : sélectionnez-en un dans le Finder, choisissez Fichier › Lire les informations, choisissez Local Word sous « Ouvrir avec », puis cliquez sur « Tout modifier ».
 	To:	À :
 	TOA Heading	En-tête de table des autorités
 	TOC Heading	En-tête de table des matières
@@ -2353,8 +2353,8 @@ preview	Title	Titre
 	Word XML Document (*.xml)	Document XML Word (*.xml)
 	WordArt	WordArt
 	WordArt Styles	Styles WordArt
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice est désormais l’application par défaut pour les documents Word.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word est désormais l’application par défaut pour les documents Word.
 	Words only	Mots uniquement
 	Wrap Text	Habillage du texte
 	Wrap Text Sides	Côtés de l’habillage
@@ -2383,7 +2383,7 @@ preview	Title	Titre
 	{language} (no dictionary)	{language} (pas de dictionnaire)
 	{language} is now the document's default language.	{language} est désormais la langue par défaut du document.
 	{language}: no dictionary found	{language} : aucun dictionnaire trouvé
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language} : LocalOffice ne vérifie pas encore l’orthographe ni la grammaire dans cette langue.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language} : Local Word ne vérifie pas encore l’orthographe ni la grammaire dans cette langue.
 	{language}: {file}	{language} : {file}
 	{names} and {n} more	{names} et {n} autres
 	{name}   {height} × {width} in	{name}   {height} × {width} po

@@ -30,18 +30,18 @@
   <?define HasCraftFontLicences=0 ?>
   <?endif ?>
   <Package
-      Name="LocalOffice"
-Manufacturer="LocalOffice contributors"
+      Name="Local Word"
+Manufacturer="Local Word contributors"
       Version="$(var.Version)"
       UpgradeCode="075497F9-E861-45D0-9C7F-A74F8C34E6BA"
       Scope="$(var.Scope)"
       Compressed="yes"
       Language="1033">
-    <SummaryInformation Description="LocalOffice word processor" Manufacturer="LocalOffice contributors" />
+    <SummaryInformation Description="Local Word word processor" Manufacturer="Local Word contributors" />
     <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
          (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
     <MajorUpgrade AllowSameVersionUpgrades="yes"
-        DowngradeErrorMessage="A newer version of LocalOffice is already installed." />
+        DowngradeErrorMessage="A newer version of Local Word is already installed." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
 
     <Icon Id="LocalOfficeIcon.ico" SourceFile="$(var.IconPath)" />
@@ -56,7 +56,7 @@ Manufacturer="LocalOffice contributors"
          LICENSE-APACHE. The finish page offers to launch LocalOffice (ticked by default) through
          WixShellExec (WixToolset.Util.wixext); silent installs (/qn) never show it. -->
     <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch LocalOffice" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Local Word" />
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
     <Property Id="WixShellExecTarget" Value="[#LocalOfficeExe]" />
     <CustomAction Id="LaunchLocalOffice" BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)" DllEntry="WixShellExec"
@@ -68,11 +68,11 @@ Manufacturer="LocalOffice contributors"
     </UI>
 
     <StandardDirectory Id="ProgramFiles6432Folder">
-      <Directory Id="INSTALLFOLDER" Name="LocalOffice" />
+      <Directory Id="INSTALLFOLDER" Name="Local Word" />
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder" />
 
-    <Feature Id="Main" Title="LocalOffice" Level="1">
+    <Feature Id="Main" Title="Local Word" Level="1">
       <ComponentGroupRef Id="AppNotices" />
       <?if $(var.HasCraftFontLicences) = 1 ?>
       <ComponentGroupRef Id="CraftFontLicences" />
@@ -93,18 +93,18 @@ Manufacturer="LocalOffice contributors"
     <ComponentGroup Id="LocalOfficeFiles" Directory="INSTALLFOLDER">
       <Component Id="LocalOfficeApp" Guid="855DCEC6-9285-444F-9382-9654B83B34F6">
         <File Id="LocalOfficeExe" Source="$(var.BinDir)\localoffice.exe" KeyPath="yes">
-          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="LocalOffice"
-              Description="LocalOffice word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Local Word"
+              Description="Local Word word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
               Icon="LocalOfficeIcon.ico" IconIndex="0" />
           <!-- Alias de busca: a busca do Windows casa o nome do atalho, e todo app da
                suíte começa com Local — "word" puro não acharia nada. -->
           <Shortcut Id="AliasShortcut" Directory="ProgramMenuFolder" Name="Word"
-              Description="LocalOffice word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+              Description="Local Word word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
               Icon="LocalOfficeIcon.ico" IconIndex="0" />
           <!-- Atalho no desktop (paridade com o resto da suíte; per-machine = desktop
                comum, visível pra todos os usuários). -->
-          <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="LocalOffice"
-              Description="LocalOffice word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+          <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="Local Word"
+              Description="Local Word word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
               Icon="LocalOfficeIcon.ico" IconIndex="0" />
         </File>
 
@@ -124,10 +124,10 @@ Manufacturer="LocalOffice contributors"
            plain text are only "Open with" candidates. Removed again on uninstall. -->
       <Component Id="LocalOfficeFileTypes" Guid="EFF89E6A-F9B8-49F9-B3AE-E243347484B4">
         <RegistryValue Root="HKMU" Key="Software\RegisteredApplications" Name="LocalOffice" Value="Software\LocalOffice\Capabilities" Type="string" KeyPath="yes" />
-        <RegistryValue Root="HKMU" Key="Software\LocalOffice\Capabilities" Name="ApplicationName" Value="LocalOffice" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalOffice\Capabilities" Name="ApplicationName" Value="Local Word" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalOffice\Capabilities" Name="ApplicationDescription" Value="Write and design documents; open and save Word files." Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalOffice\Capabilities" Name="ApplicationIcon" Value="&quot;[#LocalOfficeExe]&quot;,0" Type="string" />
-        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe" Name="FriendlyAppName" Value="LocalOffice" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe" Name="FriendlyAppName" Value="Local Word" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe\shell\open\command" Value="&quot;[#LocalOfficeExe]&quot; &quot;%1&quot;" Type="string" />
 
         <ProgId Id="LocalOffice.Document" Description="Word Document" Icon="LocalOfficeExe" IconIndex="0" />

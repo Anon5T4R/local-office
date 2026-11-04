@@ -1303,7 +1303,7 @@ fn app_xml(doc: &Document) -> Vec<u8> {
             ("xmlns:vt", "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"),
         ],
     );
-    w.leaf("Application", &[], "LocalOffice");
+    w.leaf("Application", &[], "Local Word");
     w.leaf("Words", &[], &doc.word_count().to_string());
     w.leaf("Paragraphs", &[], &doc.paragraph_count().to_string());
     w.leaf("DocSecurity", &[], "0");

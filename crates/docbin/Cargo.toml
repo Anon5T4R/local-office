@@ -3,7 +3,7 @@ name = "localoffice-docbin"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "LocalOffice reader for the Word 97-2003 binary file format (.doc, [MS-DOC])"
+description = "Local Word reader for the Word 97-2003 binary file format (.doc, [MS-DOC])"
 
 [lints]
 workspace = true

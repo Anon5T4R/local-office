@@ -3,7 +3,7 @@ name = "localoffice-layout"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "LocalOffice layout: shaping, line breaking, tabs, lists, tables, pagination, headers/footers, hit testing"
+description = "Local Word layout: shaping, line breaking, tabs, lists, tables, pagination, headers/footers, hit testing"
 
 [lints]
 workspace = true

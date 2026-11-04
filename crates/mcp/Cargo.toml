@@ -3,7 +3,7 @@ name = "localoffice-mcp"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "LocalOffice MCP server: every command as a tool, headless or bridged to the running app"
+description = "Local Word MCP server: every command as a tool, headless or bridged to the running app"
 
 [lints]
 workspace = true

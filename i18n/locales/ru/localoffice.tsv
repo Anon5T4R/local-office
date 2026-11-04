@@ -1,4 +1,4 @@
-# Русский (ru) interface catalog for LocalOffice.
+# Русский (ru) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -55,7 +55,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	АаБбВвГг
 	AaBbYyZz	АаБбЮюЯя
-	About LocalOffice	О LocalOffice
+	About Local Word	О Local Word
 	Above Chart	Над диаграммой
 	Above the item	Над объектом
 	Absolute value cases	Уравнение со случаями
@@ -206,7 +206,7 @@
 	Automatically Update Document Styles	Автоматически обновлять стили документа
 	Automatically update document styles	Автоматически обновлять стили документа
 	AutoSave	Автосохранение
-	AutoSave documents you have saved in LocalOffice	Автосохранение документов, уже сохранённых в LocalOffice
+	AutoSave documents you have saved in Local Word	Автосохранение документов, уже сохранённых в Local Word
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Ошибка автосохранения: {error}. Сохраните документ, чтобы снова включить автосохранение.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	В браузере автосохранение недоступно: оно не может записывать ваши файлы. «Сохранить» скачивает копию.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Автосохранение работает только с файлами .docx, .odt и .rtf; {name} не сохраняет всё форматирование. Сохраните файл как .docx, чтобы включить автосохранение.
@@ -275,7 +275,7 @@
 	Brackets with Separators	Скобки с разделителями
 	Breaks	Разрывы
 	Breve	Бреве
-	Browse in LocalOffice…	Обзор в LocalOffice…
+	Browse in Local Word…	Обзор в Local Word…
 	Building Block Gallery Content Control	Элемент управления содержимым: коллекция стандартных блоков
 	Built-In	Встроенные
 	Built-in style	Встроенный стиль
@@ -481,7 +481,7 @@
 	Cosine Function	Косинус
 	Cotangent Function	Котангенс
 	Couldn't download {name}: {error}	Не удалось загрузить {name}: {error}
-	Couldn't make LocalOffice the default: {error}	Не удалось сделать LocalOffice приложением по умолчанию: {error}
+	Couldn't make Local Word the default: {error}	Не удалось сделать Local Word приложением по умолчанию: {error}
 	Couldn't open {path}: {error}	Не удалось открыть {path}: {error}
 	Count by:	Шаг:
 	Count words in text boxes and notes	Учитывать текстовые поля и сноски
@@ -946,7 +946,7 @@
 	Immersive	Иммерсивный режим
 	Immersive Reader	Иммерсивное чтение
 	Immersive\nReader	Иммерсивное\nчтение
-	In Default apps, choose LocalOffice for the document types you want it to open.	В разделе «Приложения по умолчанию» выберите LocalOffice для нужных типов документов.
+	In Default apps, choose Local Word for the document types you want it to open.	В разделе «Приложения по умолчанию» выберите Local Word для нужных типов документов.
 	In equations, typing a name after a backslash replaces it with its symbol.	В формулах имя после обратной косой черты заменяется символом.
 	In Front of Text	Перед текстом
 	In Line with Text	В тексте
@@ -1065,7 +1065,7 @@
 	Keep Lines Together	Не разрывать абзац
 	Keep lines together	Не разрывать абзац
 	Keep Text Only	Вставить без форматирования
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Храните пароль в надёжном месте: без него никто, включая LocalOffice, не сможет открыть документ. Оставьте оба поля пустыми, чтобы убрать пароль.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Храните пароль в надёжном месте: без него никто, включая Local Word, не сможет открыть документ. Оставьте оба поля пустыми, чтобы убрать пароль.
 	Keep with Next	Не отрывать от следующего
 	Keep with next	Не отрывать от следующего
 	Keeps the fonts and formatting of the copied text.	Сохраняет шрифты и форматирование скопированного текста.
@@ -1196,7 +1196,7 @@
 	Mail Merge	Слияние
 	Mailings	Рассылки
 	Main entry:	Основная запись:
-	Make LocalOffice the default for Word documents…	Сделать LocalOffice приложением по умолчанию для документов Word…
+	Make Local Word the default for Word documents…	Сделать Local Word приложением по умолчанию для документов Word…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Увеличивает или уменьшает ленту, меню и диалоговые окна. «Авто» следует системному масштабированию экрана; 100% — один пиксель экрана на точку. Масштаб документа настраивается отдельно.
 	Manage Sources	Управление источниками
 	Manage Styles	Управление стилями
@@ -1330,7 +1330,7 @@
 	No Soft Edges	Без сглаживания
 	No sources yet.	Источников пока нет.
 	No Spacing	Без интервала
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Орфографический словарь для языка «{language}» не установлен, поэтому текст не проверяется. LocalOffice ищет словарь Hunspell {name} в папке LOCALOFFICE_DICTIONARIES и в обычных системных расположениях.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Орфографический словарь для языка «{language}» не установлен, поэтому текст не проверяется. Local Word ищет словарь Hunspell {name} в папке LOCALOFFICE_DICTIONARIES и в обычных системных расположениях.
 	No templates match your search.	Нет шаблонов, подходящих под запрос.
 	No Transform	Без трансформации
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Слов пока нет. Команда «Добавить в словарь» для слова с ошибкой помещает его сюда.
@@ -1398,7 +1398,7 @@
 	Offset: Top Right	Смещение: вверх вправо
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Старые клавиши меню: Alt, {keys}. Продолжайте ввод или нажмите Esc для отмены.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Вкл.: при вводе текста и нажатии клавиш со стрелками курсор плавно перемещается на новое место, а его мигание плавно угасает. Выкл.: курсор перескакивает и резко мигает.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Вкл.: LocalOffice открывается на странице Файл › Главная с пустым документом, шаблонами и недавними документами. Выкл.: открывается пустой документ.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Вкл.: Local Word открывается на странице Файл › Главная с пустым документом, шаблонами и недавними документами. Выкл.: открывается пустой документ.
 	One	Одна
 	One half	Одна вторая
 	One label per recipient	Одна наклейка на получателя
@@ -1413,11 +1413,11 @@
 	Only the allowed styles can be applied.	Можно применять только разрешённые стили.
 	Only web (http, https) and email (mailto) links can be followed	Переходить можно только по веб-ссылкам (http, https) и ссылкам на электронную почту (mailto)
 	Open a document first	Сначала откройте документ
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Открыть файл во встроенном обозревателе LocalOffice, если системное диалоговое окно выбора файлов не появляется.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Открыть файл во встроенном обозревателе Local Word, если системное диалоговое окно выбора файлов не появляется.
 	OpenDocument Text (*.odt)	Текст OpenDocument (*.odt)
 	Opening print dialog…	Открытие окна печати…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Отныне файлы .docx, .doc, .rtf и .odt и шаблоны Word будут открываться в LocalOffice.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Открывает «Параметры» › «Приложения по умолчанию», где можно выбрать LocalOffice для .docx и других типов документов.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Отныне файлы .docx, .doc, .rtf и .odt и шаблоны Word будут открываться в Local Word.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Открывает «Параметры» › «Приложения по умолчанию», где можно выбрать Local Word для .docx и других типов документов.
 	Operator	Оператор
 	Operator Structures	Структуры операторов
 	Operators	Операторы
@@ -1673,7 +1673,7 @@
 	Replay	Воспроизвести
 	Research	Исследование
 	Researcher	Исследователь
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Исследователю нужен онлайн-сервис, а LocalOffice работает с документами без подключения к интернету.
+	Researcher needs an online service; Local Word keeps your documents offline.	Исследователю нужен онлайн-сервис, а Local Word работает с документами без подключения к интернету.
 	Reset All…	Сбросить все…
 	Reset Character Formatting	Сбросить форматирование символов
 	Reset Crop	Сбросить обрезку
@@ -1875,7 +1875,7 @@
 	Show the equation on a line of its own	Показать уравнение на отдельной строке
 	Show the mini toolbar when text is selected	Показывать мини-панель при выделении текста
 	Show the ribbon	Показать ленту
-	Show the Start screen when LocalOffice starts	Показывать начальный экран при запуске LocalOffice
+	Show the Start screen when Local Word starts	Показывать начальный экран при запуске Local Word
 	Show/Hide ¶	Показать/скрыть ¶
 	Show\nComments	Показать\nкомментарии
 	Showing the first {count} items.	Показаны первые элементы: {count}.
@@ -2106,7 +2106,7 @@
 	The printer, two-sided printing and pages per sheet are chosen in that dialog.	Принтер, двусторонняя печать и число страниц на листе выбираются в этом диалоге.
 	The recipient-list field that fills each part of an address block and greeting line.	Поле списка получателей, которое заполняет каждую часть блока адреса и строки приветствия.
 	the Spike is empty	копилка пуста
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Системное диалоговое окно выбора файлов недоступно, поэтому LocalOffice показывает собственное. Чтобы пользоваться системным, установите портал выбора файлов (например, xdg-desktop-portal-gtk) или zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Системное диалоговое окно выбора файлов недоступно, поэтому Local Word показывает собственное. Чтобы пользоваться системным, установите портал выбора файлов (например, xdg-desktop-portal-gtk) или zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Текст в точке вставки помечен: Не проверять орфографию и грамматику.
 	The time right now	Текущее время
 	Theme Colors	Цвета темы
@@ -2123,7 +2123,7 @@
 	These merge fields aren't in the recipient list:	Этих полей слияния нет в списке получателей:
 	These settings will be used for new documents.	Эти параметры будут использоваться для новых документов.
 	Thick	Толстый
-	this chart was made in another program: LocalOffice shows it but can't edit it	эта диаграмма создана в другой программе: LocalOffice показывает её, но не может изменить
+	this chart was made in another program: Local Word shows it but can't edit it	эта диаграмма создана в другой программе: Local Word показывает её, но не может изменить
 	This document	Этот документ
 	This field has no options.	У этого поля нет параметров.
 	This folder can't be read: {error}	Не удаётся прочитать папку: {error}
@@ -2133,7 +2133,7 @@
 	This password type isn't supported.	Этот тип пароля не поддерживается.
 	This point forward	До конца документа
 	This section	К этому разделу
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	этот SmartArt создан в другой программе: LocalOffice показывает его, но не может изменить
+	this SmartArt was made in another program: Local Word shows it but can't edit it	этот SmartArt создан в другой программе: Local Word показывает его, но не может изменить
 	this text box is already linked: break the link first	это текстовое поле уже связано: сначала разорвите связь
 	Three	Три
 	Through	Сквозное
@@ -2144,7 +2144,7 @@ preview	Title	Пример
 	Title Bar	Строка заголовка
 	Title from the document properties	Название из свойств документа
 	Title:	Заголовок:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Чтобы открывать документы Word в LocalOffice по умолчанию: выберите документ в Finder, выберите «Файл» › «Свойства», укажите LocalOffice в разделе «Открывать в программе» и нажмите «Изменить все».
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Чтобы открывать документы Word в Local Word по умолчанию: выберите документ в Finder, выберите «Файл» › «Свойства», укажите Local Word в разделе «Открывать в программе» и нажмите «Изменить все».
 	To:	По:
 	TOA Heading	Заголовок таблицы ссылок
 	TOC Heading	Заголовок оглавления
@@ -2300,8 +2300,8 @@ preview	Title	Пример
 	Word XML Document (*.xml)	Документ Word XML (*.xml)
 	WordArt	WordArt
 	WordArt Styles	Стили WordArt
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice теперь приложение по умолчанию для документов Word.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word теперь приложение по умолчанию для документов Word.
 	Words only	Только слова
 	Wrap Text	Обтекание текстом
 	Wrap Text Sides	Стороны обтекания
@@ -2331,7 +2331,7 @@ preview	Title	Пример
 	{language} (no dictionary)	{language} (нет словаря)
 	{language} is now the document's default language.	{language} теперь язык документа по умолчанию.
 	{language}: no dictionary found	{language}: словарь не найден
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice пока не проверяет орфографию и грамматику на этом языке.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word пока не проверяет орфографию и грамматику на этом языке.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} и ещё {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} дюйма

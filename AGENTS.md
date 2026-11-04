@@ -1,4 +1,4 @@
-# AGENTS.md — LocalOffice
+# AGENTS.md — Local Word
 
 Fork independente do wordcraft (ArtCraft), rebrandado para a suíte Local do João.
 Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de terceiros.

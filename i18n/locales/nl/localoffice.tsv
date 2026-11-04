@@ -1,4 +1,4 @@
-# Nederlands (nl) interface catalog for LocalOffice.
+# Nederlands (nl) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -57,7 +57,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaBbCcDd
 	AaBbYyZz	AaBbYyZz
-	About LocalOffice	Over LocalOffice
+	About Local Word	Over Local Word
 	Above Chart	Boven grafiek
 	Above the item	Boven het item
 	Absolute value cases	Gevallen voor absolute waarde
@@ -223,7 +223,7 @@
 	Automatically Update Document Styles	Documentstijlen automatisch bijwerken
 	Automatically update document styles	Documentstijlen automatisch bijwerken
 	AutoSave	Automatisch opslaan
-	AutoSave documents you have saved in LocalOffice	AutoSave voor documenten die je in LocalOffice hebt opgeslagen
+	AutoSave documents you have saved in Local Word	AutoSave voor documenten die je in Local Word hebt opgeslagen
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	AutoSave is mislukt: {error}. Sla het document op om automatisch opslaan weer in te schakelen.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	AutoSave is niet beschikbaar in de browser: die kan niet naar je bestanden schrijven. Bij Opslaan wordt een kopie gedownload.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	AutoSave behoudt alleen .docx-, .odt- en .rtf-bestanden; {name} kan niet alle opmaak behouden. Sla op als .docx om AutoSave in te schakelen.
@@ -297,7 +297,7 @@
 	Break Link	Link verbreken
 	Breaks	Einden
 	Breve	Brevis
-	Browse in LocalOffice…	Bladeren in LocalOffice…
+	Browse in Local Word…	Bladeren in Local Word…
 	Building Block Gallery Content Control	Inhoudsbesturingselement galerij bouwstenen
 	Built-In	Ingebouwd
 	Built-in style	Ingebouwde stijl
@@ -513,7 +513,7 @@
 	Cosine Function	Cosinusfunctie
 	Cotangent Function	Cotangentfunctie
 	Couldn't download {name}: {error}	Kan {name} niet downloaden: {error}
-	Couldn't make LocalOffice the default: {error}	Kan LocalOffice niet de standaardapp maken: {error}
+	Couldn't make Local Word the default: {error}	Kan Local Word niet de standaardapp maken: {error}
 	Couldn't open {path}: {error}	Kan {path} niet openen: {error}
 	Count by:	Tellen per:
 	Count words in text boxes and notes	Woorden tellen in tekstvakken en notities
@@ -985,7 +985,7 @@
 	Immersive	Meeslepend
 	Immersive Reader	Meeslepende lezer
 	Immersive\nReader	Meeslepende\nlezer
-	In Default apps, choose LocalOffice for the document types you want it to open.	Kies in Standaardapps LocalOffice voor de documenttypen die je ermee wilt openen.
+	In Default apps, choose Local Word for the document types you want it to open.	Kies in Standaardapps Local Word voor de documenttypen die je ermee wilt openen.
 	In equations, typing a name after a backslash replaces it with its symbol.	In vergelijkingen vervangt het typen van een naam na een backslash deze door het bijbehorende symbool.
 	In Front of Text	Voor tekst
 	In Line with Text	In lijn met tekst
@@ -1111,7 +1111,7 @@
 	Keep Lines Together	Regels bij elkaar houden
 	Keep lines together	Regels bij elkaar houden
 	Keep Text Only	Alleen tekst behouden
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Bewaar het wachtwoord op een veilige plek: zonder het kan niemand, ook LocalOffice niet, het document openen. Laat beide vakjes leeg om het wachtwoord te verwijderen.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Bewaar het wachtwoord op een veilige plek: zonder het kan niemand, ook Local Word niet, het document openen. Laat beide vakjes leeg om het wachtwoord te verwijderen.
 	Keep with Next	Bij volgende houden
 	Keep with next	Bij volgende houden
 	Keeps the fonts and formatting of the copied text.	Behoudt de lettertypen en opmaak van de gekopieerde tekst.
@@ -1239,7 +1239,7 @@
 	Mail Merge	Afdrukken en samenvoegen
 	Mailings	Mailings
 	Main entry:	Hoofditem:
-	Make LocalOffice the default for Word documents…	LocalOffice de standaardapp maken voor Word-documenten…
+	Make Local Word the default for Word documents…	Local Word de standaardapp maken voor Word-documenten…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Maakt het lint, menu's en dialoogvensters groter of kleiner. Automatisch volgt de schaalinstelling van je beeldscherm; 100% is één schermpixel per punt. Documentzoom staat daar los van.
 	Manage Sources	Bronnen beheren
 	Manage Styles	Stijlen beheren
@@ -1374,7 +1374,7 @@
 	No Soft Edges	Geen zachte randen
 	No sources yet.	Nog geen bronnen.
 	No Spacing	Geen spatiëring
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Er is geen spellingwoordenboek voor {language} geïnstalleerd, dus de spelling wordt niet gecontroleerd. LocalOffice zoekt het Hunspell-woordenboek {name} in de map LOCALOFFICE_DICTIONARIES en op de gebruikelijke systeemlocaties.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Er is geen spellingwoordenboek voor {language} geïnstalleerd, dus de spelling wordt niet gecontroleerd. Local Word zoekt het Hunspell-woordenboek {name} in de map LOCALOFFICE_DICTIONARIES en op de gebruikelijke systeemlocaties.
 	No templates match your search.	Er zijn geen sjablonen die overeenkomen met je zoekopdracht.
 	No Transform	Geen transformatie
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Nog geen woorden. Met Toevoegen aan woordenboek wordt een foutspeld woord hier geplaatst.
@@ -1444,7 +1444,7 @@
 	Offset: Top Right	Verschuiving: rechtsboven
 	Omit	Overslaan
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Aan: de invoercursor gleedt naar de nieuwe plaats wanneer je typt of de pijltoetsen gebruikt en het knipperen vervaagt. Uit: hij springt en knippert aan en uit.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Aan: LocalOffice opent Bestand › Start met een leeg document, de sjablonen en je recente documenten. Uit: er wordt een leeg document geopend.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Aan: Local Word opent Bestand › Start met een leeg document, de sjablonen en je recente documenten. Uit: er wordt een leeg document geopend.
 	One	Eén
 	One half	Eén halve
 	One label per recipient	Eén label per ontvanger
@@ -1459,11 +1459,11 @@
 	Only the allowed styles can be applied.	Alleen de toegestane stijlen kunnen worden toegepast.
 	Only web (http, https) and email (mailto) links can be followed	Alleen webkoppelingen (http, https) en e-mailkoppelingen (mailto) kunnen worden gevolgd
 	Open a document first	Open eerst een document
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Een bestand openen met de eigen browser van LocalOffice wanneer het systeembestandsdialoogvenster niet verschijnt.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Een bestand openen met de eigen browser van Local Word wanneer het systeembestandsdialoogvenster niet verschijnt.
 	OpenDocument Text (*.odt)	OpenDocument-tekst (*.odt)
 	Opening print dialog…	Afdrukvenster wordt geopend…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Opent voortaan .docx-, .doc-, .rtf- en .odt-bestanden en Word-sjablonen met LocalOffice.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Opent Instellingen › Standaardapps, waar je LocalOffice kiest voor .docx en de andere documenttypen.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Opent voortaan .docx-, .doc-, .rtf- en .odt-bestanden en Word-sjablonen met Local Word.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Opent Instellingen › Standaardapps, waar je Local Word kiest voor .docx en de andere documenttypen.
 	Operator	Operator
 	Operator Structures	Operatorstructuren
 	Operators	Operatoren
@@ -1728,7 +1728,7 @@
 	Report	Rapport
 	Research	Onderzoek
 	Researcher	Onderzoeker
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Onderzoeker heeft een onlinedienst nodig; LocalOffice houdt je documenten offline.
+	Researcher needs an online service; Local Word keeps your documents offline.	Onderzoeker heeft een onlinedienst nodig; Local Word houdt je documenten offline.
 	Reset	Herstellen
 	Reset All…	Alles herstellen…
 	Reset Character Formatting	Tekstopmaak herstellen
@@ -1928,7 +1928,7 @@
 	Show the equation in the line of text	De vergelijking in de tekstregel tonen
 	Show the equation on a line of its own	De vergelijking op een eigen regel tonen
 	Show the mini toolbar when text is selected	De minibalk weergeven wanneer tekst is geselecteerd
-	Show the Start screen when LocalOffice starts	Het startscherm tonen wanneer LocalOffice start
+	Show the Start screen when Local Word starts	Het startscherm tonen wanneer Local Word start
 	Show/Hide ¶	Tonen/verbergen ¶
 	Show\nComments	Opmerkingen\ntonen
 	Showing the first {count} items.	De eerste {count} items worden weergegeven.
@@ -2164,7 +2164,7 @@
 	The recipient-list field that fills each part of an address block and greeting line.	Het veld uit de ontvangerslijst dat elk deel van een adresblok en begroetingsregel vult.
 	The spelling and grammar check is complete.	De spelling- en grammaticacontrole is voltooid.
 	the Spike is empty	de verzamelbak is leeg
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Het systeemvenster voor bestanden is niet beschikbaar, dus toont LocalOffice het eigen venster. Installeer een portaal voor bestandskiezer (zoals xdg-desktop-portal-gtk) of zenity om het systeemvenster te krijgen.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Het systeemvenster voor bestanden is niet beschikbaar, dus toont Local Word het eigen venster. Installeer een portaal voor bestandskiezer (zoals xdg-desktop-portal-gtk) of zenity om het systeemvenster te krijgen.
 	The text at the insertion point is marked Do not check spelling or grammar.	De tekst bij de invoegpositie is gemarkeerd: Spelling of grammatica niet controleren.
 	The time right now	De huidige tijd
 	Theme Colors	Themakleuren
@@ -2181,7 +2181,7 @@
 	These merge fields aren't in the recipient list:	Deze samenvoegvelden staan niet in de ontvangerslijst:
 	These settings will be used for new documents.	Deze instellingen worden gebruikt voor nieuwe documenten.
 	Thick	Dik
-	this chart was made in another program: LocalOffice shows it but can't edit it	deze grafiek is gemaakt in een ander programma: LocalOffice toont hem, maar kan hem niet bewerken
+	this chart was made in another program: Local Word shows it but can't edit it	deze grafiek is gemaakt in een ander programma: Local Word toont hem, maar kan hem niet bewerken
 	This document	Dit document
 	This field has no options.	Dit veld heeft geen opties.
 	This folder can't be read: {error}	Kan deze map niet worden gelezen: {error}
@@ -2191,7 +2191,7 @@
 	This password type isn't supported.	Dit wachtwoordtype wordt niet ondersteund.
 	This point forward	Vanaf dit punt
 	This section	Deze sectie
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	deze SmartArt is gemaakt in een ander programma: LocalOffice toont hem, maar kan hem niet bewerken
+	this SmartArt was made in another program: Local Word shows it but can't edit it	deze SmartArt is gemaakt in een ander programma: Local Word toont hem, maar kan hem niet bewerken
 	this text box is already linked: break the link first	dit tekstvak is al gekoppeld: verbreek eerst de koppeling
 	Three	Drie
 	Through	Doorlopend
@@ -2203,7 +2203,7 @@ preview	Title	Titel
 	Title Bar	Titelbalk
 	Title from the document properties	Titel uit documenteigenschappen
 	Title:	Titel:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Om Word-documenten standaard met LocalOffice te openen: selecteer er een in Finder, kies Bestand › Info, selecteer LocalOffice bij Open met en klik daarna op Alles wijzigen.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Om Word-documenten standaard met Local Word te openen: selecteer er een in Finder, kies Bestand › Info, selecteer Local Word bij Open met en klik daarna op Alles wijzigen.
 	To:	Tot:
 	TOA Heading	Kop van verwijzingslijst
 	TOC Heading	Kop inhoudsopgave
@@ -2372,8 +2372,8 @@ preview	Title	Titel
 	Word XML Document (*.xml)	Word XML-document (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArt-stijlen
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice is nu de standaardapp voor Word-documenten.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word is nu de standaardapp voor Word-documenten.
 	Words	Woorden
 	Words only	Alleen woorden
 	Wrap Text	Tekstterugloop
@@ -2403,7 +2403,7 @@ preview	Title	Titel
 	{language} (no dictionary)	{language} (geen woordenboek)
 	{language} is now the document's default language.	{language} is nu de standaardtaal van het document.
 	{language}: no dictionary found	{language}: geen woordenboek gevonden
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice controleert in deze taal nog geen spelling of grammatica.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word controleert in deze taal nog geen spelling of grammatica.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} en nog {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} inch

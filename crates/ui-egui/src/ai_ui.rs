@@ -261,7 +261,7 @@ fn send(app: &mut WordApp) {
     if input.trim().is_empty() {
         return;
     }
-    let mut history = vec![system_turn(app, "You help with a document the user has open in LocalOffice.")];
+    let mut history = vec![system_turn(app, "You help with a document the user has open in Local Word.")];
     for turn in &app.ai.chat {
         match turn {
             Turn::User(t) => history.push(Msg::User(t.clone())),
@@ -283,7 +283,7 @@ fn summarize(app: &mut WordApp) {
             return;
         }
     };
-    let framing = "You help with a document the user has open in LocalOffice. Answer in the document's language; be concise; use short paragraphs and, when it helps, a short list.";
+    let framing = "You help with a document the user has open in Local Word. Answer in the document's language; be concise; use short paragraphs and, when it helps, a short list.";
     let mut history = vec![system_turn(app, framing)];
     history.push(Msg::User("Summarize this document: what it is, its main points and any actions it asks of the reader.".into()));
     app.ai.chat.push(Turn::User(tl!("Summarize this document.").to_string()));

@@ -910,7 +910,7 @@ impl Session {
             goal_x,
             page_hint,
             registry,
-            author: "LocalOffice User".into(),
+            author: "Local Word User".into(),
             initials: String::new(),
             painter: None,
             status: String::new(),

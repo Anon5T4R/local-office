@@ -1,4 +1,4 @@
-# Magyar (hu) interface catalog for LocalOffice.
+# Magyar (hu) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -55,7 +55,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaÁáBbCc
 	AaBbYyZz	AaBbYyZz ŐőŰű
-	About LocalOffice	A LocalOffice névjegye
+	About Local Word	A Local Word névjegye
 	Above Chart	Diagram fölött
 	Above the item	Az elem fölött
 	Absolute value cases	Abszolút érték esetszétválasztással
@@ -206,7 +206,7 @@
 	Automatically Update Document Styles	Dokumentumstílusok automatikus frissítése
 	Automatically update document styles	Dokumentumstílusok automatikus frissítése
 	AutoSave	Automatikus mentés
-	AutoSave documents you have saved in LocalOffice	A LocalOfficeban mentett dokumentumok automatikus mentése
+	AutoSave documents you have saved in Local Word	A Local Wordban mentett dokumentumok automatikus mentése
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Az automatikus mentés sikertelen: {error}. Az újbóli bekapcsolásához mentsd a dokumentumot.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	A böngészőben nincs automatikus mentés, mert nem tud írni a fájljaidba. A Mentés egy másolatot tölt le.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Az automatikus mentés csak .docx, .odt és .rtf fájlt tart naprakészen; ez a formátum ({name}) nem őriz meg minden formázást. Az automatikus mentéshez mentsd .docx formátumban.
@@ -276,7 +276,7 @@
 	Break Link	Csatolás megszüntetése
 	Breaks	Törések
 	Breve	Breve
-	Browse in LocalOffice…	Tallózás a LocalOfficeban…
+	Browse in Local Word…	Tallózás a Local Wordban…
 	Building Block Gallery Content Control	Építőelemgaléria-tartalomvezérlő
 	Built-In	Beépített
 	Built-in style	Beépített stílus
@@ -490,7 +490,7 @@
 	Cosine Function	Koszinuszfüggvény
 	Cotangent Function	Kotangensfüggvény
 	Couldn't download {name}: {error}	Nem sikerült letölteni: {name} ({error})
-	Couldn't make LocalOffice the default: {error}	Nem sikerült a LocalOfficeot alapértelmezetté tenni: {error}
+	Couldn't make Local Word the default: {error}	Nem sikerült a Local Wordot alapértelmezetté tenni: {error}
 	Couldn't open {path}: {error}	Nem sikerült megnyitni: {path} ({error})
 	Count by:	Lépésköz:
 	Count words in text boxes and notes	A szövegdobozok és a jegyzetek szavainak beszámítása
@@ -960,7 +960,7 @@
 	Immersive	Elmélyült
 	Immersive Reader	Elmélyült olvasás
 	Immersive\nReader	Elmélyült\nolvasás
-	In Default apps, choose LocalOffice for the document types you want it to open.	Az Alapértelmezett alkalmazások között válassza a LocalOfficeot azokhoz a dokumentumtípusokhoz, amelyeket meg kell nyitnia.
+	In Default apps, choose Local Word for the document types you want it to open.	Az Alapértelmezett alkalmazások között válassza a Local Wordot azokhoz a dokumentumtípusokhoz, amelyeket meg kell nyitnia.
 	In equations, typing a name after a backslash replaces it with its symbol.	Egyenletben a fordított perjel után beírt név helyére a hozzá tartozó szimbólum kerül.
 	In Front of Text	Szöveg előtt
 	In Line with Text	Szöveggel egy sorban
@@ -1080,7 +1080,7 @@
 	Keep Lines Together	Sorok együtt tartása
 	Keep lines together	Sorok együtt tartása
 	Keep Text Only	Csak a szöveg megtartása
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Tartsd biztonságos helyen a jelszót: nélküle senki, még a LocalOffice sem tudja megnyitni a dokumentumot. A jelszó eltávolításához hagyd üresen mindkét mezőt.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Tartsd biztonságos helyen a jelszót: nélküle senki, még a Local Word sem tudja megnyitni a dokumentumot. A jelszó eltávolításához hagyd üresen mindkét mezőt.
 	Keep with Next	Együtt a következővel
 	Keep with next	Együtt a következővel
 	Keeps the fonts and formatting of the copied text.	Megtartja a másolt szöveg betűtípusát és formázását.
@@ -1210,7 +1210,7 @@
 	Mail Merge	Körlevél
 	Mailings	Levelezés
 	Main entry:	Főbejegyzés:
-	Make LocalOffice the default for Word documents…	A LocalOffice legyen az alapértelmezett a Word-dokumentumokhoz…
+	Make Local Word the default for Word documents…	A Local Word legyen az alapértelmezett a Word-dokumentumokhoz…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	A menüszalag, a menük és a párbeszédablakok nagyítása vagy kicsinyítése. Az Automatikus a rendszer kijelzőméretezését követi; 100% pontonként egy képernyőpixel. A dokumentum nagyítása ettől független.
 	Manage Sources	Források kezelése
 	Manage Styles	Stílusok kezelése
@@ -1350,7 +1350,7 @@
 	No Soft Edges	Nincsenek lágy szélek
 	No sources yet.	Még nincs forrás.
 	No Spacing	Nincs térköz
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	A(z) {language} nyelvhez nincs telepítve helyesírási szótár, ezért nem ellenőrzi. A LocalOffice a(z) {name} Hunspell-szótárat a LOCALOFFICE_DICTIONARIES mappában és a szokásos rendszerhelyeken keresi.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	A(z) {language} nyelvhez nincs telepítve helyesírási szótár, ezért nem ellenőrzi. A Local Word a(z) {name} Hunspell-szótárat a LOCALOFFICE_DICTIONARIES mappában és a szokásos rendszerhelyeken keresi.
 	No templates match your search.	Egy sablon sem felel meg a keresésnek.
 	No Transform	Nincs átalakítás
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Még nincs szó. Ha egy hibás szón a Felvétel a szótárba parancsot választod, ide kerül.
@@ -1418,7 +1418,7 @@
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Régi menübillentyűk: Alt, {keys}. Gépeljen tovább, vagy a megszakításhoz nyomja meg az Esc billentyűt.
 	Omit	Elhagyás
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Be: gépeléskor és a nyílbillentyűk használatakor a kurzor csúszva mozog az új helyére, és halványulva villog. Ki: a kurzor ugrik, és egyszerűen ki-be villog.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Be: a LocalOffice a Fájl › Kezdőlap oldalon nyílik meg, üres dokumentummal, a sablonokkal és a legutóbbi dokumentumokkal. Ki: üres dokumentumot nyit meg.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Be: a Local Word a Fájl › Kezdőlap oldalon nyílik meg, üres dokumentummal, a sablonokkal és a legutóbbi dokumentumokkal. Ki: üres dokumentumot nyit meg.
 	One	Egy
 	One half	Egy ketted
 	One label per recipient	Címzettenként egy címke
@@ -1433,11 +1433,11 @@
 	Only the allowed styles can be applied.	Csak az engedélyezett stílusok alkalmazhatók.
 	Only web (http, https) and email (mailto) links can be followed	Csak webes (http, https) és e-mail (mailto) link nyitható meg
 	Open a document first	Először nyisson meg egy dokumentumot
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Fájl megnyitása a LocalOffice saját tallózójával, ha a rendszer fájlpárbeszédablaka nem jelenik meg.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Fájl megnyitása a Local Word saját tallózójával, ha a rendszer fájlpárbeszédablaka nem jelenik meg.
 	OpenDocument Text (*.odt)	OpenDocument szöveg (*.odt)
 	Opening print dialog…	Nyomtatási párbeszédablak megnyitása…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Mostantól a .docx, .doc, .rtf és .odt fájlok, valamint a Word-sablonok a LocalOfficetal nyílnak meg.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Megnyitja a Beállítások › Alapértelmezett alkalmazások lapot, ahol a LocalOfficeot választhatja a .docx és a többi dokumentumtípus számára.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Mostantól a .docx, .doc, .rtf és .odt fájlok, valamint a Word-sablonok a Local Wordtal nyílnak meg.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Megnyitja a Beállítások › Alapértelmezett alkalmazások lapot, ahol a Local Wordot választhatja a .docx és a többi dokumentumtípus számára.
 	Operator	Operátor
 	Operator Structures	Operátorszerkezetek
 	Operators	Operátorok
@@ -1693,7 +1693,7 @@
 	Replay	Visszajátszás
 	Research	Kutatás
 	Researcher	Kutatássegéd
-	Researcher needs an online service; LocalOffice keeps your documents offline.	A Kutatássegédhez online szolgáltatás kell; a LocalOffice a dokumentumait offline tartja.
+	Researcher needs an online service; Local Word keeps your documents offline.	A Kutatássegédhez online szolgáltatás kell; a Local Word a dokumentumait offline tartja.
 	Reset	Visszaállítás
 	Reset All…	Összes visszaállítása…
 	Reset Character Formatting	Karakterformázás visszaállítása
@@ -1890,7 +1890,7 @@
 	Show the equation on a line of its own	Az egyenlet megjelenítése külön sorban
 	Show the mini toolbar when text is selected	Mini eszköztár megjelenítése szövegkijelöléskor
 	Show the ribbon	Menüszalag megjelenítése
-	Show the Start screen when LocalOffice starts	Kezdőképernyő megjelenítése a LocalOffice indításakor
+	Show the Start screen when Local Word starts	Kezdőképernyő megjelenítése a Local Word indításakor
 	Show/Hide ¶	Megjelenítés/elrejtés ¶
 	Show\nComments	Megjegyzések\nmegjelenítése
 	Showing the first {count} items.	Az első {count} elem látható.
@@ -2119,7 +2119,7 @@
 	The recipient-list field that fills each part of an address block and greeting line.	A címzettlista mezője, amely a címblokk és a megszólítás egyes részeit kitölti.
 	The spelling and grammar check is complete.	A helyesírás- és nyelvhelyesség-ellenőrzés befejeződött.
 	the Spike is empty	a gyűjtő üres
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	A rendszer fájlpárbeszédablaka nem érhető el, ezért a LocalOffice a sajátját mutatja. A rendszer párbeszédablakához telepíts egy fájlválasztó portált (például xdg-desktop-portal-gtk) vagy a zenity programot.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	A rendszer fájlpárbeszédablaka nem érhető el, ezért a Local Word a sajátját mutatja. A rendszer párbeszédablakához telepíts egy fájlválasztó portált (például xdg-desktop-portal-gtk) vagy a zenity programot.
 	The text at the insertion point is marked Do not check spelling or grammar.	A beszúrási pontnál lévő szöveg jelölése: Nincs helyesírás- és nyelvhelyesség-ellenőrzés.
 	The time right now	A jelenlegi időpont
 	Theme Colors	Témaszínek
@@ -2136,7 +2136,7 @@
 	These merge fields aren't in the recipient list:	Ezek az egyesítési mezők hiányoznak a címzettlistából:
 	These settings will be used for new documents.	Ezek a beállítások az új dokumentumokra lesznek érvényesek.
 	Thick	Vastag
-	this chart was made in another program: LocalOffice shows it but can't edit it	ez a diagram egy másik programban készült: a LocalOffice megjeleníti, de nem tudja szerkeszteni
+	this chart was made in another program: Local Word shows it but can't edit it	ez a diagram egy másik programban készült: a Local Word megjeleníti, de nem tudja szerkeszteni
 	This document	Ez a dokumentum
 	This field has no options.	Ennek a mezőnek nincsenek beállításai.
 	This folder can't be read: {error}	Ez a mappa nem olvasható: {error}
@@ -2146,7 +2146,7 @@
 	This password type isn't supported.	Ez a jelszótípus nem támogatott.
 	This point forward	Innentől kezdve
 	This section	Ez a szakasz
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	ez a SmartArt egy másik programban készült: a LocalOffice megjeleníti, de nem tudja szerkeszteni
+	this SmartArt was made in another program: Local Word shows it but can't edit it	ez a SmartArt egy másik programban készült: a Local Word megjeleníti, de nem tudja szerkeszteni
 	this text box is already linked: break the link first	ez a szövegdoboz már csatolva van: előbb bontsa a csatolást
 	Three	Három
 	Through	Átfutó
@@ -2156,7 +2156,7 @@
 	Title Bar	Címsáv
 	Title from the document properties	A dokumentum tulajdonságaiban megadott cím
 	Title:	Cím:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Ha a Word-dokumentumokat alapértelmezés szerint a LocalOfficetal szeretné megnyitni: jelöljön ki egyet a Finderben, válassza a Fájl › Információ parancsot, a „Megnyitás ezzel” alatt válassza a LocalOfficeot, majd kattintson az „Összes módosítása” gombra.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Ha a Word-dokumentumokat alapértelmezés szerint a Local Wordtal szeretné megnyitni: jelöljön ki egyet a Finderben, válassza a Fájl › Információ parancsot, a „Megnyitás ezzel” alatt válassza a Local Wordot, majd kattintson az „Összes módosítása” gombra.
 	To:	Eddig:
 	TOA Heading	Jogforrásjegyzék címsora
 	TOC Heading	Tartalomjegyzék címsora
@@ -2312,8 +2312,8 @@
 	Word XML Document (*.xml)	Word XML-dokumentum (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArt-stílusok
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	Mostantól a LocalOffice az alapértelmezett alkalmazás a Word-dokumentumokhoz.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Mostantól a Local Word az alapértelmezett alkalmazás a Word-dokumentumokhoz.
 	Words only	Csak szavak
 	Wrap Text	Szöveg körbefuttatása
 	Wrap Text Sides	Körbefuttatás oldalai
@@ -2345,7 +2345,7 @@
 	{language} (no dictionary)	{language} (nincs szótár)
 	{language} is now the document's default language.	A dokumentum alapértelmezett nyelve mostantól: {language}
 	{language}: no dictionary found	{language}: nem található szótár
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: a LocalOffice ezen a nyelven még nem ellenőrzi a helyesírást és a nyelvhelyességet.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: a Local Word ezen a nyelven még nem ellenőrzi a helyesírást és a nyelvhelyességet.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} és még {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} hüvelyk

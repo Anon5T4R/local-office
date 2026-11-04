@@ -1,4 +1,4 @@
-# Svenska (sv) interface catalog for LocalOffice.
+# Svenska (sv) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -55,7 +55,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaBbÅåÖö
 	AaBbYyZz	AaBbÅåÖö
-	About LocalOffice	Om LocalOffice
+	About Local Word	Om Local Word
 	Above Chart	Ovanför diagrammet
 	Above the item	Ovanför objektet
 	Absolute value cases	Fall med absolutbelopp
@@ -204,7 +204,7 @@
 	Automatically Update Document Styles	Uppdatera dokumentstilar automatiskt
 	Automatically update document styles	Uppdatera dokumentstilar automatiskt
 	AutoSave	Autospara
-	AutoSave documents you have saved in LocalOffice	Autospara dokument som du har sparat i LocalOffice
+	AutoSave documents you have saved in Local Word	Autospara dokument som du har sparat i Local Word
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Autospara misslyckades: {error}. Spara dokumentet för att slå på Autospara igen.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Autospara finns inte i webbläsaren, eftersom den inte kan skriva till dina filer. Spara laddar ner en kopia.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Autospara fungerar bara med .docx-, .odt- och .rtf-filer; {name} kan inte behålla all formatering. Spara som .docx för att slå på Autospara.
@@ -274,7 +274,7 @@
 	Brackets with Separators	Hakparenteser med avgränsare
 	Breaks	Brytningar
 	Breve	Breve
-	Browse in LocalOffice…	Bläddra i LocalOffice…
+	Browse in Local Word…	Bläddra i Local Word…
 	Building Block Gallery Content Control	Innehållskontroll för byggblocksgalleri
 	Built-In	Inbyggd
 	Built-in style	Inbyggd stil
@@ -483,7 +483,7 @@
 	Cosine Function	Cosinusfunktion
 	Cotangent Function	Cotangensfunktion
 	Couldn't download {name}: {error}	Det gick inte att ladda ner {name}: {error}
-	Couldn't make LocalOffice the default: {error}	Det gick inte att göra LocalOffice till standardprogram: {error}
+	Couldn't make Local Word the default: {error}	Det gick inte att göra Local Word till standardprogram: {error}
 	Couldn't open {path}: {error}	Det gick inte att öppna {path}: {error}
 	Count by:	Intervall:
 	Count words in text boxes and notes	Räkna ord i textrutor, fotnoter och slutnoter
@@ -950,7 +950,7 @@
 	Immersive	Fördjupning
 	Immersive Reader	Fördjupad läsning
 	Immersive\nReader	Fördjupad\nläsning
-	In Default apps, choose LocalOffice for the document types you want it to open.	I Standardappar väljer du LocalOffice för de dokumenttyper som den ska öppna.
+	In Default apps, choose Local Word for the document types you want it to open.	I Standardappar väljer du Local Word för de dokumenttyper som den ska öppna.
 	In equations, typing a name after a backslash replaces it with its symbol.	I ekvationer ersätts ett namn som du skriver efter ett omvänt snedstreck med sin symbol.
 	In Front of Text	Framför texten
 	In Line with Text	I nivå med texten
@@ -1069,7 +1069,7 @@
 	Keep Lines Together	Håll ihop raderna
 	Keep lines together	Håll ihop raderna
 	Keep Text Only	Behåll bara texten
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Förvara lösenordet på ett säkert ställe: utan det kan ingen, inte heller LocalOffice, öppna dokumentet. Lämna båda rutorna tomma för att ta bort lösenordet.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Förvara lösenordet på ett säkert ställe: utan det kan ingen, inte heller Local Word, öppna dokumentet. Lämna båda rutorna tomma för att ta bort lösenordet.
 	Keep with Next	Håll ihop med nästa
 	Keep with next	Håll ihop med nästa
 	Keeps the fonts and formatting of the copied text.	Behåller typsnitt och formatering från den kopierade texten.
@@ -1201,7 +1201,7 @@ template	Letter	Brev
 	Mail Merge	Dokumentkoppling
 	Mailings	Utskick
 	Main entry:	Huvudpost:
-	Make LocalOffice the default for Word documents…	Gör LocalOffice till standardprogram för Word-dokument…
+	Make Local Word the default for Word documents…	Gör Local Word till standardprogram för Word-dokument…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Gör menyfliksområdet, menyerna och dialogrutorna större eller mindre. Automatisk följer systemets skalning av skärmen; 100 % är en skärmpixel per punkt. Dokumentets zoom ställs in separat.
 	Manage Sources	Hantera källor
 	Manage Styles	Hantera stilar
@@ -1335,7 +1335,7 @@ template	Letter	Brev
 	No Soft Edges	Inga mjuka kanter
 	No sources yet.	Inga källor än.
 	No Spacing	Inget avstånd
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Ingen stavningsordlista för {language} är installerad, så språket kontrolleras inte. LocalOffice letar efter Hunspell-ordlistan {name} i mappen LOCALOFFICE_DICTIONARIES och på systemets vanliga platser.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Ingen stavningsordlista för {language} är installerad, så språket kontrolleras inte. Local Word letar efter Hunspell-ordlistan {name} i mappen LOCALOFFICE_DICTIONARIES och på systemets vanliga platser.
 	No templates match your search.	Inga mallar matchar sökningen.
 	No Transform	Ingen omformning
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Inga ord än. Välj Lägg till i ordlistan på ett felstavat ord, så hamnar det här.
@@ -1402,7 +1402,7 @@ template	Letter	Brev
 	Offset: Top Right	Förskjutning: uppe till höger
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Gamla menytangenter: Alt, {keys}. Fortsätt skriva eller tryck på Esc för att avbryta.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	På: markören glider till sin nya plats när du skriver eller använder piltangenterna, och blinkningen tonas mjukt. Av: den hoppar och blinkar av och på.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	På: LocalOffice öppnas på Arkiv › Start, med ett tomt dokument, mallarna och dina senaste dokument. Av: ett tomt dokument öppnas.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	På: Local Word öppnas på Arkiv › Start, med ett tomt dokument, mallarna och dina senaste dokument. Av: ett tomt dokument öppnas.
 	One	En
 	One half	En halv
 	One label per recipient	En etikett per mottagare
@@ -1417,11 +1417,11 @@ template	Letter	Brev
 	Only the allowed styles can be applied.	Bara de tillåtna stilarna kan användas.
 	Only web (http, https) and email (mailto) links can be followed	Bara webblänkar (http, https) och e-postlänkar (mailto) kan följas
 	Open a document first	Öppna först ett dokument
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Öppna en fil med LocalOffices egen filbläddrare när systemets fildialogruta inte visas.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Öppna en fil med Local Words egen filbläddrare när systemets fildialogruta inte visas.
 	OpenDocument Text (*.odt)	OpenDocument-text (*.odt)
 	Opening print dialog…	Öppnar utskriftsdialogen…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Öppnar .docx-, .doc-, .rtf- och .odt-filer och Word-mallar med LocalOffice från och med nu.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Öppnar Inställningar › Standardappar, där du väljer LocalOffice för .docx och de andra dokumenttyperna.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Öppnar .docx-, .doc-, .rtf- och .odt-filer och Word-mallar med Local Word från och med nu.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Öppnar Inställningar › Standardappar, där du väljer Local Word för .docx och de andra dokumenttyperna.
 	Operator	Operator
 	Operator Structures	Operatorstrukturer
 	Operators	Operatorer
@@ -1674,7 +1674,7 @@ template	Letter	Brev
 	Replay	Uppspelning
 	Research	Efterforskning
 	Researcher	Efterforska
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Efterforska kräver en onlinetjänst; LocalOffice håller dina dokument offline.
+	Researcher needs an online service; Local Word keeps your documents offline.	Efterforska kräver en onlinetjänst; Local Word håller dina dokument offline.
 	Reset All…	Återställ alla…
 	Reset Character Formatting	Återställ teckenformatering
 	Reset Crop	Återställ beskärning
@@ -1871,7 +1871,7 @@ template	Letter	Brev
 	Show the equation on a line of its own	Visa ekvationen på en egen rad
 	Show the mini toolbar when text is selected	Visa miniverktygsfältet när text är markerad
 	Show the ribbon	Visa menyfliksområdet
-	Show the Start screen when LocalOffice starts	Visa startskärmen när LocalOffice startar
+	Show the Start screen when Local Word starts	Visa startskärmen när Local Word startar
 	Show/Hide ¶	Visa/dölj ¶
 	Show\nComments	Visa\nkommentarer
 	Showing the first {count} items.	Visar de första {count} objekten.
@@ -2100,7 +2100,7 @@ template	Letter	Brev
 	The recipient-list field that fills each part of an address block and greeting line.	Fältet i mottagarlistan som fyller i varje del av adressblocket och hälsningsfrasen.
 	The spelling and grammar check is complete.	Stavnings- och grammatikkontrollen är klar.
 	the Spike is empty	samlaren är tom
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Systemets fildialogruta är inte tillgänglig, så LocalOffice visar sin egen. Installera en filväljarportal (till exempel xdg-desktop-portal-gtk) eller zenity för att få systemets dialogruta.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Systemets fildialogruta är inte tillgänglig, så Local Word visar sin egen. Installera en filväljarportal (till exempel xdg-desktop-portal-gtk) eller zenity för att få systemets dialogruta.
 	The text at the insertion point is marked Do not check spelling or grammar.	Texten vid insättningspunkten är markerad: Kontrollera inte stavning eller grammatik.
 	The time right now	Klockslaget just nu
 	Theme Colors	Temafärger
@@ -2117,7 +2117,7 @@ template	Letter	Brev
 	These merge fields aren't in the recipient list:	De här kopplingsfälten finns inte i mottagarlistan:
 	These settings will be used for new documents.	De här inställningarna används för nya dokument.
 	Thick	Tjock
-	this chart was made in another program: LocalOffice shows it but can't edit it	detta diagram skapades i ett annat program: LocalOffice visar det men kan inte redigera det
+	this chart was made in another program: Local Word shows it but can't edit it	detta diagram skapades i ett annat program: Local Word visar det men kan inte redigera det
 	This document	Det här dokumentet
 	This field has no options.	Det här fältet har inga alternativ.
 	This folder can't be read: {error}	Den här mappen kan inte läsas: {error}
@@ -2127,7 +2127,7 @@ template	Letter	Brev
 	This password type isn't supported.	Den här typen av lösenord stöds inte.
 	This point forward	Härifrån och framåt
 	This section	Det här avsnittet
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	denna SmartArt skapades i ett annat program: LocalOffice visar den men kan inte redigera den
+	this SmartArt was made in another program: Local Word shows it but can't edit it	denna SmartArt skapades i ett annat program: Local Word visar den men kan inte redigera den
 	this text box is already linked: break the link first	denna textruta är redan länkad: bryt länken först
 	Three	Tre
 	Through	Genom
@@ -2138,7 +2138,7 @@ preview	Title	Titel
 	Title Bar	Namnlist
 	Title from the document properties	Titeln från dokumentegenskaperna
 	Title:	Titel:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Så här öppnar du Word-dokument med LocalOffice som standard: markera ett dokument i Finder, välj Arkiv › Hämta info, välj LocalOffice under Öppna med och klicka sedan på Ändra alla.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Så här öppnar du Word-dokument med Local Word som standard: markera ett dokument i Finder, välj Arkiv › Hämta info, välj Local Word under Öppna med och klicka sedan på Ändra alla.
 	To:	Till:
 	TOA Heading	Rubrik för rättskällor
 	TOC Heading	Innehållsrubrik
@@ -2297,8 +2297,8 @@ preview	Title	Titel
 	Word XML Document (*.xml)	Word XML-dokument (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArt-stilar
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice är nu standardprogram för Word-dokument.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word är nu standardprogram för Word-dokument.
 	Words only	Bara ord
 	Wrap Text	Textombrytning
 	Wrap Text Sides	Sidor för textombrytning
@@ -2327,7 +2327,7 @@ preview	Title	Titel
 	{language} (no dictionary)	{language} (ingen ordlista)
 	{language} is now the document's default language.	{language} är nu dokumentets standardspråk.
 	{language}: no dictionary found	{language}: ingen ordlista hittades
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice kontrollerar inte stavning eller grammatik på det här språket än.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word kontrollerar inte stavning eller grammatik på det här språket än.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} och {n} till
 	{name}   {height} × {width} in	{name}   {height} × {width} tum

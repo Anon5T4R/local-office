@@ -1,4 +1,4 @@
-# Čeština (cs) interface catalog for LocalOffice.
+# Čeština (cs) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -55,7 +55,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaÁáBbCc
 	AaBbYyZz	AaBbYyZz ČčŘřŽž
-	About LocalOffice	O aplikaci LocalOffice
+	About Local Word	O aplikaci Local Word
 	Above Chart	Nad grafem
 	Above the item	Nad položkou
 	Absolute value cases	Absolutní hodnota podle případů
@@ -206,7 +206,7 @@
 	Automatically Update Document Styles	Automaticky aktualizovat styly dokumentu
 	Automatically update document styles	Automaticky aktualizovat styly dokumentu
 	AutoSave	Automatické ukládání
-	AutoSave documents you have saved in LocalOffice	Automaticky ukládat dokumenty uložené ve LocalOfficeu
+	AutoSave documents you have saved in Local Word	Automaticky ukládat dokumenty uložené ve Local Wordu
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Automatické ukládání selhalo: {error}. Uložením dokumentu automatické ukládání znovu zapnete.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Automatické ukládání není v prohlížeči dostupné, protože nemůže zapisovat do vašich souborů. Příkaz Uložit stáhne kopii.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Automatické ukládání podporuje pouze soubory .docx, .odt a .rtf; formát {name} nedokáže zachovat veškeré formátování. Pro zapnutí automatického ukládání uložte dokument jako .docx.
@@ -275,7 +275,7 @@
 	Brackets with Separators	Závorky s oddělovači
 	Breaks	Konce
 	Breve	Oblouček
-	Browse in LocalOffice…	Procházet ve LocalOfficeu…
+	Browse in Local Word…	Procházet ve Local Wordu…
 	Building Block Gallery Content Control	Ovládací prvek obsahu galerie stavebních bloků
 	Built-In	Vestavěné
 	Built-in style	Vestavěný styl
@@ -484,7 +484,7 @@
 	Cosine Function	Kosinus
 	Cotangent Function	Kotangens
 	Couldn't download {name}: {error}	Nepodařilo se stáhnout {name}: {error}
-	Couldn't make LocalOffice the default: {error}	LocalOffice se nepodařilo nastavit jako výchozí: {error}
+	Couldn't make Local Word the default: {error}	Local Word se nepodařilo nastavit jako výchozí: {error}
 	Couldn't open {path}: {error}	Nepodařilo se otevřít {path}: {error}
 	Count by:	Číslovat po:
 	Count words in text boxes and notes	Počítat slova v textových polích a poznámkách
@@ -943,7 +943,7 @@
 	Immersive	Asistivní čtení
 	Immersive Reader	Asistivní čtečka
 	Immersive\nReader	Asistivní\nčtečka
-	In Default apps, choose LocalOffice for the document types you want it to open.	Ve Výchozích aplikacích vyberte LocalOffice pro typy dokumentů, které má otevírat.
+	In Default apps, choose Local Word for the document types you want it to open.	Ve Výchozích aplikacích vyberte Local Word pro typy dokumentů, které má otevírat.
 	In equations, typing a name after a backslash replaces it with its symbol.	V rovnicích se název napsaný za zpětným lomítkem nahradí příslušným symbolem.
 	In Front of Text	Před textem
 	In Line with Text	V řádku s textem
@@ -1063,7 +1063,7 @@
 	Keep Lines Together	Svázat řádky
 	Keep lines together	Svázat řádky
 	Keep Text Only	Zachovat pouze text
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Heslo si bezpečně uložte: bez něj dokument nikdo (včetně aplikace LocalOffice) neotevře. Chcete-li heslo odebrat, ponechte obě pole prázdná.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Heslo si bezpečně uložte: bez něj dokument nikdo (včetně aplikace Local Word) neotevře. Chcete-li heslo odebrat, ponechte obě pole prázdná.
 	Keep with Next	Svázat s následujícím
 	Keep with next	Svázat s následujícím
 	Keeps the fonts and formatting of the copied text.	Zachová písma a formátování zkopírovaného textu.
@@ -1193,7 +1193,7 @@
 	Mail Merge	Hromadná korespondence
 	Mailings	Korespondence
 	Main entry:	Hlavní položka:
-	Make LocalOffice the default for Word documents…	Nastavit LocalOffice jako výchozí pro dokumenty Word…
+	Make Local Word the default for Word documents…	Nastavit Local Word jako výchozí pro dokumenty Word…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Zvětší nebo zmenší pás karet, nabídky a dialogová okna. Automaticky sleduje škálování displeje v systému; 100% je jeden pixel obrazovky na bod. Lupa dokumentu se nastavuje zvlášť.
 	Manage Sources	Spravovat prameny
 	Manage Styles	Spravovat styly
@@ -1331,7 +1331,7 @@
 	No Soft Edges	Bez měkkých okrajů
 	No sources yet.	Zatím žádné prameny.
 	No Spacing	Bez mezer
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Pro jazyk {language} není nainstalován žádný pravopisný slovník, proto se nekontroluje. LocalOffice hledá slovník Hunspell {name} ve složce LOCALOFFICE_DICTIONARIES a na obvyklých místech v systému.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Pro jazyk {language} není nainstalován žádný pravopisný slovník, proto se nekontroluje. Local Word hledá slovník Hunspell {name} ve složce LOCALOFFICE_DICTIONARIES a na obvyklých místech v systému.
 	No templates match your search.	Hledání neodpovídají žádné šablony.
 	No Transform	Bez transformace
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Zatím žádná slova. Sem se ukládají slova přidaná příkazem Přidat do slovníku u chybně napsaného slova.
@@ -1398,7 +1398,7 @@
 	Offset: Top Right	Posun: vpravo nahoru
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Staré klávesy nabídek: Alt, {keys}. Pokračujte v psaní, nebo zrušte klávesou Esc.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Zapnuto: kurzor se při psaní nebo použití kláves se šipkami plynule přesune na nové místo a jeho blikání se prolíná. Vypnuto: kurzor přeskakuje a blikání se ostře zapíná a vypíná.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Zapnuto: LocalOffice se otevře na kartě Soubor › Domů s prázdným dokumentem, šablonami a nedávnými dokumenty. Vypnuto: otevře prázdný dokument.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Zapnuto: Local Word se otevře na kartě Soubor › Domů s prázdným dokumentem, šablonami a nedávnými dokumenty. Vypnuto: otevře prázdný dokument.
 	One	Jeden
 	One half	Jedna polovina
 	One label per recipient	Jeden štítek na příjemce
@@ -1413,11 +1413,11 @@
 	Only the allowed styles can be applied.	Lze použít pouze povolené styly.
 	Only web (http, https) and email (mailto) links can be followed	Otevřít lze pouze webové (http, https) a e-mailové (mailto) odkazy
 	Open a document first	Nejprve otevřete dokument
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Otevřít soubor pomocí vlastního prohlížeče souborů LocalOfficeu, když se systémový dialog pro práci se soubory nezobrazí.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Otevřít soubor pomocí vlastního prohlížeče souborů Local Wordu, když se systémový dialog pro práci se soubory nezobrazí.
 	OpenDocument Text (*.odt)	Text OpenDocument (*.odt)
 	Opening print dialog…	Otevírání dialogu tisku…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Soubory .docx, .doc, .rtf a .odt a šablony Wordu se od teď otevírají ve LocalOfficeu.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Otevře Nastavení › Výchozí aplikace, kde zvolíte LocalOffice pro .docx a další typy dokumentů.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Soubory .docx, .doc, .rtf a .odt a šablony Wordu se od teď otevírají ve Local Wordu.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Otevře Nastavení › Výchozí aplikace, kde zvolíte Local Word pro .docx a další typy dokumentů.
 	Operator	Operátor
 	Operator Structures	Struktury operátorů
 	Operators	Operátory
@@ -1675,7 +1675,7 @@
 	Replay	Přehrát
 	Research	Rešerše
 	Researcher	Výzkumník
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Výzkumník potřebuje online službu; LocalOffice vaše dokumenty uchovává offline.
+	Researcher needs an online service; Local Word keeps your documents offline.	Výzkumník potřebuje online službu; Local Word vaše dokumenty uchovává offline.
 	Reset All…	Obnovit vše…
 	Reset Character Formatting	Obnovit formátování znaků
 	Reset Crop	Zrušit oříznutí
@@ -1875,7 +1875,7 @@
 	Show the equation on a line of its own	Zobrazit rovnici na samostatném řádku
 	Show the mini toolbar when text is selected	Při výběru textu zobrazit miniaturní panel nástrojů
 	Show the ribbon	Zobrazit pás karet
-	Show the Start screen when LocalOffice starts	Při spuštění LocalOfficeu zobrazit úvodní obrazovku
+	Show the Start screen when Local Word starts	Při spuštění Local Wordu zobrazit úvodní obrazovku
 	Show/Hide ¶	Zobrazit/skrýt ¶
 	Show\nComments	Zobrazit\nkomentáře
 	Showing the first {count} items.	Zobrazuje se prvních {count} položek.
@@ -2104,7 +2104,7 @@
 	The recipient-list field that fills each part of an address block and greeting line.	Pole seznamu příjemců, které vyplní jednotlivé části bloku adresy a řádku oslovení.
 	The spelling and grammar check is complete.	Kontrola pravopisu a mluvnice je dokončena.
 	the Spike is empty	sběrač je prázdný
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Systémový dialog pro práci se soubory není k dispozici, proto LocalOffice zobrazuje vlastní. Chcete-li používat systémový dialog, nainstalujte portál pro výběr souborů (například xdg-desktop-portal-gtk) nebo zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Systémový dialog pro práci se soubory není k dispozici, proto Local Word zobrazuje vlastní. Chcete-li používat systémový dialog, nainstalujte portál pro výběr souborů (například xdg-desktop-portal-gtk) nebo zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Text v místě vkládání je označen: Nekontrolovat pravopis ani mluvnici.
 	The time right now	Aktuální čas
 	Theme Colors	Barvy motivu
@@ -2121,7 +2121,7 @@
 	These merge fields aren't in the recipient list:	Tato slučovací pole nejsou v seznamu příjemců:
 	These settings will be used for new documents.	Tato nastavení se použijí pro nové dokumenty.
 	Thick	Silné
-	this chart was made in another program: LocalOffice shows it but can't edit it	tento graf byl vytvořen v jiném programu: LocalOffice ho zobrazí, ale nemůže ho upravit
+	this chart was made in another program: Local Word shows it but can't edit it	tento graf byl vytvořen v jiném programu: Local Word ho zobrazí, ale nemůže ho upravit
 	This document	Tento dokument
 	This field has no options.	Toto pole nemá žádné možnosti.
 	This folder can't be read: {error}	Tuto složku nelze přečíst: {error}
@@ -2131,7 +2131,7 @@
 	This password type isn't supported.	Tento typ hesla není podporován.
 	This point forward	Od tohoto místa dále
 	This section	Tento oddíl
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	tento SmartArt byl vytvořen v jiném programu: LocalOffice ho zobrazí, ale nemůže ho upravit
+	this SmartArt was made in another program: Local Word shows it but can't edit it	tento SmartArt byl vytvořen v jiném programu: Local Word ho zobrazí, ale nemůže ho upravit
 	this text box is already linked: break the link first	toto textové pole už je propojené: nejprve zrušte propojení
 	Three	Tři
 	Through	Průchozí
@@ -2142,7 +2142,7 @@ preview	Title	Ukázka
 	Title Bar	Záhlaví okna
 	Title from the document properties	Název z vlastností dokumentu
 	Title:	Název:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Chcete-li dokumenty Word otevírat ve LocalOfficeu jako výchozí: vyberte jeden ve Finderu, zvolte Soubor › Informace, v části „Otevřít v aplikaci“ vyberte LocalOffice a klikněte na „Změnit vše“.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Chcete-li dokumenty Word otevírat ve Local Wordu jako výchozí: vyberte jeden ve Finderu, zvolte Soubor › Informace, v části „Otevřít v aplikaci“ vyberte Local Word a klikněte na „Změnit vše“.
 	To:	Do:
 	TOA Heading	Nadpis seznamu citovaných předpisů
 	TOC Heading	Nadpis obsahu
@@ -2298,8 +2298,8 @@ preview	Title	Ukázka
 	Word XML Document (*.xml)	Dokument Word XML (*.xml)
 	WordArt	WordArt
 	WordArt Styles	Styly WordArt
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice je nyní výchozí aplikací pro dokumenty Word.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word je nyní výchozí aplikací pro dokumenty Word.
 	Words only	Pouze slova
 	Wrap Text	Obtékání textu
 	Wrap Text Sides	Strany obtékání textu
@@ -2328,7 +2328,7 @@ preview	Title	Ukázka
 	{language} (no dictionary)	{language} (bez slovníku)
 	{language} is now the document's default language.	Výchozím jazykem dokumentu je nyní {language}.
 	{language}: no dictionary found	{language}: slovník nebyl nalezen
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice v tomto jazyce zatím nekontroluje pravopis ani mluvnici.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word v tomto jazyce zatím nekontroluje pravopis ani mluvnici.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} a dalších {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} palce

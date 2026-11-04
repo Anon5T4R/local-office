@@ -14,10 +14,10 @@ fn main() {
     }
     let mut res = winresource::WindowsResource::new();
     res.set_icon("../../assets/app-icon/localoffice.ico")
-        .set("ProductName", "LocalOffice")
-        .set("FileDescription", "LocalOffice word processor")
+        .set("ProductName", "Local Word")
+        .set("FileDescription", "Local Word word processor")
         .set("CompanyName", "Learning Machines LLC")
-        .set("LegalCopyright", "Copyright (c) the LocalOffice authors. MIT OR Apache-2.0.")
+        .set("LegalCopyright", "Copyright (c) the Local Word authors. MIT OR Apache-2.0.")
         .set("OriginalFilename", "localoffice.exe")
         .set("InternalName", "localoffice");
     if let Err(e) = res.compile() {

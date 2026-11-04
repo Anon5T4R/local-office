@@ -1,4 +1,4 @@
-# Български (bg) interface catalog for LocalOffice.
+# Български (bg) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -55,7 +55,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	АаБбВвГг
 	AaBbYyZz	AaBbYyZz
-	About LocalOffice	За LocalOffice
+	About Local Word	За Local Word
 	Above Chart	Над диаграмата
 	Above the item	Над елемента
 	Absolute value cases	Абсолютна стойност по случаи
@@ -207,7 +207,7 @@
 	Automatically Update Document Styles	Автоматично актуализиране на стиловете на документа
 	Automatically update document styles	Автоматично актуализиране на стиловете на документа
 	AutoSave	Автоматично запазване
-	AutoSave documents you have saved in LocalOffice	Автоматично запазване на документите, които сте запазили в LocalOffice
+	AutoSave documents you have saved in Local Word	Автоматично запазване на документите, които сте запазили в Local Word
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Автоматичното запазване е неуспешно: {error}. Запазете документа, за да включите отново автоматичното запазване.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Автоматичното запазване не е налично в браузъра: то не може да записва във Вашите файлове. „Запазване“ изтегля копие.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Автоматичното запазване поддържа само файлове .docx, .odt и .rtf; {name} не може да запази цялото форматиране. Запазете като .docx, за да включите автоматичното запазване.
@@ -277,7 +277,7 @@
 	Break Link	Прекъсване на връзката
 	Breaks	Прекъсвания
 	Breve	Бреве
-	Browse in LocalOffice…	Разглеждане в LocalOffice…
+	Browse in Local Word…	Разглеждане в Local Word…
 	Building Block Gallery Content Control	Контрола за съдържание с галерия от градивни блокове
 	Built-In	Вградени
 	Built-in style	Вграден стил
@@ -482,7 +482,7 @@
 	Cosine Function	Функция косинус
 	Cotangent Function	Функция котангенс
 	Couldn't download {name}: {error}	Неуспешно изтегляне на {name}: {error}
-	Couldn't make LocalOffice the default: {error}	LocalOffice не можа да стане приложение по подразбиране: {error}
+	Couldn't make Local Word the default: {error}	Local Word не можа да стане приложение по подразбиране: {error}
 	Couldn't open {path}: {error}	Неуспешно отваряне на {path}: {error}
 	Count by:	Стъпка:
 	Count words in text boxes and notes	Броене на думите в текстови полета и бележки
@@ -953,7 +953,7 @@
 	Immersive	Потапящ
 	Immersive Reader	Потапящ четец
 	Immersive\nReader	Потапящ\nчетец
-	In Default apps, choose LocalOffice for the document types you want it to open.	В „Приложения по подразбиране“ изберете LocalOffice за типовете документи, които искате да отваря.
+	In Default apps, choose Local Word for the document types you want it to open.	В „Приложения по подразбиране“ изберете Local Word за типовете документи, които искате да отваря.
 	In equations, typing a name after a backslash replaces it with its symbol.	В уравненията име, въведено след обратна наклонена черта, се заменя със своя символ.
 	In Front of Text	Пред текста
 	In Line with Text	На един ред с текста
@@ -1074,7 +1074,7 @@
 	Keep Lines Together	Редовете заедно
 	Keep lines together	Редовете заедно
 	Keep Text Only	Запазване само на текста
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Съхранявайте паролата на сигурно място: без нея никой, включително LocalOffice, не може да отвори документа. Оставете двете полета празни, за да премахнете паролата.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Съхранявайте паролата на сигурно място: без нея никой, включително Local Word, не може да отвори документа. Оставете двете полета празни, за да премахнете паролата.
 	Keep with Next	Заедно със следващия
 	Keep with next	Заедно със следващия
 	Keeps the fonts and formatting of the copied text.	Запазва шрифтовете и форматирането на копирания текст.
@@ -1205,7 +1205,7 @@
 	Mail Merge	Обединяване на кореспонденция
 	Mailings	Кореспонденция
 	Main entry:	Основен запис:
-	Make LocalOffice the default for Word documents…	LocalOffice по подразбиране за документи на Word…
+	Make Local Word the default for Word documents…	Local Word по подразбиране за документи на Word…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Уголемява или смалява лентата, менютата и диалоговите прозорци. „Автоматично“ следва мащабирането на дисплея в системата; 100% е един пиксел от екрана на точка. Мащабът на документа е отделна настройка.
 	Manage Sources	Управление на източниците
 	Manage Styles	Управление на стиловете
@@ -1340,7 +1340,7 @@
 	No Soft Edges	Без меки ръбове
 	No sources yet.	Все още няма източници.
 	No Spacing	Без разредка
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Не е инсталиран правописен речник за {language}, затова текстът не се проверява. LocalOffice търси речника Hunspell {name} в папката LOCALOFFICE_DICTIONARIES и на обичайните места в системата.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Не е инсталиран правописен речник за {language}, затова текстът не се проверява. Local Word търси речника Hunspell {name} в папката LOCALOFFICE_DICTIONARIES и на обичайните места в системата.
 	No templates match your search.	Няма шаблони, отговарящи на търсенето.
 	No Transform	Без трансформиране
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Все още няма думи. „Добавяне в речника“ върху сгрешена дума я добавя тук.
@@ -1409,7 +1409,7 @@
 	Offset: Top Right	Отместване: горе вдясно
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Стари клавиши за менюта: Alt, {keys}. Продължете да пишете или натиснете Esc за отказ.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Включено: курсорът се плъзга до новото си място, когато пишете или използвате стрелките, а мигането му избледнява. Изключено: курсорът прескача и мига рязко.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Вкл.: LocalOffice се отваря на Файл › Начало с празен документ, шаблоните и последните документи. Изкл.: отваря се празен документ.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Вкл.: Local Word се отваря на Файл › Начало с празен документ, шаблоните и последните документи. Изкл.: отваря се празен документ.
 	One	Една
 	One half	Една втора
 	One label per recipient	По един етикет за получател
@@ -1424,11 +1424,11 @@
 	Only the allowed styles can be applied.	Могат да се прилагат само разрешените стилове.
 	Only web (http, https) and email (mailto) links can be followed	Могат да се отварят само уеб (http, https) и имейл (mailto) връзки
 	Open a document first	Първо отворете документ
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Отваряне на файл чрез собствения браузър на LocalOffice, когато системният диалогов прозорец за файлове не се появява.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Отваряне на файл чрез собствения браузър на Local Word, когато системният диалогов прозорец за файлове не се появява.
 	OpenDocument Text (*.odt)	OpenDocument текст (*.odt)
 	Opening print dialog…	Отваряне на диалоговия прозорец за печат…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Отсега нататък файловете .docx, .doc, .rtf и .odt и шаблоните на Word ще се отварят с LocalOffice.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Отваря „Настройки › Приложения по подразбиране“, където избирате LocalOffice за .docx и другите типове документи.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Отсега нататък файловете .docx, .doc, .rtf и .odt и шаблоните на Word ще се отварят с Local Word.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Отваря „Настройки › Приложения по подразбиране“, където избирате Local Word за .docx и другите типове документи.
 	Operator	Оператор
 	Operator Structures	Операторни структури
 	Operators	Оператори
@@ -1690,7 +1690,7 @@
 	Replay	Възпроизвеждане
 	Research	Проучване
 	Researcher	Изследовател
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Изследователят изисква онлайн услуга, а LocalOffice пази документите ви офлайн.
+	Researcher needs an online service; Local Word keeps your documents offline.	Изследователят изисква онлайн услуга, а Local Word пази документите ви офлайн.
 	Reset All…	Нулиране на всички…
 	Reset Character Formatting	Нулиране на форматирането на знаците
 	Reset Crop	Нулиране на изрязването
@@ -1891,7 +1891,7 @@
 	Show the equation on a line of its own	Показване на уравнението на отделен ред
 	Show the mini toolbar when text is selected	Показване на мини лентата с инструменти при избран текст
 	Show the ribbon	Показване на лентата
-	Show the Start screen when LocalOffice starts	Показване на началния екран при стартиране на LocalOffice
+	Show the Start screen when Local Word starts	Показване на началния екран при стартиране на Local Word
 	Show/Hide ¶	Показване/скриване на ¶
 	Show\nComments	Показване на\nкоментарите
 	Showing the first {count} items.	Показани са първите {count} елемента.
@@ -2119,7 +2119,7 @@
 	The printer, two-sided printing and pages per sheet are chosen in that dialog.	Принтерът, двустранният печат и броят страници на лист се избират в този диалогов прозорец.
 	The recipient-list field that fills each part of an address block and greeting line.	Полето от списъка с получатели, което попълва всяка част от адресния блок и реда за поздрав.
 	the Spike is empty	натрупването е празно
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Системният диалогов прозорец за файлове не е наличен, затова LocalOffice показва своя. За да получите системния, инсталирайте портал за избор на файлове (например xdg-desktop-portal-gtk) или zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Системният диалогов прозорец за файлове не е наличен, затова Local Word показва своя. За да получите системния, инсталирайте портал за избор на файлове (например xdg-desktop-portal-gtk) или zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Текстът при курсора е отбелязан с: Без проверка на правописа и граматиката.
 	The time right now	Текущият час
 	Theme Colors	Цветове на темата
@@ -2136,7 +2136,7 @@
 	These merge fields aren't in the recipient list:	Тези полета за обединяване не са в списъка с получатели:
 	These settings will be used for new documents.	Тези настройки ще се използват за новите документи.
 	Thick	Дебело
-	this chart was made in another program: LocalOffice shows it but can't edit it	тази диаграма е създадена в друга програма: LocalOffice я показва, но не може да я редактира
+	this chart was made in another program: Local Word shows it but can't edit it	тази диаграма е създадена в друга програма: Local Word я показва, но не може да я редактира
 	This document	Този документ
 	This field has no options.	Това поле няма опции.
 	This folder can't be read: {error}	Тази папка не може да бъде прочетена: {error}
@@ -2146,7 +2146,7 @@
 	This password type isn't supported.	Този тип парола не се поддържа.
 	This point forward	От тази точка нататък
 	This section	Този раздел
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	този SmartArt е създаден в друга програма: LocalOffice го показва, но не може да го редактира
+	this SmartArt was made in another program: Local Word shows it but can't edit it	този SmartArt е създаден в друга програма: Local Word го показва, но не може да го редактира
 	this text box is already linked: break the link first	това текстово поле вече е свързано: първо прекъснете връзката
 	Three	Три
 	Through	През
@@ -2156,7 +2156,7 @@
 	Title Bar	Заглавна лента
 	Title from the document properties	Заглавието от свойствата на документа
 	Title:	Заглавие:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	За да се отварят документите на Word с LocalOffice по подразбиране: изберете документ във Finder, изберете File › Get Info, изберете LocalOffice под Open with и щракнете Change All.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	За да се отварят документите на Word с Local Word по подразбиране: изберете документ във Finder, изберете File › Get Info, изберете Local Word под Open with и щракнете Change All.
 	To:	До:
 	TOA Heading	Заглавие на списъка на правните източници
 	TOC Heading	Заглавие на съдържание
@@ -2312,8 +2312,8 @@
 	Word XML Document (*.xml)	XML документ на Word (*.xml)
 	WordArt	WordArt
 	WordArt Styles	Стилове на WordArt
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice вече е приложението по подразбиране за документи на Word.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word вече е приложението по подразбиране за документи на Word.
 	Words only	Само думи
 	Wrap Text	Обтичане на текста
 	Wrap Text Sides	Страни за обтичане
@@ -2343,7 +2343,7 @@
 	{language} (no dictionary)	{language} (няма речник)
 	{language} is now the document's default language.	{language} вече е езикът по подразбиране на документа.
 	{language}: no dictionary found	{language}: не е намерен речник
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice все още не проверява правописа и граматиката на този език.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word все още не проверява правописа и граматиката на този език.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} и още {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} инча

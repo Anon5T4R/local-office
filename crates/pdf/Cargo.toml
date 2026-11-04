@@ -3,7 +3,7 @@ name = "localoffice-pdf"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "LocalOffice PDF export (craft-pdf / Krilla): embedded font subsets with selectable text, links, outline, tagging"
+description = "Local Word PDF export (craft-pdf / Krilla): embedded font subsets with selectable text, links, outline, tagging"
 
 [lints]
 workspace = true

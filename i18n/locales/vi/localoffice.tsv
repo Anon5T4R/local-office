@@ -1,4 +1,4 @@
-# Tiếng Việt (vi) interface catalog for LocalOffice.
+# Tiếng Việt (vi) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -55,7 +55,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaBbCcDd
 	AaBbYyZz	AaBbYyZz
-	About LocalOffice	Giới thiệu về LocalOffice
+	About Local Word	Giới thiệu về Local Word
 	Above Chart	Phía trên biểu đồ
 	Above the item	Phía trên mục
 	Absolute value cases	Trường hợp giá trị tuyệt đối
@@ -208,7 +208,7 @@
 	Automatically Update Document Styles	Tự động cập nhật kiểu tài liệu
 	Automatically update document styles	Tự động cập nhật kiểu tài liệu
 	AutoSave	Tự động lưu
-	AutoSave documents you have saved in LocalOffice	Tự động lưu các tài liệu bạn đã lưu trong LocalOffice
+	AutoSave documents you have saved in Local Word	Tự động lưu các tài liệu bạn đã lưu trong Local Word
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Không thể tự động lưu: {error}. Hãy lưu tài liệu để bật lại tính năng này.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Tự động lưu không khả dụng trong trình duyệt: không thể ghi vào tệp của bạn. Lưu sẽ tải xuống một bản sao.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Tự động lưu chỉ hỗ trợ tệp .docx, .odt và .rtf; {name} không giữ được toàn bộ định dạng. Lưu dưới dạng .docx để bật Tự động lưu.
@@ -283,7 +283,7 @@
 	Breaks	Ngắt
 	Breve	Dấu trăng
 	Bring Forward	Chuyển lên trước
-	Browse in LocalOffice…	Duyệt trong LocalOffice…
+	Browse in Local Word…	Duyệt trong Local Word…
 	Building Block Gallery Content Control	Điều khiển nội dung thư viện khối
 	Built-In	Có sẵn
 	Built-in style	Kiểu có sẵn
@@ -499,7 +499,7 @@
 	Cosine Function	Hàm côsin
 	Cotangent Function	Hàm côtang
 	Couldn't download {name}: {error}	Không tải được {name}: {error}
-	Couldn't make LocalOffice the default: {error}	Không thể đặt LocalOffice làm ứng dụng mặc định: {error}
+	Couldn't make Local Word the default: {error}	Không thể đặt Local Word làm ứng dụng mặc định: {error}
 	Couldn't open {path}: {error}	Không mở được {path}: {error}
 	Count by:	Đếm theo:
 	Count words in text boxes and notes	Đếm từ trong cả hộp văn bản và ghi chú
@@ -989,7 +989,7 @@
 	Immersive	Tập trung
 	Immersive Reader	Bộ đọc tập trung
 	Immersive\nReader	Bộ đọc\ntập trung
-	In Default apps, choose LocalOffice for the document types you want it to open.	Trong Ứng dụng mặc định, chọn LocalOffice cho các loại tài liệu bạn muốn mở bằng ứng dụng này.
+	In Default apps, choose Local Word for the document types you want it to open.	Trong Ứng dụng mặc định, chọn Local Word cho các loại tài liệu bạn muốn mở bằng ứng dụng này.
 	In equations, typing a name after a backslash replaces it with its symbol.	Trong phương trình, khi nhập tên sau dấu gạch chéo ngược, tên sẽ được thay bằng ký hiệu tương ứng.
 	In Front of Text	Trước văn bản
 	In Line with Text	Nằm cùng dòng với văn bản
@@ -1112,7 +1112,7 @@
 	Keep Lines Together	Giữ các dòng cùng nhau
 	Keep lines together	Giữ các dòng cùng nhau
 	Keep Text Only	Chỉ giữ văn bản
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Hãy giữ mật khẩu ở nơi an toàn: nếu mất thì không ai, kể cả LocalOffice, có thể mở được tài liệu. Để trống cả hai ô nếu muốn gỡ mật khẩu.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Hãy giữ mật khẩu ở nơi an toàn: nếu mất thì không ai, kể cả Local Word, có thể mở được tài liệu. Để trống cả hai ô nếu muốn gỡ mật khẩu.
 	Keep with Next	Giữ cùng đoạn kế tiếp
 	Keep with next	Giữ cùng đoạn kế tiếp
 	Keeps the fonts and formatting of the copied text.	Giữ nguyên phông chữ và định dạng của văn bản đã sao chép.
@@ -1254,7 +1254,7 @@ template	Letter	Thư
 	Mail Merge	Trộn thư
 	Mailings	Gửi thư
 	Main entry:	Mục chính:
-	Make LocalOffice the default for Word documents…	Đặt LocalOffice làm ứng dụng mặc định cho tài liệu Word…
+	Make Local Word the default for Word documents…	Đặt Local Word làm ứng dụng mặc định cho tài liệu Word…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Làm ribbon, menu và hộp thoại lớn hơn hoặc nhỏ hơn. Tự động theo tỉ lệ hiển thị của hệ thống; 100% là một điểm ảnh màn hình cho mỗi point. Thu phóng tài liệu là mục riêng.
 	Manage Sources	Quản lý nguồn
 	Manage Styles	Quản lý kiểu
@@ -1394,7 +1394,7 @@ template	Letter	Thư
 	No Soft Edges	Không cạnh mềm
 	No sources yet.	Chưa có nguồn nào.
 	No Spacing	Không giãn cách
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Chưa cài từ điển chính tả cho {language}, nên ngôn ngữ này không được kiểm tra. LocalOffice tìm từ điển Hunspell {name} trong thư mục LOCALOFFICE_DICTIONARIES và ở các vị trí thông thường của hệ thống.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Chưa cài từ điển chính tả cho {language}, nên ngôn ngữ này không được kiểm tra. Local Word tìm từ điển Hunspell {name} trong thư mục LOCALOFFICE_DICTIONARIES và ở các vị trí thông thường của hệ thống.
 	No templates match your search.	Không có mẫu nào khớp với tìm kiếm của bạn.
 	No Transform	Không biến đổi
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Chưa có từ nào. “Thêm vào từ điển” trên từ sai chính tả sẽ đưa từ đó vào đây.
@@ -1464,7 +1464,7 @@ template	Letter	Thư
 	Offset: Top Right	Độ lệch: trên bên phải
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Phím menu cũ: Alt, {keys}. Tiếp tục gõ hoặc nhấn Esc để hủy.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Bật: con trỏ văn bản lướt đến vị trí mới khi bạn gõ hoặc dùng phím mũi tên, và nhịp nhấp nháy mờ dần. Tắt: con trỏ nhảy đến vị trí mới và nhấp nháy bật tắt.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Bật: LocalOffice mở ở Tệp › Trang chủ, với tài liệu trống, các mẫu và tài liệu gần đây của bạn. Tắt: LocalOffice mở một tài liệu trống.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Bật: Local Word mở ở Tệp › Trang chủ, với tài liệu trống, các mẫu và tài liệu gần đây của bạn. Tắt: Local Word mở một tài liệu trống.
 	One	Một
 	One half	Một phần hai
 	One label per recipient	Một nhãn cho mỗi người nhận
@@ -1479,11 +1479,11 @@ template	Letter	Thư
 	Only the allowed styles can be applied.	Chỉ có thể áp dụng các kiểu được cho phép.
 	Only web (http, https) and email (mailto) links can be followed	Chỉ mở được liên kết web (http, https) và email (mailto)
 	Open a document first	Hãy mở một tài liệu trước
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Mở tệp bằng trình duyệt tệp của LocalOffice khi hộp thoại tệp của hệ thống không xuất hiện.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Mở tệp bằng trình duyệt tệp của Local Word khi hộp thoại tệp của hệ thống không xuất hiện.
 	OpenDocument Text (*.odt)	Tệp văn bản OpenDocument (*.odt)
 	Opening print dialog…	Đang mở hộp thoại in…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Từ nay, mở tệp .docx, .doc, .rtf, .odt và mẫu Word bằng LocalOffice.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Mở Cài đặt › Ứng dụng mặc định để chọn LocalOffice cho .docx và các loại tài liệu khác.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Từ nay, mở tệp .docx, .doc, .rtf, .odt và mẫu Word bằng Local Word.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Mở Cài đặt › Ứng dụng mặc định để chọn Local Word cho .docx và các loại tài liệu khác.
 	Operator	Toán tử
 	Operator Structures	Cấu trúc toán tử
 	Operators	Toán tử
@@ -1745,7 +1745,7 @@ template	Letter	Thư
 	Replay	Phát lại
 	Research	Tra cứu
 	Researcher	Công cụ tra cứu
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Trình nghiên cứu cần một dịch vụ trực tuyến; LocalOffice giữ tài liệu của bạn ngoại tuyến.
+	Researcher needs an online service; Local Word keeps your documents offline.	Trình nghiên cứu cần một dịch vụ trực tuyến; Local Word giữ tài liệu của bạn ngoại tuyến.
 	Reset All…	Đặt lại tất cả…
 	Reset Character Formatting	Đặt lại định dạng ký tự
 	Reset Crop	Đặt lại cắt xén
@@ -1950,7 +1950,7 @@ template	Letter	Thư
 	Show the equation on a line of its own	Hiện phương trình trên dòng riêng
 	Show the mini toolbar when text is selected	Hiện thanh công cụ mini khi chọn chữ
 	Show the ribbon	Hiện dải lệnh
-	Show the Start screen when LocalOffice starts	Hiện màn hình Bắt đầu khi khởi chạy LocalOffice
+	Show the Start screen when Local Word starts	Hiện màn hình Bắt đầu khi khởi chạy Local Word
 	Show/Hide ¶	Hiện/Ẩn ¶
 	Show\nComments	Hiện\nnhận xét
 	Showing the first {count} items.	Đang hiển thị {count} mục đầu tiên.
@@ -2189,7 +2189,7 @@ template	Letter	Thư
 	The recipient-list field that fills each part of an address block and greeting line.	Trường danh sách người nhận điền vào từng phần của khối địa chỉ và dòng chào hỏi.
 	The spelling and grammar check is complete.	Đã soát xong chính tả và ngữ pháp.
 	the Spike is empty	bộ gom đang trống
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Hộp thoại tệp của hệ thống không khả dụng, nên LocalOffice hiển thị hộp thoại riêng. Để dùng hộp thoại của hệ thống, hãy cài đặt cổng chọn tệp (như xdg-desktop-portal-gtk) hoặc zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Hộp thoại tệp của hệ thống không khả dụng, nên Local Word hiển thị hộp thoại riêng. Để dùng hộp thoại của hệ thống, hãy cài đặt cổng chọn tệp (như xdg-desktop-portal-gtk) hoặc zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Văn bản tại điểm chèn được đánh dấu: Không kiểm tra chính tả hoặc ngữ pháp.
 	The time right now	Giờ hiện tại
 	Theme Colors	Màu chủ đề
@@ -2206,7 +2206,7 @@ template	Letter	Thư
 	These merge fields aren't in the recipient list:	Các trường trộn này không nằm trong danh sách người nhận:
 	These settings will be used for new documents.	Các thiết đặt này sẽ được dùng cho tài liệu mới.
 	Thick	Dày
-	this chart was made in another program: LocalOffice shows it but can't edit it	biểu đồ này được tạo trong chương trình khác: LocalOffice hiển thị được nhưng không sửa được
+	this chart was made in another program: Local Word shows it but can't edit it	biểu đồ này được tạo trong chương trình khác: Local Word hiển thị được nhưng không sửa được
 	This document	Tài liệu này
 	This field has no options.	Trường này không có tùy chọn nào.
 	This folder can't be read: {error}	Không thể đọc thư mục này: {error}
@@ -2216,7 +2216,7 @@ template	Letter	Thư
 	This password type isn't supported.	Loại mật khẩu này không được hỗ trợ.
 	This point forward	Từ đây trở đi
 	This section	Phần này
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	SmartArt này được tạo trong chương trình khác: LocalOffice hiển thị được nhưng không sửa được
+	this SmartArt was made in another program: Local Word shows it but can't edit it	SmartArt này được tạo trong chương trình khác: Local Word hiển thị được nhưng không sửa được
 	this text box is already linked: break the link first	hộp văn bản này đã được liên kết: hãy ngắt liên kết trước
 	Three	Ba
 	Through	Xuyên qua
@@ -2226,7 +2226,7 @@ template	Letter	Thư
 	Title Bar	Thanh tiêu đề
 	Title from the document properties	Tiêu đề trong thuộc tính tài liệu
 	Title:	Tiêu đề:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Để mở tài liệu Word bằng LocalOffice theo mặc định: chọn một tài liệu trong Finder, chọn Tệp › Lấy thông tin, chọn LocalOffice ở mục Mở bằng, rồi nhấp Thay đổi tất cả.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Để mở tài liệu Word bằng Local Word theo mặc định: chọn một tài liệu trong Finder, chọn Tệp › Lấy thông tin, chọn Local Word ở mục Mở bằng, rồi nhấp Thay đổi tất cả.
 	To:	Đến:
 	TOA Heading	Tiêu đề bảng thẩm quyền
 	TOC Heading	Tiêu đề mục lục
@@ -2391,8 +2391,8 @@ template	Letter	Thư
 	Word XML Document (*.xml)	Tài liệu Word XML (*.xml)
 	WordArt	WordArt
 	WordArt Styles	Kiểu WordArt
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice hiện là ứng dụng mặc định cho tài liệu Word.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word hiện là ứng dụng mặc định cho tài liệu Word.
 	Words only	Chỉ gạch chân từ
 	Wrap Text	Văn bản quanh đối tượng
 	Wrap Text Sides	Hai bên
@@ -2421,7 +2421,7 @@ template	Letter	Thư
 	{language} (no dictionary)	{language} (không có từ điển)
 	{language} is now the document's default language.	{language} hiện là ngôn ngữ mặc định của tài liệu.
 	{language}: no dictionary found	{language}: không tìm thấy từ điển
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice chưa soát chính tả và ngữ pháp cho ngôn ngữ này.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word chưa soát chính tả và ngữ pháp cho ngôn ngữ này.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} và {n} tệp nữa
 	{name}   {height} × {width} in	{name}   {height} × {width} in

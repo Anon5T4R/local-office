@@ -1,4 +1,4 @@
-# Українська (uk) interface catalog for LocalOffice.
+# Українська (uk) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -38,7 +38,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbYyZz	AaBbYyZz ЄєЇї
 	About	Про програму
-	About LocalOffice	Про LocalOffice
+	About Local Word	Про Local Word
 	Above Chart	Над діаграмою
 	Above the item	Над елементом
 	Accent	Діакритичний знак
@@ -180,7 +180,7 @@
 	Automatically Update Document Styles	Автоматично оновлювати стилі документа
 	Automatically update document styles	Автоматично оновлювати стилі документа
 	AutoSave	Автозбереження
-	AutoSave documents you have saved in LocalOffice	Автоматично зберігати документи, збережені у LocalOffice
+	AutoSave documents you have saved in Local Word	Автоматично зберігати документи, збережені у Local Word
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Не вдалося виконати автозбереження: {error}. Збережіть документ, щоб знову ввімкнути автозбереження.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Автозбереження недоступне в браузері: воно не може записувати у ваші файли. Збереження завантажує копію.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Автозбереження підтримує лише файли .docx, .odt і .rtf; {name} не може зберегти все форматування. Збережіть як .docx, щоб увімкнути автозбереження.
@@ -236,7 +236,7 @@
 	Bracket	Дужки
 	Break Link	Розірвати зв'язок
 	Breaks	Розриви
-	Browse in LocalOffice…	Огляд у LocalOffice…
+	Browse in Local Word…	Огляд у Local Word…
 	Building Block Gallery Content Control	Елемент керування вмістом «Колекція стандартних блоків»
 	Built-In	Вбудовані
 	Built-in style	Вбудований стиль
@@ -402,7 +402,7 @@
 	Correct TWo INitial CApitals	Виправляти ДВі ВЕликі літери на початку слова
 	Corrections	Виправлення
 	Couldn't download {name}: {error}	Не вдалося завантажити {name}: {error}
-	Couldn't make LocalOffice the default: {error}	Не вдалося зробити LocalOffice типовою програмою: {error}
+	Couldn't make Local Word the default: {error}	Не вдалося зробити Local Word типовою програмою: {error}
 	Couldn't open {path}: {error}	Не вдалося відкрити {path}: {error}
 	Count by:	Крок:
 	Count words in text boxes and notes	Рахувати слова в текстових полях і виносках
@@ -820,7 +820,7 @@
 	Immersive	Зосереджений
 	Immersive Reader	Зосереджене читання
 	Immersive\nReader	Зосереджене\nчитання
-	In Default apps, choose LocalOffice for the document types you want it to open.	У програмах за замовчуванням виберіть LocalOffice для типів документів, які він має відкривати.
+	In Default apps, choose Local Word for the document types you want it to open.	У програмах за замовчуванням виберіть Local Word для типів документів, які він має відкривати.
 	In equations, typing a name after a backslash replaces it with its symbol.	У рівняннях назва після зворотної скісної риски замінюється символом.
 	In Front of Text	Перед текстом
 	In Line with Text	У рядку з текстом
@@ -915,7 +915,7 @@
 	Keep Lines Together	Не розривати рядки абзацу
 	Keep lines together	Не розривати рядки абзацу
 	Keep Text Only	Зберегти лише текст
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Зберігайте пароль у надійному місці: без нього ніхто, зокрема LocalOffice, не зможе відкрити документ. Залиште обидва поля порожніми, щоб видалити пароль.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Зберігайте пароль у надійному місці: без нього ніхто, зокрема Local Word, не зможе відкрити документ. Залиште обидва поля порожніми, щоб видалити пароль.
 	Keep with Next	Не відривати від наступного
 	Keep with next	Не відривати від наступного
 	Keeps the fonts and formatting of the copied text.	Зберігає шрифти й форматування скопійованого тексту.
@@ -1019,7 +1019,7 @@
 	Mail Merge	Злиття
 	Mailings	Розсилки
 	Main entry:	Основний елемент:
-	Make LocalOffice the default for Word documents…	Зробити LocalOffice типовою програмою для документів Word…
+	Make Local Word the default for Word documents…	Зробити Local Word типовою програмою для документів Word…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Збільшує або зменшує стрічку, меню й діалогові вікна. «Авто» відповідає системному масштабуванню екрана; 100% — один піксель екрана на точку. Масштаб документа налаштовується окремо.
 	Manage Sources	Керувати джерелами
 	Manage Styles	Керування стилями
@@ -1151,7 +1151,7 @@
 	No Shadow	Без тіні
 	No Soft Edges	Без м'яких країв
 	No sources yet.	Джерел ще немає.
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Орфографічний словник для мови «{language}» не встановлено, тому текст не перевіряється. LocalOffice шукає словник Hunspell {name} у теці LOCALOFFICE_DICTIONARIES та в звичайних системних розташуваннях.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Орфографічний словник для мови «{language}» не встановлено, тому текст не перевіряється. Local Word шукає словник Hunspell {name} у теці LOCALOFFICE_DICTIONARIES та в звичайних системних розташуваннях.
 	No templates match your search.	Немає шаблонів, що відповідають пошуку.
 	No Transform	Без перетворення
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Слів ще немає. «Додати до словника» для слова з помилкою додає його сюди.
@@ -1215,7 +1215,7 @@
 	OK	Гаразд
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Старі клавіші меню: Alt, {keys}. Продовжуйте вводити або натисніть Esc, щоб скасувати.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Увімкнено: каретка плавно переходить на нове місце, коли ви вводите текст або користуєтеся стрілками, а її блимання згасає поступово. Вимкнено: вона перестрибує й блимає різко.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Увімкнено: LocalOffice відкривається на сторінці Файл › Основне з порожнім документом, шаблонами та нещодавніми документами. Вимкнено: відкривається порожній документ.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Увімкнено: Local Word відкривається на сторінці Файл › Основне з порожнім документом, шаблонами та нещодавніми документами. Вимкнено: відкривається порожній документ.
 	One	Один
 	One label per recipient	Одна етикетка на одержувача
 	One line per item. Enter adds an item.	Один рядок на елемент. Enter додає елемент.
@@ -1229,11 +1229,11 @@
 	Only the allowed styles can be applied.	Можна застосовувати лише дозволені стилі.
 	Only web (http, https) and email (mailto) links can be followed	Можна переходити лише за вебпосиланнями (http, https) і посиланнями на електронну пошту (mailto)
 	Open a document first	Спочатку відкрийте документ
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Відкрити файл власним оглядачем LocalOffice, коли системне діалогове вікно файлів не з'являється.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Відкрити файл власним оглядачем Local Word, коли системне діалогове вікно файлів не з'являється.
 	OpenDocument Text (*.odt)	Текст OpenDocument (*.odt)
 	Opening print dialog…	Відкриття діалогу друку…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Відтепер файли .docx, .doc, .rtf, .odt і шаблони Word відкриватимуться у LocalOffice.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Відкриває Параметри › Програми за замовчуванням, де ви вибираєте LocalOffice для .docx та інших типів документів.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Відтепер файли .docx, .doc, .rtf, .odt і шаблони Word відкриватимуться у Local Word.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Відкриває Параметри › Програми за замовчуванням, де ви вибираєте Local Word для .docx та інших типів документів.
 	Operator	Оператор
 	Optional Hyphen	М'який перенос
 	Or	Або
@@ -1468,7 +1468,7 @@
 	Replay	Відтворити
 	Research	Дослідження
 	Researcher	Дослідник
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Досліднику потрібна онлайн-служба, а LocalOffice працює з документами без підключення до інтернету.
+	Researcher needs an online service; Local Word keeps your documents offline.	Досліднику потрібна онлайн-служба, а Local Word працює з документами без підключення до інтернету.
 	Reset All…	Скинути все…
 	Reset Character Formatting	Скинути форматування символів
 	Reset Crop	Скинути обітнення
@@ -1662,7 +1662,7 @@
 	Show the community button in the title bar	Показувати кнопку спільноти в заголовку вікна
 	Show the mini toolbar when text is selected	Показувати міні-панель інструментів під час виділення тексту
 	Show the ribbon	Показати стрічку
-	Show the Start screen when LocalOffice starts	Показувати початковий екран під час запуску LocalOffice
+	Show the Start screen when Local Word starts	Показувати початковий екран під час запуску Local Word
 	Show/Hide ¶	Показати/приховати ¶
 	Show\nComments	Показати\nкоментарі
 	Showing the first {count} items.	Показано лише перші елементи: {count}.
@@ -1845,7 +1845,7 @@
 	The printer, two-sided printing and pages per sheet are chosen in that dialog.	Принтер, двобічний друк і кількість сторінок на аркуші вибирають у цьому діалозі.
 	The recipient-list field that fills each part of an address block and greeting line.	Поле списку одержувачів, яке заповнює кожну частину блоку адреси та рядка привітання.
 	the Spike is empty	накопичувач порожній
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Системне діалогове вікно файлів недоступне, тож LocalOffice показує власне. Щоб отримати системне вікно, установіть портал вибору файлів (наприклад, xdg-desktop-portal-gtk) або zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Системне діалогове вікно файлів недоступне, тож Local Word показує власне. Щоб отримати системне вікно, установіть портал вибору файлів (наприклад, xdg-desktop-portal-gtk) або zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Текст у точці вставлення позначено: Не перевіряти правопис і граматику.
 	The time right now	Поточний час
 	Theme Colors	Кольори теми
@@ -1862,7 +1862,7 @@
 	These merge fields aren't in the recipient list:	Цих полів злиття немає в списку одержувачів:
 	These settings will be used for new documents.	Ці параметри використовуватимуться для нових документів.
 	Thick	Товста
-	this chart was made in another program: LocalOffice shows it but can't edit it	цю діаграму створено в іншій програмі: LocalOffice показує її, але не може редагувати
+	this chart was made in another program: Local Word shows it but can't edit it	цю діаграму створено в іншій програмі: Local Word показує її, але не може редагувати
 	This document	Цей документ
 	This field has no options.	Це поле не має параметрів.
 	This folder can't be read: {error}	Не вдається прочитати цю теку: {error}
@@ -1872,7 +1872,7 @@
 	This password type isn't supported.	Цей тип пароля не підтримується.
 	This point forward	Від цього місця
 	This section	Цей розділ
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	цей SmartArt створено в іншій програмі: LocalOffice показує його, але не може редагувати
+	this SmartArt was made in another program: Local Word shows it but can't edit it	цей SmartArt створено в іншій програмі: Local Word показує його, але не може редагувати
 	this text box is already linked: break the link first	це текстове поле вже зв’язане: спочатку розірвіть зв’язок
 	Three	Три
 	Through	Наскрізне
@@ -1882,7 +1882,7 @@
 	Title Bar	Рядок заголовка
 	Title from the document properties	Назва документа
 	Title:	Заголовок:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Щоб документи Word типово відкривалися у LocalOffice: виберіть документ у Finder, оберіть Файл › Отримати інфо, виберіть LocalOffice у розділі «Відкривати за допомогою» і натисніть «Змінити все».
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Щоб документи Word типово відкривалися у Local Word: виберіть документ у Finder, оберіть Файл › Отримати інфо, виберіть Local Word у розділі «Відкривати за допомогою» і натисніть «Змінити все».
 	To:	По:
 	Today	Сьогодні
 	Toggle Check Box	Перемкнути прапорець
@@ -2010,8 +2010,8 @@
 	Word XML Document (*.xml)	Документ Word XML (*.xml)
 	WordArt	WordArt
 	WordArt Styles	Стилі WordArt
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice тепер типова програма для документів Word.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word тепер типова програма для документів Word.
 	Words only	Лише слова
 	Wrap Text	Обтікання текстом
 	Wrap Text Sides	Сторони обтікання
@@ -2040,7 +2040,7 @@
 	{language} (no dictionary)	{language} (немає словника)
 	{language} is now the document's default language.	{language} тепер типова мова документа.
 	{language}: no dictionary found	{language}: словник не знайдено
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice поки що не перевіряє правопис і граматику цією мовою.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word поки що не перевіряє правопис і граматику цією мовою.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} та ще {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} дюйма

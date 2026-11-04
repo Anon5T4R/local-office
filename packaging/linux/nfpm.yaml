@@ -13,7 +13,7 @@ release: 1
 section: graphics
 priority: optional
 maintainer: ${LOCALOFFICE_MAINTAINER}
-vendor: LocalOffice contributors
+vendor: Local Word contributors
 homepage: https://github.com/Anon5T4R/local-office
 license: MIT OR Apache-2.0
 description: |-

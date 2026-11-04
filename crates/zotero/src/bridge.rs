@@ -352,9 +352,9 @@ impl Bridge {
                 Ok(Value::Null)
             }
             "Document_importDocument" | "Document_exportDocument" => {
-                Err("LocalOffice doesn't support Zotero's document transfer; the citations are already stored the way Word keeps them".into())
+                Err("Local Word doesn't support Zotero's document transfer; the citations are already stored the way Word keeps them".into())
             }
-            m => Err(format!("LocalOffice doesn't support {m}")),
+            m => Err(format!("Local Word doesn't support {m}")),
         }
     }
 

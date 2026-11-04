@@ -68,7 +68,7 @@ pub fn tool_definitions() -> Value {
         tool(
             "list_commands",
             "List commands",
-            "Every LocalOffice command: id, label, ribbon location, shortcut and params. Filter with `query`.",
+            "Every Local Word command: id, label, ribbon location, shortcut and params. Filter with `query`.",
             obj(json!({"query": s("Case-insensitive filter on id/label/location")}), &[]),
             true
         ),
@@ -149,8 +149,8 @@ pub fn tool_definitions() -> Value {
             obj(json!({}), &[]),
             true
         ),
-        tool("parity", "Feature parity", "LocalOffice's command coverage of the word-processor feature catalog.", obj(json!({}), &[]), true),
-        tool("screenshot", "Screenshot app", "Screenshot of the whole LocalOffice window (desktop app only).", obj(json!({}), &[]), true),
+        tool("parity", "Feature parity", "Local Word's command coverage of the word-processor feature catalog.", obj(json!({}), &[]), true),
+        tool("screenshot", "Screenshot app", "Screenshot of the whole Local Word window (desktop app only).", obj(json!({}), &[]), true),
         tool(
             "click",
             "Click",

@@ -19,9 +19,9 @@ pub const DESIGNCRAFT: App = App::new("designcraft", "DesignCraft", "Page layout
 pub const FIGCRAFT: App = App::new("figcraft", "FigCraft", "Interface design and prototyping", "storytold/figcraft");
 pub const LOCALOFFICE: App = App {
     former_ids: &["wordcraft"],
-    former_names: &["WordCraft"],
-    publisher: "LocalOffice contributors",
-    ..App::new("localoffice", "LocalOffice", "Writing and document design", "Anon5T4R/local-office")
+    former_names: &["WordCraft", "LocalOffice"],
+    publisher: "Local Word contributors",
+    ..App::new("localoffice", "Local Word", "Writing and document design", "Anon5T4R/local-office")
 };
 pub const SOUNDCRAFT: App = App::new("soundcraft", "SoundCraft", "Recording, editing and mixing audio", "storytold/soundcraft");
 pub const DECKCRAFT: App = App::new("deckcraft", "DeckCraft", "Presentations and slide shows", "storytold/deckcraft");
@@ -66,8 +66,10 @@ mod tests {
         ids.dedup();
         assert_eq!(ids.len(), SUITE.len());
         for a in &SUITE {
-            assert_eq!(a.repo, format!("storytold/{}", a.id));
-            assert_eq!(a.name.to_lowercase(), a.id);
+            if a.repo.starts_with("storytold/") {
+                assert_eq!(a.repo, format!("storytold/{}", a.id));
+                assert_eq!(a.name.to_lowercase(), a.id);
+            }
         }
         assert!(by_id(LAUNCHER.id).is_none());
         assert_eq!(by_id("pdfcraft").map(|a| a.former_ids), Some(&["printcraft"][..]));

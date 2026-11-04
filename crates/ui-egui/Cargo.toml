@@ -3,7 +3,7 @@ name = "localoffice-ui-egui"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "LocalOffice egui front end (Word-style ribbon UI); swappable: nothing below depends on it"
+description = "Local Word egui front end (Word-style ribbon UI); swappable: nothing below depends on it"
 
 [lints]
 workspace = true

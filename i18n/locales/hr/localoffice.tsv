@@ -1,4 +1,4 @@
-# Hrvatski (hr) interface catalog for LocalOffice.
+# Hrvatski (hr) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -55,7 +55,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaBbCcDd
 	AaBbYyZz	AaBbYyZz
-	About LocalOffice	O programu LocalOffice
+	About Local Word	O programu Local Word
 	Above Chart	Iznad grafikona
 	Above the item	Iznad stavke
 	Absolute value cases	Slučajevi apsolutne vrijednosti
@@ -205,7 +205,7 @@
 	Automatically Update Document Styles	Automatski ažuriraj stilove dokumenta
 	Automatically update document styles	Automatski ažuriraj stilove dokumenta
 	AutoSave	Automatsko spremanje
-	AutoSave documents you have saved in LocalOffice	Automatsko spremanje dokumenata koje ste spremili u programu LocalOffice
+	AutoSave documents you have saved in Local Word	Automatsko spremanje dokumenata koje ste spremili u programu Local Word
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Automatsko spremanje nije uspjelo: {error}. Spremite dokument kako biste ponovno uključili automatsko spremanje.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Automatsko spremanje nije dostupno u pregledniku: ne može pisati u vaše datoteke. Spremanje preuzima kopiju.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Automatsko spremanje čuva samo datoteke .docx, .odt i .rtf; {name} ne može sačuvati cijelo oblikovanje. Spremite kao .docx kako biste uključili automatsko spremanje.
@@ -275,7 +275,7 @@
 	Brackets with Separators	Zagrade s razdjelnicima
 	Breaks	Prijelomi
 	Breve	Breve
-	Browse in LocalOffice…	Pregledaj u programu LocalOffice…
+	Browse in Local Word…	Pregledaj u programu Local Word…
 	Building Block Gallery Content Control	Kontrola sadržaja galerije gradivnih blokova
 	Built-In	Ugrađeno
 	Built-in style	Ugrađeni stil
@@ -482,7 +482,7 @@
 	Cosine Function	Funkcija kosinus
 	Cotangent Function	Funkcija kotangens
 	Couldn't download {name}: {error}	Nije moguće preuzeti {name}: {error}
-	Couldn't make LocalOffice the default: {error}	Nije moguće postaviti LocalOffice kao zadani program: {error}
+	Couldn't make Local Word the default: {error}	Nije moguće postaviti Local Word kao zadani program: {error}
 	Couldn't open {path}: {error}	Nije moguće otvoriti {path}: {error}
 	Count by:	Broji po:
 	Count words in text boxes and notes	Broji riječi u tekstnim okvirima i bilješkama
@@ -949,7 +949,7 @@
 	Immersive Reader	Imerzivni čitač
 	Immersive\nReader	Imerzivni\nčitač
 	Import…	Uvezi…
-	In Default apps, choose LocalOffice for the document types you want it to open.	U zadanim aplikacijama odaberite LocalOffice za vrste dokumenata koje želite njime otvarati.
+	In Default apps, choose Local Word for the document types you want it to open.	U zadanim aplikacijama odaberite Local Word za vrste dokumenata koje želite njime otvarati.
 	In equations, typing a name after a backslash replaces it with its symbol.	U jednadžbama upisivanje naziva nakon obrnute kose crte zamjenjuje ga njegovim simbolom.
 	In Front of Text	Ispred teksta
 	In Line with Text	U retku s tekstom
@@ -1068,7 +1068,7 @@
 	Keep Lines Together	Zadrži retke zajedno
 	Keep lines together	Zadrži retke zajedno
 	Keep Text Only	Zadrži samo tekst
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Lozinku spremite na sigurno mjesto: bez nje nitko, pa ni LocalOffice, ne može otvoriti dokument. Ostavite oba polja praznima da biste uklonili lozinku.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Lozinku spremite na sigurno mjesto: bez nje nitko, pa ni Local Word, ne može otvoriti dokument. Ostavite oba polja praznima da biste uklonili lozinku.
 	Keep with Next	Zadrži sa sljedećim
 	Keep with next	Zadrži sa sljedećim
 	Keeps the fonts and formatting of the copied text.	Zadržava fontove i oblikovanje kopiranog teksta.
@@ -1199,7 +1199,7 @@ template	Letter	Pismo
 	Mail Merge	Spajanje pošte
 	Mailings	Pošta
 	Main entry:	Glavni unos:
-	Make LocalOffice the default for Word documents…	Postavi LocalOffice kao zadani program za Word dokumente…
+	Make Local Word the default for Word documents…	Postavi Local Word kao zadani program za Word dokumente…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Povećava ili smanjuje vrpcu, izbornike i dijaloške okvire. Automatski prati skaliranje zaslona u sustavu; 100 % je jedan piksel zaslona po točki. Zumiranje dokumenta postavlja se zasebno.
 	Manage Sources	Upravljanje izvorima
 	Manage Styles	Upravljanje stilovima
@@ -1333,7 +1333,7 @@ template	Letter	Pismo
 	No Soft Edges	Bez mekih rubova
 	No sources yet.	Još nema izvora.
 	No Spacing	Bez proreda
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Pravopisni rječnik za {language} nije instaliran pa se taj jezik ne provjerava. LocalOffice traži Hunspell rječnik {name} u mapi LOCALOFFICE_DICTIONARIES i na uobičajenim mjestima u sustavu.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Pravopisni rječnik za {language} nije instaliran pa se taj jezik ne provjerava. Local Word traži Hunspell rječnik {name} u mapi LOCALOFFICE_DICTIONARIES i na uobičajenim mjestima u sustavu.
 	No templates match your search.	Nijedan predložak ne odgovara pretrazi.
 	No Transform	Bez transformacije
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Još nema riječi. Naredba Dodaj u rječnik na pogrešno napisanoj riječi stavlja je ovamo.
@@ -1400,7 +1400,7 @@ template	Letter	Pismo
 	Offset: Top Right	Pomak: gore desno
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Stare tipke izbornika: Alt, {keys}. Nastavite tipkati ili pritisnite Esc za odustajanje.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Uključeno: kursor klizi na novo mjesto kad tipkate ili koristite tipke sa strelicama, a njegovo treptanje postupno nestaje. Isključeno: skače i treperi.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Uključeno: LocalOffice se otvara na Datoteka › Početna, s praznim dokumentom, predlošcima i vašim nedavnim dokumentima. Isključeno: otvara prazan dokument.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Uključeno: Local Word se otvara na Datoteka › Početna, s praznim dokumentom, predlošcima i vašim nedavnim dokumentima. Isključeno: otvara prazan dokument.
 	One	Jedan
 	One half	Jedna polovina
 	One label per recipient	Jedna naljepnica po primatelju
@@ -1415,11 +1415,11 @@ template	Letter	Pismo
 	Only the allowed styles can be applied.	Mogu se primijeniti samo dopušteni stilovi.
 	Only web (http, https) and email (mailto) links can be followed	Mogu se otvarati samo web-poveznice (http, https) i poveznice e-pošte (mailto)
 	Open a document first	Prvo otvorite dokument
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Otvorite datoteku vlastitim preglednikom programa LocalOffice kada se sustavni dijaloški okvir za datoteke ne pojavi.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Otvorite datoteku vlastitim preglednikom programa Local Word kada se sustavni dijaloški okvir za datoteke ne pojavi.
 	OpenDocument Text (*.odt)	OpenDocument Text (*.odt)
 	Opening print dialog…	Otvaranje dijaloškog okvira za ispis…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Od sada otvara datoteke .docx, .doc, .rtf i .odt te Word predloške u programu LocalOffice.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Otvara Postavke › Zadane aplikacije, gdje odabirete LocalOffice za .docx i ostale vrste dokumenata.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Od sada otvara datoteke .docx, .doc, .rtf i .odt te Word predloške u programu Local Word.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Otvara Postavke › Zadane aplikacije, gdje odabirete Local Word za .docx i ostale vrste dokumenata.
 	Operator	Operator
 	Operator Structures	Strukture operatora
 	Operators	Operatori
@@ -1675,7 +1675,7 @@ template	Letter	Pismo
 	Replay	Ponovno reproduciraj
 	Research	Istraživanje
 	Researcher	Istraživač
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Istraživač zahtijeva mrežnu uslugu; LocalOffice vaše dokumente drži izvan mreže.
+	Researcher needs an online service; Local Word keeps your documents offline.	Istraživač zahtijeva mrežnu uslugu; Local Word vaše dokumente drži izvan mreže.
 	Reset All…	Vrati sve na zadano…
 	Reset Character Formatting	Vrati zadano oblikovanje znakova
 	Reset Crop	Poništi obrezivanje
@@ -1870,7 +1870,7 @@ template	Letter	Pismo
 	Show the equation on a line of its own	Prikaži jednadžbu u zasebnom retku
 	Show the mini toolbar when text is selected	Prikaži malu alatnu traku kad je tekst odabran
 	Show the ribbon	Prikaži vrpcu
-	Show the Start screen when LocalOffice starts	Prikaži početni zaslon kad se LocalOffice pokrene
+	Show the Start screen when Local Word starts	Prikaži početni zaslon kad se Local Word pokrene
 	Show/Hide ¶	Prikaži/sakrij ¶
 	Show\nComments	Prikaži\nkomentare
 	Showing the first {count} items.	Prikazuje se prvih {count} stavki.
@@ -2100,7 +2100,7 @@ template	Letter	Pismo
 	The recipient-list field that fills each part of an address block and greeting line.	Polje popisa primatelja koje popunjava svaki dio bloka adrese i retka pozdrava.
 	The spelling and grammar check is complete.	Provjera pravopisa i gramatike je dovršena.
 	the Spike is empty	skupljač je prazan
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Sustavni dijaloški okvir za datoteke nije dostupan, pa LocalOffice prikazuje vlastiti. Da biste dobili sustavni dijaloški okvir, instalirajte portal za odabir datoteka (primjerice xdg-desktop-portal-gtk) ili zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Sustavni dijaloški okvir za datoteke nije dostupan, pa Local Word prikazuje vlastiti. Da biste dobili sustavni dijaloški okvir, instalirajte portal za odabir datoteka (primjerice xdg-desktop-portal-gtk) ili zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Tekst na točki umetanja označen je: Ne provjeravaj pravopis ni gramatiku.
 	The time right now	Trenutačno vrijeme
 	Theme Colors	Boje teme
@@ -2117,7 +2117,7 @@ template	Letter	Pismo
 	These merge fields aren't in the recipient list:	Ova polja za spajanje nisu na popisu primatelja:
 	These settings will be used for new documents.	Ove će se postavke koristiti za nove dokumente.
 	Thick	Debelo
-	this chart was made in another program: LocalOffice shows it but can't edit it	ovaj grafikon izrađen je u drugom programu: LocalOffice ga prikazuje, ali ga ne može uređivati
+	this chart was made in another program: Local Word shows it but can't edit it	ovaj grafikon izrađen je u drugom programu: Local Word ga prikazuje, ali ga ne može uređivati
 	This document	Ovaj dokument
 	This field has no options.	Ovo polje nema mogućnosti.
 	This folder can't be read: {error}	Ova se mapa ne može pročitati: {error}
@@ -2127,7 +2127,7 @@ template	Letter	Pismo
 	This password type isn't supported.	Ova vrsta lozinke nije podržana.
 	This point forward	Od ove točke nadalje
 	This section	Ovaj odjeljak
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	ovaj SmartArt izrađen je u drugom programu: LocalOffice ga prikazuje, ali ga ne može uređivati
+	this SmartArt was made in another program: Local Word shows it but can't edit it	ovaj SmartArt izrađen je u drugom programu: Local Word ga prikazuje, ali ga ne može uređivati
 	this text box is already linked: break the link first	ovaj tekstni okvir već je povezan: najprije prekinite vezu
 	Three	Tri
 	Through	Kroz
@@ -2138,7 +2138,7 @@ preview	Title	Naslov
 	Title Bar	Naslovna traka
 	Title from the document properties	Naslov iz svojstava dokumenta
 	Title:	Naslov:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Da biste Word dokumente prema zadanim postavkama otvarali u programu LocalOffice: odaberite jedan u Finderu, odaberite Datoteka › Dohvati informacije, pod Otvori pomoću odaberite LocalOffice, pa kliknite Promijeni sve.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Da biste Word dokumente prema zadanim postavkama otvarali u programu Local Word: odaberite jedan u Finderu, odaberite Datoteka › Dohvati informacije, pod Otvori pomoću odaberite Local Word, pa kliknite Promijeni sve.
 	To:	Do:
 	TOA Heading	Naslov popisa pravnih izvora
 	TOC Heading	Naslov sadržaja
@@ -2295,8 +2295,8 @@ preview	Title	Naslov
 	Word XML Document (*.xml)	Word XML dokument (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArt stilovi
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice je sada zadana aplikacija za Word dokumente.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word je sada zadana aplikacija za Word dokumente.
 	Words only	Samo riječi
 	Wrap Text	Obtok teksta
 	Wrap Text Sides	Strane obtoka teksta
@@ -2325,7 +2325,7 @@ preview	Title	Naslov
 	{language} (no dictionary)	{language} (nema rječnika)
 	{language} is now the document's default language.	{language} je sada zadani jezik dokumenta.
 	{language}: no dictionary found	{language}: rječnik nije pronađen
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice na ovom jeziku još ne provjerava pravopis ni gramatiku.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word na ovom jeziku još ne provjerava pravopis ni gramatiku.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} i još {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} in

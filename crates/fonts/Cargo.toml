@@ -3,7 +3,7 @@ name = "localoffice-fonts"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "LocalOffice fonts: font database (bundled OFL + system), metrics, glyph outlines, shaping"
+description = "Local Word fonts: font database (bundled OFL + system), metrics, glyph outlines, shaping"
 
 [lints]
 workspace = true

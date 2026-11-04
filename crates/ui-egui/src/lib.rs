@@ -2142,16 +2142,16 @@ impl WordApp {
         };
         match hook() {
             Ok(DefaultApp::SettingsOpened) => {
-                self.status(tl!("In Default apps, choose LocalOffice for the document types you want it to open."));
+                self.status(tl!("In Default apps, choose Local Word for the document types you want it to open."));
                 Ok(json!({"settingsOpened": true}))
             }
             Ok(DefaultApp::MadeDefault) => {
-                self.status(tl!("LocalOffice is now the default app for Word documents."));
+                self.status(tl!("Local Word is now the default app for Word documents."));
                 Ok(json!({"default": true}))
             }
             Err(e) => {
                 log::warn!("make default app: {e}");
-                let msg = i18n::fmt(tl!("Couldn't make LocalOffice the default: {error}"), &[("error", &e)]);
+                let msg = i18n::fmt(tl!("Couldn't make Local Word the default: {error}"), &[("error", &e)]);
                 self.status(msg.clone());
                 Err(msg)
             }

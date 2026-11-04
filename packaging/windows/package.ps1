@@ -57,7 +57,7 @@ New-Item -ItemType Directory -Force -Path $Dist | Out-Null
 if (-not $env:LOCALOFFICE_BUILD_SHA) { $env:LOCALOFFICE_BUILD_SHA = (git -C $Root rev-parse HEAD 2>$null) }
 if (-not $env:LOCALOFFICE_BUILD_DATE) { $env:LOCALOFFICE_BUILD_DATE = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd') }
 
-Write-Output "LocalOffice $Version for Windows $Arch ($Target)"
+Write-Output "Local Word $Version for Windows $Arch ($Target)"
 
 if (-not $SkipBuild) {
   # Static CRT: no VC++ redistributable needed. Scoped to the target so host build scripts and
@@ -127,8 +127,8 @@ function ConvertTo-RtfText([string] $Text) {
   return $sb.ToString()
 }
 $paragraphs = [System.Collections.Generic.List[string]]::new()
-$paragraphs.Add('\b LocalOffice\b0')
-$paragraphs.Add((ConvertTo-RtfText 'LocalOffice is dual-licensed under the MIT License or the Apache License, Version 2.0, at your option. Both license texts follow. Bundled fonts and other third-party material keep their own open licenses, listed in NOTICE and ATTRIBUTION.md at https://github.com/Anon5T4R/local-office.'))
+$paragraphs.Add('\b Local Word\b0')
+$paragraphs.Add((ConvertTo-RtfText 'Local Word is dual-licensed under the MIT License or the Apache License, Version 2.0, at your option. Both license texts follow. Bundled fonts and other third-party material keep their own open licenses, listed in NOTICE and ATTRIBUTION.md at https://github.com/Anon5T4R/local-office.'))
 foreach ($file in 'LICENSE-MIT', 'LICENSE-APACHE') {
   $title = $true  # each file opens with its license's name: show it bold
   foreach ($para in ((Get-Content -Raw (Join-Path $Root $file)) -split '\r?\n\s*\r?\n')) {

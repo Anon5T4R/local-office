@@ -3,7 +3,7 @@ name = "localoffice-doc"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "LocalOffice document model: stories, paragraphs, runs, tables, sections, styles, numbering, fields, notes, comments, revisions; edit primitives"
+description = "Local Word document model: stories, paragraphs, runs, tables, sections, styles, numbering, fields, notes, comments, revisions; edit primitives"
 
 [lints]
 workspace = true

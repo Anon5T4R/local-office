@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish = false
-description = "LocalOffice command line: convert, inspect, render, run commands, MCP server"
+description = "Local Word command line: convert, inspect, render, run commands, MCP server"
 
 [[bin]]
 name = "localoffice-cli"

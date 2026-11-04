@@ -45,7 +45,7 @@ pub fn submit() -> Submit {
                 }),
                 grayscale: settings.grayscale,
                 scaling: craft_print::Scaling::ShrinkToFit,
-                title: "LocalOffice document".into(),
+                title: "Local Word document".into(),
                 options,
             };
             let _ = sender.send(craft_print::submit(&bytes, &job).map_err(|error| error.to_string()));

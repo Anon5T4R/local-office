@@ -1,4 +1,4 @@
-# 한국어 (ko) interface catalog for LocalOffice.
+# 한국어 (ko) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -56,7 +56,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaBbCcDd
 	AaBbYyZz	AaBbYyZz
-	About LocalOffice	LocalOffice 정보
+	About Local Word	Local Word 정보
 	Above Chart	차트 위
 	Above the item	항목 위
 	Absolute value cases	절댓값 경우 나누기
@@ -206,7 +206,7 @@
 	Automatically Update Document Styles	문서 스타일 자동 업데이트
 	Automatically update document styles	문서 스타일 자동 업데이트
 	AutoSave	자동 저장
-	AutoSave documents you have saved in LocalOffice	LocalOffice에서 저장한 문서 자동 저장
+	AutoSave documents you have saved in Local Word	Local Word에서 저장한 문서 자동 저장
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	자동 저장 실패: {error}. 자동 저장을 다시 사용하려면 문서를 저장하세요.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	브라우저에서는 자동 저장을 사용할 수 없습니다. 파일에 직접 쓸 수 없으므로 저장하면 사본이 다운로드됩니다.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	자동 저장은 .docx, .odt, .rtf 파일만 지원합니다. {name}에서는 모든 서식을 유지할 수 없습니다. 자동 저장을 사용하려면 .docx로 저장하세요.
@@ -276,7 +276,7 @@
 	Break Link	연결 끊기
 	Breaks	나누기
 	Breve	브레베
-	Browse in LocalOffice…	LocalOffice에서 찾아보기…
+	Browse in Local Word…	Local Word에서 찾아보기…
 	Building Block Gallery Content Control	문서 블록 갤러리 콘텐츠 컨트롤
 	Built-In	기본 제공
 	Built-in style	기본 제공 스타일
@@ -486,7 +486,7 @@
 	Cosine Function	코사인 함수
 	Cotangent Function	코탄젠트 함수
 	Couldn't download {name}: {error}	{name}을(를) 다운로드하지 못했습니다: {error}
-	Couldn't make LocalOffice the default: {error}	LocalOffice를 기본 앱으로 설정하지 못했습니다: {error}
+	Couldn't make Local Word the default: {error}	Local Word를 기본 앱으로 설정하지 못했습니다: {error}
 	Couldn't open {path}: {error}	{path}을(를) 열 수 없습니다: {error}
 	Count by:	증가 단위:
 	Count words in text boxes and notes	텍스트 상자와 메모의 단어 수 포함
@@ -931,7 +931,7 @@
 	Immersive	몰입형
 	Immersive Reader	몰입형 리더
 	Immersive\nReader	몰입형\n리더
-	In Default apps, choose LocalOffice for the document types you want it to open.	기본 앱에서 LocalOffice로 열 문서 형식을 선택하세요.
+	In Default apps, choose Local Word for the document types you want it to open.	기본 앱에서 Local Word로 열 문서 형식을 선택하세요.
 	In equations, typing a name after a backslash replaces it with its symbol.	수식에서 역슬래시 뒤에 이름을 입력하면 해당 기호로 바뀝니다.
 	In Front of Text	텍스트 앞
 	In Line with Text	텍스트 줄 안
@@ -1045,7 +1045,7 @@
 	Keep Lines Together	현재 단락의 모든 줄을 한 페이지에 유지
 	Keep lines together	현재 단락의 모든 줄을 한 페이지에 유지
 	Keep Text Only	텍스트만 유지
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	암호를 안전한 곳에 보관하세요. 암호가 없으면 LocalOffice를 포함해 누구도 문서를 열 수 없습니다. 암호를 제거하려면 두 입력란을 모두 비워 두세요.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	암호를 안전한 곳에 보관하세요. 암호가 없으면 Local Word를 포함해 누구도 문서를 열 수 없습니다. 암호를 제거하려면 두 입력란을 모두 비워 두세요.
 	Keep with Next	다음 단락과 함께 유지
 	Keep with next	다음 단락과 함께 유지
 	Keeps the fonts and formatting of the copied text.	복사한 텍스트의 글꼴과 서식을 유지합니다.
@@ -1172,7 +1172,7 @@
 	Mail Merge	메일 병합
 	Mailings	편지
 	Main entry:	주 항목:
-	Make LocalOffice the default for Word documents…	Word 문서의 기본 앱으로 LocalOffice 설정…
+	Make Local Word the default for Word documents…	Word 문서의 기본 앱으로 Local Word 설정…
 	Manage Sources	출처 관리
 	Manage Styles	스타일 관리
 	Manage Styles…	스타일 관리…
@@ -1366,7 +1366,7 @@
 	Offset: Top Right	오프셋: 오른쪽 위
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	이전 메뉴 키: Alt, {keys}. 계속 입력하거나 Esc 키를 눌러 취소하세요.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	사용: 입력하거나 방향키를 누르면 커서가 새 위치로 부드럽게 이동하고 깜박임이 서서히 사라집니다. 사용 안 함: 커서가 바로 이동하고 깜박임이 켜졌다 꺼집니다.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	켜기: LocalOffice를 실행하면 파일 › 홈에 빈 문서, 서식 파일 및 최근 문서가 표시됩니다. 끄기: 빈 문서가 열립니다.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	켜기: Local Word를 실행하면 파일 › 홈에 빈 문서, 서식 파일 및 최근 문서가 표시됩니다. 끄기: 빈 문서가 열립니다.
 	One	하나
 	One half	2분의 1
 	One label per recipient	받는 사람마다 레이블 하나
@@ -1380,11 +1380,11 @@
 	Only the allowed styles can be applied.	허용된 스타일만 적용할 수 있습니다.
 	Only web (http, https) and email (mailto) links can be followed	웹(http, https) 및 이메일(mailto) 링크만 열 수 있습니다.
 	Open a document first	먼저 문서를 여세요
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	시스템 파일 대화상자가 나타나지 않을 때 LocalOffice의 파일 브라우저로 파일을 엽니다.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	시스템 파일 대화상자가 나타나지 않을 때 Local Word의 파일 브라우저로 파일을 엽니다.
 	OpenDocument Text (*.odt)	OpenDocument Text (*.odt)
 	Opening print dialog…	인쇄 대화 상자 여는 중…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	이제부터 .docx, .doc, .rtf, .odt 파일과 Word 템플릿을 LocalOffice에서 엽니다.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	설정 › 기본 앱을 열어 .docx 및 다른 문서 형식의 기본 앱으로 LocalOffice를 선택합니다.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	이제부터 .docx, .doc, .rtf, .odt 파일과 Word 템플릿을 Local Word에서 엽니다.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	설정 › 기본 앱을 열어 .docx 및 다른 문서 형식의 기본 앱으로 Local Word를 선택합니다.
 	Operator	연산자
 	Operator Structures	연산자 구조
 	Operators	연산자
@@ -1826,7 +1826,7 @@
 	Show the equation on a line of its own	수식을 별도 줄에 표시
 	Show the mini toolbar when text is selected	텍스트를 선택할 때 미니 도구 모음 표시
 	Show the ribbon	리본 표시
-	Show the Start screen when LocalOffice starts	LocalOffice 시작 시 시작 화면 표시
+	Show the Start screen when Local Word starts	Local Word 시작 시 시작 화면 표시
 	Show/Hide ¶	¶ 표시/숨기기
 	Show\nComments	메모\n표시
 	Showing the first {count} items.	처음 {count}개 항목 표시 중
@@ -2046,7 +2046,7 @@
 	The recipient-list field that fills each part of an address block and greeting line.	주소 블록과 인사말의 각 부분에 값을 채우는 받는 사람 목록 필드입니다.
 	The spelling and grammar check is complete.	맞춤법 및 문법 검사가 완료되었습니다.
 	the Spike is empty	스파이크가 비어 있습니다
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	시스템 파일 대화상자를 사용할 수 없어 LocalOffice의 파일 대화상자를 표시합니다. 시스템 대화상자를 사용하려면 xdg-desktop-portal-gtk 또는 zenity 같은 파일 선택 포털을 설치하세요.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	시스템 파일 대화상자를 사용할 수 없어 Local Word의 파일 대화상자를 표시합니다. 시스템 대화상자를 사용하려면 xdg-desktop-portal-gtk 또는 zenity 같은 파일 선택 포털을 설치하세요.
 	The text at the insertion point is marked Do not check spelling or grammar.	삽입 위치의 텍스트 설정: 맞춤법 및 문법 검사 안 함
 	The time right now	현재 시각
 	Theme Colors	테마 색
@@ -2059,7 +2059,7 @@
 	These marks show even when Show/Hide ¶ is off.	이 기호는 표시/숨기기 ¶가 꺼져 있어도 표시됩니다.
 	These merge fields aren't in the recipient list:	다음 병합 필드는 받는 사람 목록에 없습니다:
 	Thick	굵게
-	this chart was made in another program: LocalOffice shows it but can't edit it	이 차트는 다른 프로그램에서 만들어졌습니다: LocalOffice에서 표시할 수는 있지만 편집할 수는 없습니다
+	this chart was made in another program: Local Word shows it but can't edit it	이 차트는 다른 프로그램에서 만들어졌습니다: Local Word에서 표시할 수는 있지만 편집할 수는 없습니다
 	This document	이 문서
 	This field has no options.	이 필드에는 옵션이 없습니다.
 	This folder can't be read: {error}	이 폴더를 읽을 수 없습니다: {error}
@@ -2068,7 +2068,7 @@
 	This password type isn't supported.	이 암호 유형은 지원되지 않습니다.
 	This point forward	현재 위치부터
 	This section	이 구역
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	이 SmartArt는 다른 프로그램에서 만들어졌습니다: LocalOffice에서 표시할 수는 있지만 편집할 수는 없습니다
+	this SmartArt was made in another program: Local Word shows it but can't edit it	이 SmartArt는 다른 프로그램에서 만들어졌습니다: Local Word에서 표시할 수는 있지만 편집할 수는 없습니다
 	this text box is already linked: break the link first	이 텍스트 상자는 이미 연결되어 있습니다: 먼저 연결을 끊으세요
 	Three	세 개
 	Through	텍스트 통과
@@ -2079,7 +2079,7 @@ preview	Title	제목
 	Title Bar	제목 표시줄
 	Title from the document properties	문서 속성에 지정된 제목
 	Title:	제목:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Word 문서를 기본적으로 LocalOffice에서 열려면 Finder에서 문서를 선택하고 파일 › 정보 가져오기를 선택한 다음, 다음으로 열기에서 LocalOffice를 고르고 모두 변경을 클릭하세요.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Word 문서를 기본적으로 Local Word에서 열려면 Finder에서 문서를 선택하고 파일 › 정보 가져오기를 선택한 다음, 다음으로 열기에서 Local Word를 고르고 모두 변경을 클릭하세요.
 	To:	끝:
 	TOA Heading	법률 출처 목차 제목
 	TOC Heading	목차 제목
@@ -2235,8 +2235,8 @@ preview	Title	제목
 	Word XML Document (*.xml)	Word XML 문서 (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArt 스타일
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	이제 LocalOffice가 Word 문서의 기본 앱입니다.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	이제 Local Word가 Word 문서의 기본 앱입니다.
 	Words only	단어만
 	Wrap Text	텍스트 줄 바꿈
 	Wrap Text Sides	텍스트 배치 측면
@@ -2262,7 +2262,7 @@ preview	Title	제목
 	{group} settings	{group} 설정
 	{key}+Click to follow link	{key}+클릭하여 링크 열기
 	{language} is now the document's default language.	{language}을(를) 문서의 기본 언어로 설정했습니다.
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice는 아직 이 언어의 맞춤법 및 문법을 검사하지 않습니다.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word는 아직 이 언어의 맞춤법 및 문법을 검사하지 않습니다.
 	{names} and {n} more	{names} 외 {n}개
 	{name} already exists. Choose Save again to replace it.	{name}이(가) 이미 있습니다. 바꾸려면 저장을 다시 선택하세요.
 	{name} is protected with a password.	{name} 문서는 암호로 보호됩니다.

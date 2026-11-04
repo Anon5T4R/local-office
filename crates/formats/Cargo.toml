@@ -3,7 +3,7 @@ name = "localoffice-formats"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "LocalOffice import/export: plain text, Markdown, HTML, RTF, OpenDocument Text and LaTeX"
+description = "Local Word import/export: plain text, Markdown, HTML, RTF, OpenDocument Text and LaTeX"
 
 [lints]
 workspace = true

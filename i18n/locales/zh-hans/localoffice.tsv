@@ -1,4 +1,4 @@
-# 简体中文 (zh-hans) interface catalog for LocalOffice.
+# 简体中文 (zh-hans) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -40,7 +40,7 @@
 	A, B, C, …	A, B, C, …
 	a, b, c, …	a, b, c, …
 	AaBbYyZz	AaBbYyZz 中文
-	About LocalOffice	关于 LocalOffice
+	About Local Word	关于 Local Word
 	Above Chart	图表上方
 	Above the item	项目上方
 	Accent	重音符号
@@ -180,7 +180,7 @@
 	Automatically Update Document Styles	自动更新文档样式
 	Automatically update document styles	自动更新文档样式
 	AutoSave	自动保存
-	AutoSave documents you have saved in LocalOffice	自动保存在 LocalOffice 中保存过的文档
+	AutoSave documents you have saved in Local Word	自动保存在 Local Word 中保存过的文档
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	自动保存失败：{error}。重新保存文档后将恢复自动保存。
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	浏览器中无法使用自动保存：它不能写入你的文件。保存会下载一份副本。
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	自动保存仅适用于 .docx、.odt 和 .rtf 文件；{name} 无法保留全部格式。另存为 .docx 即可开启自动保存。
@@ -235,7 +235,7 @@
 	Bracket	括号
 	Breaks	分隔符
 	Bring Forward	上移一层
-	Browse in LocalOffice…	在 LocalOffice 中浏览…
+	Browse in Local Word…	在 Local Word 中浏览…
 	Building Block Gallery Content Control	构建基块库内容控件
 	Built-In	内置
 	Built-in style	内置样式
@@ -404,7 +404,7 @@
 	Correct TWo INitial CApitals	更正前两个字母连续大写
 	Corrections	更正
 	Couldn't download {name}: {error}	无法下载 {name}：{error}
-	Couldn't make LocalOffice the default: {error}	无法将 LocalOffice 设为默认应用：{error}
+	Couldn't make Local Word the default: {error}	无法将 Local Word 设为默认应用：{error}
 	Couldn't open {path}: {error}	无法打开 {path}：{error}
 	Count by:	行号间隔：
 	Count words in text boxes and notes	统计文本框、脚注和尾注中的字数
@@ -814,7 +814,7 @@
 	Immersive	沉浸式
 	Immersive Reader	沉浸式阅读器
 	Immersive\nReader	沉浸式阅读器
-	In Default apps, choose LocalOffice for the document types you want it to open.	请在“默认应用”中，为希望由 LocalOffice 打开的文档类型选择 LocalOffice。
+	In Default apps, choose Local Word for the document types you want it to open.	请在“默认应用”中，为希望由 Local Word 打开的文档类型选择 Local Word。
 	In equations, typing a name after a backslash replaces it with its symbol.	在公式中，在反斜杠后键入名称会将其替换为相应符号。
 	In Front of Text	浮于文字上方
 	In Line with Text	与文字同行
@@ -907,7 +907,7 @@
 	Keep Lines Together	段中不分页
 	Keep lines together	段中不分页
 	Keep Text Only	只保留文本
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	请妥善保管密码：没有密码，任何人（包括 LocalOffice）都无法打开文档。两个框都留空可删除密码。
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	请妥善保管密码：没有密码，任何人（包括 Local Word）都无法打开文档。两个框都留空可删除密码。
 	Keep with Next	与下段同页
 	Keep with next	与下段同页
 	Keeps the fonts and formatting of the copied text.	保留所复制文本的字体和格式。
@@ -1009,7 +1009,7 @@
 	Mail Merge	邮件合并
 	Mailings	邮件
 	Main entry:	主索引项：
-	Make LocalOffice the default for Word documents…	将 LocalOffice 设为 Word 文档的默认应用…
+	Make Local Word the default for Word documents…	将 Local Word 设为 Word 文档的默认应用…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	放大或缩小功能区、菜单和对话框。“自动”跟随系统的显示缩放；100% 为每点一个屏幕像素。文档缩放单独设置。
 	Manage Sources	管理源
 	Manage Styles	管理样式
@@ -1135,7 +1135,7 @@
 	No Shadow	无阴影
 	No Soft Edges	无柔化边缘
 	No sources yet.	尚无源。
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	未安装{language}的拼写词典，因此不会检查该语言。LocalOffice 会在 LOCALOFFICE_DICTIONARIES 文件夹和常见的系统位置查找 Hunspell 词典 {name}。
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	未安装{language}的拼写词典，因此不会检查该语言。Local Word 会在 LOCALOFFICE_DICTIONARIES 文件夹和常见的系统位置查找 Hunspell 词典 {name}。
 	No templates match your search.	没有与搜索匹配的模板。
 	No Transform	无转换
 	No words yet. Add to Dictionary on a misspelled word puts it here.	还没有单词。对拼写错误的单词选择“添加到词典”会将其放在这里。
@@ -1198,7 +1198,7 @@
 	Offset: Top Right	偏移：右上
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	旧菜单键: Alt, {keys}。继续输入，或按 Esc 取消。
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	开启：输入或使用方向键时，光标平滑移动到新位置，闪烁时淡入淡出。关闭：光标直接跳转，闪烁时直接显示和隐藏。
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	开：LocalOffice 打开时显示“文件 › 开始”，其中有空白文档、模板和最近使用的文档。关：直接打开空白文档。
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	开：Local Word 打开时显示“文件 › 开始”，其中有空白文档、模板和最近使用的文档。关：直接打开空白文档。
 	One	一栏
 	One label per recipient	每位收件人一个标签
 	One line per item. Enter adds an item.	每个项目一行。按 Enter 添加项目。
@@ -1212,11 +1212,11 @@
 	Only the allowed styles can be applied.	只能应用允许的样式。
 	Only web (http, https) and email (mailto) links can be followed	只能打开网页（http、https）和电子邮件（mailto）链接
 	Open a document first	请先打开文档
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	当系统文件对话框没有出现时，使用 LocalOffice 自带的浏览器打开文件。
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	当系统文件对话框没有出现时，使用 Local Word 自带的浏览器打开文件。
 	OpenDocument Text (*.odt)	OpenDocument 文本 (*.odt)
 	Opening print dialog…	正在打开打印对话框…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	今后用 LocalOffice 打开 .docx、.doc、.rtf、.odt 文件和 Word 模板。
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	打开“设置 › 默认应用”，在其中为 .docx 及其他文档类型选择 LocalOffice。
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	今后用 Local Word 打开 .docx、.doc、.rtf、.odt 文件和 Word 模板。
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	打开“设置 › 默认应用”，在其中为 .docx 及其他文档类型选择 Local Word。
 	Operator	运算符
 	Optional Hyphen	可选连字符
 	Or	或
@@ -1455,7 +1455,7 @@
 	Reply	答复
 	Research	研究
 	Researcher	研究工具
-	Researcher needs an online service; LocalOffice keeps your documents offline.	研究工具需要在线服务；LocalOffice 会将你的文档保留在本地。
+	Researcher needs an online service; Local Word keeps your documents offline.	研究工具需要在线服务；Local Word 会将你的文档保留在本地。
 	Reset	重设
 	Reset All…	全部重置…
 	Reset Character Formatting	重置字符格式
@@ -1647,7 +1647,7 @@
 	Show the community button in the title bar	在标题栏中显示社区按钮
 	Show the mini toolbar when text is selected	选择文本时显示浮动工具栏
 	Show the ribbon	显示功能区
-	Show the Start screen when LocalOffice starts	启动 LocalOffice 时显示开始屏幕
+	Show the Start screen when Local Word starts	启动 Local Word 时显示开始屏幕
 	Show/Hide ¶	显示/隐藏 ¶
 	Show\nComments	显示批注
 	Showing the first {count} items.	仅显示前 {count} 项。
@@ -1834,7 +1834,7 @@
 	The printer, two-sided printing and pages per sheet are chosen in that dialog.	打印机、双面打印和每张页数在该对话框中选择。
 	The recipient-list field that fills each part of an address block and greeting line.	地址块和问候语的每一部分所使用的收件人列表域。
 	the Spike is empty	图文场为空
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	系统文件对话框不可用，因此 LocalOffice 显示自己的对话框。要使用系统对话框，请安装文件选择器门户（例如 xdg-desktop-portal-gtk）或 zenity。
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	系统文件对话框不可用，因此 Local Word 显示自己的对话框。要使用系统对话框，请安装文件选择器门户（例如 xdg-desktop-portal-gtk）或 zenity。
 	The text at the insertion point is marked Do not check spelling or grammar.	插入点处的文本已标记为：不检查拼写或语法
 	The time right now	当前时间
 	Theme Colors	主题颜色
@@ -1851,7 +1851,7 @@
 	These merge fields aren't in the recipient list:	以下合并域不在收件人列表中：
 	These settings will be used for new documents.	这些设置将用于新文档。
 	Thick	粗线
-	this chart was made in another program: LocalOffice shows it but can't edit it	此图表由其他程序创建: LocalOffice 可以显示但无法编辑
+	this chart was made in another program: Local Word shows it but can't edit it	此图表由其他程序创建: Local Word 可以显示但无法编辑
 	This document	此文档
 	This field has no options.	此域没有选项。
 	This folder can't be read: {error}	无法读取此文件夹：{error}
@@ -1861,7 +1861,7 @@
 	This password type isn't supported.	不支持此密码类型。
 	This point forward	插入点之后
 	This section	本节
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	此 SmartArt 由其他程序创建: LocalOffice 可以显示但无法编辑
+	this SmartArt was made in another program: Local Word shows it but can't edit it	此 SmartArt 由其他程序创建: Local Word 可以显示但无法编辑
 	this text box is already linked: break the link first	此文本框已链接: 请先断开链接
 	Three	三栏
 	Through	穿越型
@@ -1870,7 +1870,7 @@
 	Title Bar	标题栏
 	Title from the document properties	文档标题
 	Title:	标题：
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	要默认用 LocalOffice 打开 Word 文档：在访达中选中一个文档，选择“文件 › 显示简介”，在“打开方式”中选择 LocalOffice，然后点按“全部更改”。
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	要默认用 Local Word 打开 Word 文档：在访达中选中一个文档，选择“文件 › 显示简介”，在“打开方式”中选择 Local Word，然后点按“全部更改”。
 	To:	到：
 	Today	今天
 	Toggle Check Box	切换复选框
@@ -2002,8 +2002,8 @@
 	Word XML Document (*.xml)	Word XML 文档 (*.xml)
 	WordArt	艺术字
 	WordArt Styles	艺术字样式
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice 现在是 Word 文档的默认应用。
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word 现在是 Word 文档的默认应用。
 	Words	字数
 	Words only	仅字词
 	Wrap Text	环绕文字
@@ -2032,7 +2032,7 @@
 	{language} (no dictionary)	{language}（无词典）
 	{language} is now the document's default language.	{language} 现在是此文档的默认语言。
 	{language}: no dictionary found	{language}：未找到词典
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}：LocalOffice 暂不检查此语言的拼写和语法
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}：Local Word 暂不检查此语言的拼写和语法
 	{language}: {file}	{language}：{file}
 	{names} and {n} more	{names} 等另外 {n} 个
 	{name}   {height} × {width} in	{name}   {height} × {width} 英寸

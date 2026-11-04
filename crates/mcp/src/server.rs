@@ -183,7 +183,7 @@ impl Server {
                 Ok(json!({
                     "protocolVersion": version,
                     "capabilities": {"tools": {}, "resources": {}},
-                    "serverInfo": {"name": "localoffice", "title": "LocalOffice", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": "https://github.com/Anon5T4R/local-office"},
+                    "serverInfo": {"name": "localoffice", "title": "Local Word", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": "https://github.com/Anon5T4R/local-office"},
                     "instructions": format!(
                         "{INSTRUCTIONS} Backend: {}. Project: https://github.com/Anon5T4R/local-office",
                         self.backend.describe()

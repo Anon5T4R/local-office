@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/app-icon/hicolor/256x256/apps/com.local.localoffice.png" width="128" height="128" alt="LocalOffice icon: a document page and pen on a blue tile">
+  <img src="assets/app-icon/hicolor/256x256/apps/com.local.localoffice.png" width="128" height="128" alt="Local Word icon: a document page and pen on a blue tile">
 </p>
 
-<h1 align="center">LocalOffice</h1>
+<h1 align="center">Local Word</h1>
 
 <p align="center">
   <b>Writing and document design; an open-source, modern word processor, built in pure Rust.</b>
@@ -23,19 +23,19 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Anon5T4R/local-office"><b>LocalOffice on GitHub</b></a>
+  <a href="https://github.com/Anon5T4R/local-office"><b>Local Word on GitHub</b></a>
 </p>
 
 <br>
 
 <p align="center">
-  <img src="docs/images/hero.png" alt="LocalOffice with the Home tab of the ribbon open over a two-page document titled The Open Studio Handbook. The Navigation pane on the left lists the document's headings, the Styles gallery shows live previews of Normal, Heading 1, Title and Subtitle, and a word in the first paragraph is selected." width="100%">
-  <br><sub><b>The Open Studio Handbook</b>, LocalOffice's built-in sample: the ribbon, live Styles gallery, rulers and the Navigation pane.</sub>
+  <img src="docs/images/hero.png" alt="Local Word with the Home tab of the ribbon open over a two-page document titled The Open Studio Handbook. The Navigation pane on the left lists the document's headings, the Styles gallery shows live previews of Normal, Heading 1, Title and Subtitle, and a word in the first paragraph is selected." width="100%">
+  <br><sub><b>The Open Studio Handbook</b>, Local Word's built-in sample: the ribbon, live Styles gallery, rulers and the Navigation pane.</sub>
 </p>
 
 <p align="center">
   <a href="#a-tour">A tour</a> ·
-  <a href="#why-localoffice">Why LocalOffice</a> ·
+  <a href="#why-localoffice">Why Local Word</a> ·
   <a href="#what-works-today">What works today</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#for-agents-cli-and-mcp">For agents</a> ·
@@ -48,7 +48,7 @@
 
 ## A tour
 
-Every screenshot below is LocalOffice itself, rendered offscreen by its own UI test harness
+Every screenshot below is Local Word itself, rendered offscreen by its own UI test harness
 (`cargo run -p localoffice-ui-egui --example ui_shot`).
 
 <table>
@@ -58,7 +58,7 @@ Every screenshot below is LocalOffice itself, rendered offscreen by its own UI t
 </tr>
 <tr>
 <td width="50%" valign="top"><img src="docs/images/design.png" alt="The Design tab showing style-set previews; the document is set in a serif theme with plum headings underlined by thin rules and a pale diagonal DRAFT watermark behind the text" width="100%"><p align="center"><sub><b>Design.</b> Themes, style sets, paragraph spacing, watermarks, page colour and borders.</sub></p></td>
-<td width="50%" valign="top"><img src="docs/images/dark.png" alt="LocalOffice in dark mode with the Insert tab open and formatting marks shown: pilcrows at paragraph ends and dots for spaces" width="100%"><p align="center"><sub><b>Dark mode</b> with formatting marks, and the Insert tab: tables, pictures, shapes, links, headers, footers, fields and symbols.</sub></p></td>
+<td width="50%" valign="top"><img src="docs/images/dark.png" alt="Local Word in dark mode with the Insert tab open and formatting marks shown: pilcrows at paragraph ends and dots for spaces" width="100%"><p align="center"><sub><b>Dark mode</b> with formatting marks, and the Insert tab: tables, pictures, shapes, links, headers, footers, fields and symbols.</sub></p></td>
 </tr>
 <tr>
 <td colspan="2"><img src="docs/images/layout.png" alt="The Layout tab at 80% zoom: the first paragraph opens with a three-line drop cap E, a dark blue circle sits beside the second section with its paragraph wrapping around it and hyphenating art-ist at the line end, every line is numbered in the left margin and a thin blue border surrounds the page" width="100%"><p align="center"><sub><b>Layout.</b> Drop caps, text wrapping around pictures and shapes, automatic hyphenation, line numbers and page borders.</sub></p></td>
@@ -68,7 +68,7 @@ Every screenshot below is LocalOffice itself, rendered offscreen by its own UI t
 </tr>
 </table>
 
-## Why LocalOffice
+## Why Local Word
 
 - **Familiar.** Ribbon tabs, groups, shortcuts and behaviour: Enter continues a list,
   Tab demotes it, Ctrl/⌘+B bolds the word under the caret, the Styles gallery previews styles live,
@@ -132,7 +132,7 @@ Web: `cd apps/localoffice-web && trunk serve`, then open <http://127.0.0.1:8771/
 
 ## For agents: CLI and MCP
 
-LocalOffice was designed to be driven by people *and* by AI agents.
+Local Word was designed to be driven by people *and* by AI agents.
 
 ```sh
 claude mcp add localoffice -- localoffice-cli mcp                  # headless documents
@@ -160,7 +160,7 @@ log stops growing at 16 MiB. `--version` writes no file, and runs with `LOCALOFF
 test runs) log to standard error only. Document text is never logged; a panic message leaves out
 the text it quotes.
 
-By default LocalOffice's own crates log at `info` and everything else at `warn`. `RUST_LOG` replaces
+By default Local Word's own crates log at `info` and everything else at `warn`. `RUST_LOG` replaces
 that with env_logger-style directives, for example `RUST_LOG=debug`,
 `RUST_LOG=warn,localoffice_docx=trace` or `RUST_LOG=info,wgpu_core=warn`; a directive ending in `*`
 covers every target starting with it (`localoffice*=debug`). The logger is
@@ -184,7 +184,7 @@ check and the wasm build. Contributor and agent instructions: [AGENTS.md](AGENTS
 
 ## Roadmap
 
-LocalOffice is in **alpha**. It has commands for 97% of the ribbon and menu features in its feature catalog
+Local Word is in **alpha**. It has commands for 97% of the ribbon and menu features in its feature catalog
 ([`docs/parity-checklist.md`](docs/parity-checklist.md)) today; counting
 depth, file fidelity, stability and the rest, we estimate it is about 60% ready for real work,
 about 55% for a typical professional's weekly work and about 63% for everyday essentials. Beta
@@ -194,7 +194,7 @@ closer pagination fidelity, a stability sweep and native printing. Details and e
 
 ## Downloads
 
-**Download LocalOffice** from GitHub: the [latest release](https://github.com/Anon5T4R/local-office/releases/latest) has every build listed below, and [all releases](https://github.com/Anon5T4R/local-office/releases) has earlier versions and their notes. `<ver>` in the file names is the version number, and `SHA256SUMS.txt` lists a checksum for every file.
+**Download Local Word** from GitHub: the [latest release](https://github.com/Anon5T4R/local-office/releases/latest) has every build listed below, and [all releases](https://github.com/Anon5T4R/local-office/releases) has earlier versions and their notes. `<ver>` in the file names is the version number, and `SHA256SUMS.txt` lists a checksum for every file.
 
 ### Windows
 
@@ -204,9 +204,9 @@ closer pagination fidelity, a stability sweep and native printing. Details and e
 | arm64 (Snapdragon and other ARM PCs) | `localoffice-<ver>-windows-arm64.msi` | `localoffice-<ver>-windows-user-arm64.msi` | `localoffice-<ver>-windows-arm64-portable.zip` |
 | x86 (32-bit) | `localoffice-<ver>-windows-x86.msi` | `localoffice-<ver>-windows-user-x86.msi` | `localoffice-<ver>-windows-x86-portable.zip` |
 
-The all-users installer puts LocalOffice in Program Files and needs administrator rights. The
-just-me installer needs none: it installs into `%LOCALAPPDATA%\Programs\LocalOffice` for your
-account only. Choose one: installing both gives two LocalOffice entries in Settings › Apps and two
+The all-users installer puts Local Word in Program Files and needs administrator rights. The
+just-me installer needs none: it installs into `%LOCALAPPDATA%\Programs\Local Word` for your
+account only. Choose one: installing both gives two Local Word entries in Settings › Apps and two
 in the Start menu. Installers and executables are code-signed.
 
 **If the app doesn't open on Windows:** the desktop app initializes only DirectX 12 by default.
@@ -229,7 +229,7 @@ Windows, creating a DirectX 12 graphics pipeline fails immediately and the app e
 window appears. `WGPU_BACKEND=vulkan` (or `dx12`) still overrides that.
 
 **If the app quits right after its window appears with "Parent device is lost" in the log:**
-LocalOffice compiles DirectX 12 shaders with FXC, the compiler built into Windows, so it needs no
+Local Word compiles DirectX 12 shaders with FXC, the compiler built into Windows, so it needs no
 `dxcompiler.dll`/`dxil.dll` and ignores any copy another program put on `PATH` (#603).
 `WGPU_DX12_COMPILER` (`fxc`, `dxc`, `auto`) overrides this; with `dxc`, a matching
 `dxcompiler.dll` *and* `dxil.dll` must sit next to `localoffice.exe`. `WGPU_BACKEND = "vulkan"`
@@ -237,7 +237,7 @@ also avoids DirectX 12 altogether.
 
 **If the app is slow on an older Windows PC:** when DirectX 12 finds no graphics card with a
 driver for it (for example Intel 4th-generation graphics on Windows 11), it only offers the built-in
-software renderer, which draws every frame on the processor. LocalOffice normally uses OpenGL instead,
+software renderer, which draws every frame on the processor. Local Word normally uses OpenGL instead,
 without setting anything. If OpenGL has no usable adapter, it can use DirectX 12's WARP software
 adapter. The log file records the choice (lines starting with
 `graphics:`). `WGPU_BACKEND` still overrides it, e.g. `$env:WGPU_BACKEND = "gl"` or `"dx12"`.
@@ -282,7 +282,7 @@ For example `yay -S localoffice-bin` or `paru -S localoffice-bin`.
 
 #### Community packages
 
-These packages are maintained by community members, not by the LocalOffice team.
+These packages are maintained by community members, not by the Local Word team.
 
 On Gentoo, the [::snakebyte overlay](https://github.com/switch87/snakebyte-overlay) packages the
 Linux release as `app-office/localoffice-bin` (prebuilt) and `app-office/localoffice` (built from source):
@@ -308,15 +308,15 @@ emerge --ask app-office/localoffice-bin
 
 ## The Local suite
 
-LocalOffice is one of the **Local** apps: free, open-source, local-first tools, each written from
+Local Word is one of the **Local** apps: free, open-source, local-first tools, each written from
 scratch in Rust and each able to stand on its own — no account, no telemetry, no server.
 
 <br>
 
 ## License and credits
 
-LocalOffice is dual-licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.
-Copyright (c) 2026 ArtCraft Team and the LocalOffice contributors. Required notices are in [NOTICE](NOTICE).
+Local Word is dual-licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.
+Copyright (c) 2026 ArtCraft Team and the Local Word contributors. Required notices are in [NOTICE](NOTICE).
 
 Bundled fonts, icons, images and other assets keep their own open licenses; each one is listed
 with its author, source and license in [ATTRIBUTION.md](ATTRIBUTION.md).
@@ -326,11 +326,11 @@ Hyphenator II word list. Polish spelling reads the Hunspell `pl_PL` dictionary i
 do Russian, Portuguese, Czech, Italian, Croatian and Turkish spelling (how to install them:
 [docs/spelling-dictionaries.md](docs/spelling-dictionaries.md)), and
 Polish hyphenation the TeX patterns by Hanna Kołodziejska, Bogusław Jackowski and Marek Ryćko (MIT
-option). The sample documents and templates are original text written for LocalOffice.
+option). The sample documents and templates are original text written for Local Word.
 
-LocalOffice is an independent fork of WordCraft, maintained by Anon5T4R in the Local suite.
+Local Word is an independent fork of WordCraft, maintained by Anon5T4R in the Local suite.
 "WordCraft" and "ArtCraft" are names of the upstream project and its team; this repository uses
-only the LocalOffice name.
+only the Local Word name.
 
 <p align="center">
   <sub>Suíte Local — apps locais, sem conta, sem telemetria.</sub>

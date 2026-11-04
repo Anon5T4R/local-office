@@ -1,4 +1,4 @@
-# ქართული (ka) interface catalog for LocalOffice.
+# ქართული (ka) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -59,7 +59,7 @@
 	AaBbCcDd	AaBbCc აბგდ
 	AaBbYyZz	AaBbYyZz აბგდ
 	About	პროგრამის შესახებ
-	About LocalOffice	LocalOffice-ის შესახებ
+	About Local Word	Local Word-ის შესახებ
 	Above Chart	დიაგრამის ზემოთ
 	Above the item	ელემენტის ზემოთ
 	Absolute value cases	მოდულის შემთხვევები
@@ -239,7 +239,7 @@
 	Automatically Update Document Styles	დოკუმენტის სტილების ავტომატური განახლება
 	Automatically update document styles	დოკუმენტის სტილების ავტომატური განახლება
 	AutoSave	ავტოშენახვა
-	AutoSave documents you have saved in LocalOffice	LocalOffice-ში შენახული დოკუმენტების ავტოშენახვა
+	AutoSave documents you have saved in Local Word	Local Word-ში შენახული დოკუმენტების ავტოშენახვა
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	ავტოშენახვა ვერ მოხერხდა: {error}. ავტოშენახვის ხელახლა ჩასართავად შეინახეთ დოკუმენტი.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	ბრაუზერში ავტოშენახვა მიუწვდომელია: ის თქვენს ფაილებში ვერ წერს. შენახვა ასლს ჩამოტვირთავს.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	ავტოშენახვა მხოლოდ .docx, .odt და .rtf ფაილებს ინახავს; {name} მთელ ფორმატირებას ვერ შეინარჩუნებს. ავტოშენახვის ჩასართავად შეინახეთ .docx-ად.
@@ -319,7 +319,7 @@
 	Breaks	გამყოფები
 	Breve	ბრევისი
 	Bring Forward	წინ გადმოტანა
-	Browse in LocalOffice…	LocalOffice-ში დათვალიერება…
+	Browse in Local Word…	Local Word-ში დათვალიერება…
 	Browse…	არჩევა…
 	Building Block Gallery Content Control	სამშენებლო ბლოკების გალერეის შიგთავსის მართვის ელემენტი
 	Built-In	ჩაშენებული
@@ -567,7 +567,7 @@
 	Cosine Function	კოსინუსის ფუნქცია
 	Cotangent Function	კოტანგენსის ფუნქცია
 	Couldn't download {name}: {error}	{name} ვერ ჩამოიტვირთა: {error}
-	Couldn't make LocalOffice the default: {error}	LocalOffice ნაგულისხმევ პროგრამად ვერ დაყენდა: {error}
+	Couldn't make Local Word the default: {error}	Local Word ნაგულისხმევ პროგრამად ვერ დაყენდა: {error}
 	Couldn't open {path}: {error}	{path} ვერ გაიხსნა: {error}
 	Count by:	დანომვრის ბიჯი:
 	Count words in text boxes and notes	სიტყვების დათვლა ტექსტურ ბლოკებსა და სქოლიოებში
@@ -1131,7 +1131,7 @@
 	Immersive Reader	იმერსიული წამკითხველი
 	Immersive\nReader	იმერსიული\nწამკითხველი
 	Import…	იმპორტი…
-	In Default apps, choose LocalOffice for the document types you want it to open.	„ნაგულისხმევ აპებში“ აირჩიეთ LocalOffice იმ დოკუმენტის ტიპებისთვის, რომლებიც მისით გინდათ გახსნათ.
+	In Default apps, choose Local Word for the document types you want it to open.	„ნაგულისხმევ აპებში“ აირჩიეთ Local Word იმ დოკუმენტის ტიპებისთვის, რომლებიც მისით გინდათ გახსნათ.
 	In equations, typing a name after a backslash replaces it with its symbol.	განტოლებებში უკუდახრილი ხაზის შემდეგ აკრეფილი სახელი მისი სიმბოლოთი იცვლება.
 	In Front of Text	ტექსტის წინ
 	In Line with Text	ტექსტთან ერთ ხაზზე
@@ -1267,7 +1267,7 @@
 	Keep Lines Together	სტრიქონების ერთად დატოვება
 	Keep lines together	სტრიქონების ერთად დატოვება
 	Keep Text Only	მხოლოდ ტექსტის დატოვება
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	პაროლი უსაფრთხო ადგილას შეინახეთ: მის გარეშე დოკუმენტს ვერავინ გახსნის, მათ შორის LocalOffice-იც. პაროლის მოსახსნელად ორივე ველი ცარიელი დატოვეთ.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	პაროლი უსაფრთხო ადგილას შეინახეთ: მის გარეშე დოკუმენტს ვერავინ გახსნის, მათ შორის Local Word-იც. პაროლის მოსახსნელად ორივე ველი ცარიელი დატოვეთ.
 	Keep with Next	შემდეგთან ერთად
 	Keep with next	შემდეგთან ერთად
 	Keeps the fonts and formatting of the copied text.	ინარჩუნებს დაკოპირებული ტექსტის შრიფტებსა და ფორმატირებას.
@@ -1429,7 +1429,7 @@ template	Letter	წერილი
 	Mail Merge	წერილების შერწყმა
 	Mailings	დაგზავნა
 	Main entry:	ძირითადი ჩანაწერი:
-	Make LocalOffice the default for Word documents…	LocalOffice-ის დაყენება Word დოკუმენტების ნაგულისხმევ პროგრამად…
+	Make Local Word the default for Word documents…	Local Word-ის დაყენება Word დოკუმენტების ნაგულისხმევ პროგრამად…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	ზრდის ან ამცირებს ლენტს, მენიუებსა და ფანჯრებს. „ავტომატური“ მიჰყვება სისტემის ეკრანის მასშტაბირებას; 100% ნიშნავს ეკრანის ერთ პიქსელს ერთ პუნქტზე. დოკუმენტის მასშტაბი ცალკე იცვლება.
 	Manage Sources	წყაროების მართვა
 	Manage Styles	სტილების მართვა
@@ -1594,7 +1594,7 @@ template	Letter	წერილი
 	No Soft Edges	რბილი კიდეების გარეშე
 	No sources yet.	წყაროები ჯერ არ არის.
 	No Spacing	უინტერვალოდ
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	მართლწერის ლექსიკონი ({language}) დაყენებული არ არის, ამიტომ ტექსტი არ მოწმდება. LocalOffice Hunspell-ის ლექსიკონს {name} ეძებს LOCALOFFICE_DICTIONARIES საქაღალდეში და სისტემის ჩვეულებრივ მდებარეობებში.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	მართლწერის ლექსიკონი ({language}) დაყენებული არ არის, ამიტომ ტექსტი არ მოწმდება. Local Word Hunspell-ის ლექსიკონს {name} ეძებს LOCALOFFICE_DICTIONARIES საქაღალდეში და სისტემის ჩვეულებრივ მდებარეობებში.
 	No templates match your search.	ძიების შესაბამისი შაბლონი არ მოიძებნა.
 	No Transform	გარდაქმნის გარეშე
 	No words yet. Add to Dictionary on a misspelled word puts it here.	სიტყვები ჯერ არ არის. შეცდომით დაწერილ სიტყვაზე „ლექსიკონში დამატება“ მას აქ დაამატებს.
@@ -1671,7 +1671,7 @@ template	Letter	წერილი
 	Omit	გამოტოვება
 	On	ჩართული
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	ჩართული: აკრეფისას ან ისრიანი კლავიშებით მოძრაობისას კურსორი ახალ ადგილას გადასრიალდება, მისი ციმციმი კი რბილად ქრება და ჩნდება. გამორთული: კურსორი გადახტება და ციმციმებს.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	ჩართული: LocalOffice იხსნება ფაილი › მთავარი გვერდზე, ცარიელი დოკუმენტით, შაბლონებითა და ბოლოს გახსნილი დოკუმენტებით. გამორთული: იხსნება ცარიელი დოკუმენტი.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	ჩართული: Local Word იხსნება ფაილი › მთავარი გვერდზე, ცარიელი დოკუმენტით, შაბლონებითა და ბოლოს გახსნილი დოკუმენტებით. გამორთული: იხსნება ცარიელი დოკუმენტი.
 	One	ერთი
 	One half	ერთი მეორედი
 	One label per recipient	თითო იარლიყი თითო მიმღებზე
@@ -1687,11 +1687,11 @@ template	Letter	წერილი
 	Only web (http, https) and email (mailto) links can be followed	გადასვლა შესაძლებელია მხოლოდ ვებ (http, https) და ელფოსტის (mailto) ბმულებზე
 	Open	გახსნა
 	Open a document first	ჯერ გახსენით დოკუმენტი
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	ფაილის გახსნა LocalOffice-ის საკუთარი ბრაუზერით, როცა სისტემის ფაილის ფანჯარა არ ჩნდება.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	ფაილის გახსნა Local Word-ის საკუთარი ბრაუზერით, როცა სისტემის ფაილის ფანჯარა არ ჩნდება.
 	OpenDocument Text (*.odt)	OpenDocument ტექსტი (*.odt)
 	Opening print dialog…	ბეჭდვის ფანჯარა იხსნება…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	ამიერიდან .docx, .doc, .rtf და .odt ფაილები და Word შაბლონები LocalOffice-ით გაიხსნება.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	ხსნის Settings › Default apps-ს, სადაც .docx-ისა და დოკუმენტის სხვა ტიპებისთვის LocalOffice-ს აირჩევთ.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	ამიერიდან .docx, .doc, .rtf და .odt ფაილები და Word შაბლონები Local Word-ით გაიხსნება.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	ხსნის Settings › Default apps-ს, სადაც .docx-ისა და დოკუმენტის სხვა ტიპებისთვის Local Word-ს აირჩევთ.
 	Operator	ოპერატორი
 	Operator Structures	ოპერატორების სტრუქტურები
 	Operators	ოპერატორები
@@ -2000,7 +2000,7 @@ template	Letter	წერილი
 	Report	ანგარიში
 	Research	კვლევა
 	Researcher	მკვლევარი
-	Researcher needs an online service; LocalOffice keeps your documents offline.	მკვლევარს ონლაინ სერვისი სჭირდება; LocalOffice თქვენს დოკუმენტებს ოფლაინ ინახავს.
+	Researcher needs an online service; Local Word keeps your documents offline.	მკვლევარს ონლაინ სერვისი სჭირდება; Local Word თქვენს დოკუმენტებს ოფლაინ ინახავს.
 	Reset	ჩამოყრა
 	Reset All…	ყველაფრის ჩამოყრა…
 	Reset Character Formatting	სიმბოლოს ფორმატირების ჩამოყრა
@@ -2231,7 +2231,7 @@ template	Letter	წერილი
 	Show the equation on a line of its own	განტოლების ჩვენება ცალკე სტრიქონზე
 	Show the mini toolbar when text is selected	მინი-პანელის ჩვენება ტექსტის მონიშვნისას
 	Show the ribbon	ლენტის ჩვენება
-	Show the Start screen when LocalOffice starts	საწყისი ეკრანის ჩვენება LocalOffice-ის გაშვებისას
+	Show the Start screen when Local Word starts	საწყისი ეკრანის ჩვენება Local Word-ის გაშვებისას
 	Show/Hide ¶	¶ ჩვენება/დამალვა
 	Show\nComments	კომენტარების\nჩვენება
 	Showing the first {count} items.	ნაჩვენებია პირველი ელემენტები: {count}.
@@ -2502,7 +2502,7 @@ template	Letter	წერილი
 	The recipient-list field that fills each part of an address block and greeting line.	მიმღებთა სიის ველი, რომელიც ავსებს მისამართის ბლოკისა და მისალმების სტრიქონის თითოეულ ნაწილს.
 	The spelling and grammar check is complete.	მართლწერისა და გრამატიკის შემოწმება დასრულდა.
 	the Spike is empty	კრებული ცარიელია
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	სისტემის ფაილის ფანჯარა მიუწვდომელია, ამიტომ LocalOffice საკუთარს აჩვენებს. სისტემის ფანჯრისთვის დააინსტალირეთ ფაილის არჩევის პორტალი (მაგალითად, xdg-desktop-portal-gtk) ან zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	სისტემის ფაილის ფანჯარა მიუწვდომელია, ამიტომ Local Word საკუთარს აჩვენებს. სისტემის ფანჯრისთვის დააინსტალირეთ ფაილის არჩევის პორტალი (მაგალითად, xdg-desktop-portal-gtk) ან zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	კურსორთან მდებარე ტექსტზე ჩართულია „მართლწერისა და გრამატიკის შემოწმების გარეშე“.
 	The time right now	მიმდინარე დრო
 	Theme Colors	თემის ფერები
@@ -2520,7 +2520,7 @@ template	Letter	წერილი
 	These settings will be used for new documents.	ეს პარამეტრები ახალი დოკუმენტებისთვის გამოიყენება.
 	Thick	სქელი
 	Thickness	სისქე
-	this chart was made in another program: LocalOffice shows it but can't edit it	ეს დიაგრამა სხვა პროგრამაშია შექმნილი: LocalOffice მას აჩვენებს, მაგრამ ვერ არედაქტირებს
+	this chart was made in another program: Local Word shows it but can't edit it	ეს დიაგრამა სხვა პროგრამაშია შექმნილი: Local Word მას აჩვენებს, მაგრამ ვერ არედაქტირებს
 	This document	ეს დოკუმენტი
 	This document has no bookmarks.	ამ დოკუმენტს სანიშნეები არ აქვს.
 	This field has no options.	ამ ველს პარამეტრები არ აქვს.
@@ -2531,7 +2531,7 @@ template	Letter	წერილი
 	This password type isn't supported.	პაროლის ეს ტიპი მხარდაჭერილი არ არის.
 	This point forward	აქედან მოყოლებული
 	This section	ეს სექცია
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	ეს SmartArt სხვა პროგრამაშია შექმნილი: LocalOffice მას აჩვენებს, მაგრამ ვერ არედაქტირებს
+	this SmartArt was made in another program: Local Word shows it but can't edit it	ეს SmartArt სხვა პროგრამაშია შექმნილი: Local Word მას აჩვენებს, მაგრამ ვერ არედაქტირებს
 	this text box is already linked: break the link first	ეს ტექსტური ბლოკი უკვე დაკავშირებულია: ჯერ გაწყვიტეთ ბმული
 	Three	სამი
 	Through	გამჭოლი
@@ -2543,7 +2543,7 @@ preview	Title	სათაური
 	Title Bar	სათაურის ზოლი
 	Title from the document properties	სათაური დოკუმენტის თვისებებიდან
 	Title:	სათაური:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Word დოკუმენტების LocalOffice-ით ნაგულისხმევად გასახსნელად: Finder-ში მონიშნეთ ერთ-ერთი, აირჩიეთ File › Get Info, „Open with“-ში აირჩიეთ LocalOffice და დაწკაპეთ Change All.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Word დოკუმენტების Local Word-ით ნაგულისხმევად გასახსნელად: Finder-ში მონიშნეთ ერთ-ერთი, აირჩიეთ File › Get Info, „Open with“-ში აირჩიეთ Local Word და დაწკაპეთ Change All.
 	To:	სადამდე:
 	TOA Heading	სამართლებრივი წყაროების სიის სათაური
 	TOC Heading	სარჩევის სათაური
@@ -2734,8 +2734,8 @@ preview	Title	სათაური
 	Word XML Document (*.xml)	Word XML დოკუმენტი (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArt სტილები
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice ახლა Word დოკუმენტების ნაგულისხმევი პროგრამაა.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word ახლა Word დოკუმენტების ნაგულისხმევი პროგრამაა.
 	Words	სიტყვები
 	Words only	მხოლოდ სიტყვები
 	Wrap Text	ტექსტით გარშემოვლება
@@ -2770,7 +2770,7 @@ preview	Title	სათაური
 	{language} (no dictionary)	{language} (ლექსიკონის გარეშე)
 	{language} is now the document's default language.	{language} ახლა დოკუმენტის ნაგულისხმევი ენაა.
 	{language}: no dictionary found	{language}: ლექსიკონი ვერ მოიძებნა
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice ამ ენაზე მართლწერასა და გრამატიკას ჯერ არ ამოწმებს.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word ამ ენაზე მართლწერასა და გრამატიკას ჯერ არ ამოწმებს.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} და კიდევ {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} დუიმი

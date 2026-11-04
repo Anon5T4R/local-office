@@ -1,4 +1,4 @@
-# Eesti (et) interface catalog for LocalOffice.
+# Eesti (et) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -37,7 +37,7 @@
 	A, B, C, …	A, B, C, …
 	a, b, c, …	a, b, c, …
 	AaBbYyZz	AaBbYyZz ÕõÄäÖöÜü
-	About LocalOffice	LocalOfficei teave
+	About Local Word	Local Wordi teave
 	Above Chart	Diagrammi kohal
 	Above the item	Objekti kohal
 	Accent	Rõhumärk
@@ -174,7 +174,7 @@
 	Automatically Update Document Styles	Uuenda dokumendi stiile automaatselt
 	Automatically update document styles	Uuenda dokumendi stiile automaatselt
 	AutoSave	Automaatsalvestus
-	AutoSave documents you have saved in LocalOffice	Salvesta LocalOfficeis salvestatud dokumendid automaatselt
+	AutoSave documents you have saved in Local Word	Salvesta Local Wordis salvestatud dokumendid automaatselt
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Automaatsalvestus ebaõnnestus: {error}. Selle uuesti sisse lülitamiseks salvesta dokument.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Automaatsalvestus pole brauseris saadaval: see ei saa sinu faile kirjutada. Salvestamine laadib alla koopia.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Automaatsalvestus hoiab ainult .docx-, .odt- ja .rtf-faile; {name} ei säilita kogu vormingut. Automaatsalvestuse sisselülitamiseks salvesta .docx-failina.
@@ -226,7 +226,7 @@
 	Box	Kast
 	Bracket	Sulg
 	Breaks	Piirid
-	Browse in LocalOffice…	Sirvi LocalOfficeis…
+	Browse in Local Word…	Sirvi Local Wordis…
 	Building Block Gallery Content Control	Ehitusplokkide galerii sisujuhtelement
 	Built-In	Sisseehitatud
 	Built-in style	Sisseehitatud stiil
@@ -387,7 +387,7 @@
 	Correct TWo INitial CApitals	Paranda KAks SUurt algustähte
 	Corrections	Parandused
 	Couldn't download {name}: {error}	Faili {name} allalaadimine ebaõnnestus: {error}
-	Couldn't make LocalOffice the default: {error}	LocalOfficei ei õnnestunud vaikerakenduseks määrata: {error}
+	Couldn't make Local Word the default: {error}	Local Wordi ei õnnestunud vaikerakenduseks määrata: {error}
 	Couldn't open {path}: {error}	Faili {path} avamine ebaõnnestus: {error}
 	Count by:	Samm:
 	Count words in text boxes and notes	Loenda sõnad ka tekstiväljadel ja märkustes
@@ -783,7 +783,7 @@
 	Immersive Reader	Süvaluger
 	Immersive\nReader	Süva-\nluger
 	Import…	Impordi…
-	In Default apps, choose LocalOffice for the document types you want it to open.	Vali jaotises „Vaikerakendused“ LocalOffice nende dokumenditüüpide jaoks, mida see peaks avama.
+	In Default apps, choose Local Word for the document types you want it to open.	Vali jaotises „Vaikerakendused“ Local Word nende dokumenditüüpide jaoks, mida see peaks avama.
 	In equations, typing a name after a backslash replaces it with its symbol.	Võrrandites asendatakse kaldkriipsu järel tipitud nimi selle sümboliga.
 	In Front of Text	Teksti ees
 	In Line with Text	Tekstiga reas
@@ -875,7 +875,7 @@
 	Keep Lines Together	Hoia read koos
 	Keep lines together	Hoia read koos
 	Keep Text Only	Säilita ainult tekst
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Hoia parooli kindlas kohas: ilma selleta ei saa keegi, ka LocalOffice, dokumenti avada. Parooli eemaldamiseks jäta mõlemad väljad tühjaks.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Hoia parooli kindlas kohas: ilma selleta ei saa keegi, ka Local Word, dokumenti avada. Parooli eemaldamiseks jäta mõlemad väljad tühjaks.
 	Keep with Next	Hoia järgmisega koos
 	Keep with next	Hoia järgmisega koos
 	Keeps the fonts and formatting of the copied text.	Säilitab kopeeritud teksti fondid ja vorminduse.
@@ -972,7 +972,7 @@
 	Mail Merge	Kirjakooste
 	Mailings	Postitused
 	Main entry:	Põhikirje:
-	Make LocalOffice the default for Word documents…	Määra LocalOffice Wordi dokumentide vaikerakenduseks…
+	Make Local Word the default for Word documents…	Määra Local Word Wordi dokumentide vaikerakenduseks…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Muudab menüülindi, menüüd ja dialoogid suuremaks või väiksemaks. Automaatne järgib süsteemi ekraani skaleerimist; 100% on üks ekraanipiksel punkti kohta. Dokumendi suum on eraldi.
 	Manage Sources	Halda allikaid
 	Manage Styles	Halda stiile
@@ -1097,7 +1097,7 @@
 	No Soft Edges	Pehmete servadeta
 	No sources yet.	Allikaid veel pole.
 	No Spacing	Vahedeta
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Keele {language} õigekirjasõnastikku pole paigaldatud, seega seda ei kontrollita. LocalOffice otsib Hunspelli sõnastikku {name} kaustast LOCALOFFICE_DICTIONARIES ja tavalistest süsteemikohtadest.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Keele {language} õigekirjasõnastikku pole paigaldatud, seega seda ei kontrollita. Local Word otsib Hunspelli sõnastikku {name} kaustast LOCALOFFICE_DICTIONARIES ja tavalistest süsteemikohtadest.
 	No templates match your search.	Otsingule vastavaid malle pole.
 	No Transform	Teisenduseta
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Sõnu veel pole. Valik „Lisa sõnastikku“ valesti kirjutatud sõnal lisab selle siia.
@@ -1158,7 +1158,7 @@
 	Offset: Top Right	Nihe: üles paremale
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Vanad menüüklahvid: Alt, {keys}. Jätkake tippimist või tühistage Esc-klahviga.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Sees: tekstikursor libiseb tippimisel või nooleklahvide kasutamisel uude kohta ja selle vilkumine hajub sujuvalt. Väljas: kursor hüppab ja vilgub järsult.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Sees: LocalOffice avaneb vaates Fail › Avaleht, kus on tühi dokument, mallid ja hiljutised dokumendid. Väljas: avaneb tühi dokument.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Sees: Local Word avaneb vaates Fail › Avaleht, kus on tühi dokument, mallid ja hiljutised dokumendid. Väljas: avaneb tühi dokument.
 	One	Üks
 	One label per recipient	Üks silt saaja kohta
 	One line per item. Enter adds an item.	Üks rida üksuse kohta. Sisestusklahv lisab üksuse.
@@ -1172,11 +1172,11 @@
 	Only the allowed styles can be applied.	Rakendada saab ainult lubatud laade.
 	Only web (http, https) and email (mailto) links can be followed	Avada saab ainult veebi- (http, https) ja e-posti (mailto) linke
 	Open a document first	Avage kõigepealt dokument
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Ava fail LocalOfficei enda failisirvijaga, kui süsteemi failidialoog ei ilmu.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Ava fail Local Wordi enda failisirvijaga, kui süsteemi failidialoog ei ilmu.
 	OpenDocument Text (*.odt)	OpenDocumenti tekst (*.odt)
 	Opening print dialog…	Prindidialoogi avamine…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Edaspidi avatakse .docx-, .doc-, .rtf- ja .odt-failid ning Wordi mallid LocalOfficeiga.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Avab Sätted › Vaikerakendused, kus saad valida LocalOfficei .docx-i ja teiste dokumenditüüpide jaoks.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Edaspidi avatakse .docx-, .doc-, .rtf- ja .odt-failid ning Wordi mallid Local Wordiga.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Avab Sätted › Vaikerakendused, kus saad valida Local Wordi .docx-i ja teiste dokumenditüüpide jaoks.
 	Operator	Operaator
 	Optional Hyphen	Valikuline poolitusmärk
 	Or	Või
@@ -1406,7 +1406,7 @@
 	Replay	Esita uuesti
 	Research	Uurimine
 	Researcher	Uurija
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Uurija vajab võrguteenust; LocalOffice hoiab teie dokumendid võrguühenduseta.
+	Researcher needs an online service; Local Word keeps your documents offline.	Uurija vajab võrguteenust; Local Word hoiab teie dokumendid võrguühenduseta.
 	Reset All…	Lähtesta kõik…
 	Reset Character Formatting	Lähtesta märgivorming
 	Reset Crop	Lähtesta kärpimine
@@ -1591,7 +1591,7 @@
 	Show the community button in the title bar	Kuva tiitliribal kogukonna nupp
 	Show the mini toolbar when text is selected	Kuva teksti valimisel minitööriistariba
 	Show the ribbon	Kuva menüülint
-	Show the Start screen when LocalOffice starts	Näita LocalOfficei käivitamisel avakuva
+	Show the Start screen when Local Word starts	Näita Local Wordi käivitamisel avakuva
 	Show/Hide ¶	Kuva/peida ¶
 	Show\nComments	Kuva\nkommentaarid
 	Showing the first {count} items.	Kuvatud on ainult esimesed kirjed: {count}.
@@ -1772,7 +1772,7 @@
 	The printer, two-sided printing and pages per sheet are chosen in that dialog.	Printer, kahepoolne printimine ja lehekülgi lehe kohta valitakse selles dialoogis.
 	The recipient-list field that fills each part of an address block and greeting line.	Adressaatide loendi väli, mis täidab aadressiploki ja tervitusrea iga osa.
 	the Spike is empty	koguja on tühi
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Süsteemi failidialoog pole saadaval, seega näitab LocalOffice enda oma. Süsteemi dialoogi saamiseks paigalda failivalija portaal (näiteks xdg-desktop-portal-gtk) või zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Süsteemi failidialoog pole saadaval, seega näitab Local Word enda oma. Süsteemi dialoogi saamiseks paigalda failivalija portaal (näiteks xdg-desktop-portal-gtk) või zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Sisestuskohal olev tekst on märgitud: Ära kontrolli õigekirja ega grammatikat.
 	The time right now	Praegune kellaaeg
 	Theme Colors	Kujunduse värvid
@@ -1789,7 +1789,7 @@
 	These merge fields aren't in the recipient list:	Neid ühendamisvälju pole adressaatide loendis:
 	These settings will be used for new documents.	Neid sätteid kasutatakse uute dokumentide puhul.
 	Thick	Paks
-	this chart was made in another program: LocalOffice shows it but can't edit it	see diagramm on loodud teises programmis: LocalOffice kuvab seda, kuid ei saa seda redigeerida
+	this chart was made in another program: Local Word shows it but can't edit it	see diagramm on loodud teises programmis: Local Word kuvab seda, kuid ei saa seda redigeerida
 	This document	See dokument
 	This field has no options.	Sellel väljal pole suvandeid.
 	This folder can't be read: {error}	Seda kausta ei saa lugeda: {error}
@@ -1799,7 +1799,7 @@
 	This password type isn't supported.	Seda paroolitüüpi ei toetata.
 	This point forward	Siitpeale
 	This section	See jaotis
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	see SmartArt on loodud teises programmis: LocalOffice kuvab seda, kuid ei saa seda redigeerida
+	this SmartArt was made in another program: Local Word shows it but can't edit it	see SmartArt on loodud teises programmis: Local Word kuvab seda, kuid ei saa seda redigeerida
 	this text box is already linked: break the link first	see tekstiväli on juba lingitud: katkestage esmalt link
 	Three	Kolm
 	Through	Läbiv
@@ -1808,7 +1808,7 @@
 	Title Bar	Tiitliriba
 	Title from the document properties	Pealkiri dokumendi atribuutidest
 	Title:	Pealkiri:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Wordi dokumentide vaikimisi avamiseks LocalOfficeiga vali Finderis üks dokument, vali Fail › Hangi teave, vali jaotises „Ava rakendusega“ LocalOffice ja klõpsa „Muuda kõiki“.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Wordi dokumentide vaikimisi avamiseks Local Wordiga vali Finderis üks dokument, vali Fail › Hangi teave, vali jaotises „Ava rakendusega“ Local Word ja klõpsa „Muuda kõiki“.
 	To:	Kuni:
 	TOC Heading	Sisukorra pealkiri
 	TOC {n}	Sisukord {n}
@@ -1932,8 +1932,8 @@
 	Word XML Document (*.xml)	Wordi XML-dokument (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArti laadid
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice on nüüd Wordi dokumentide vaikerakendus.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word on nüüd Wordi dokumentide vaikerakendus.
 	Words only	Ainult sõnad
 	Wrap Text	Mähi tekst
 	Wrap Text Sides	Mähkimise küljed
@@ -1960,7 +1960,7 @@
 	{language} (no dictionary)	{language} (sõnastik puudub)
 	{language} is now the document's default language.	{language} on nüüd dokumendi vaikekeel.
 	{language}: no dictionary found	{language}: sõnastikku ei leitud
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice ei kontrolli selles keeles veel õigekirja ega grammatikat.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word ei kontrolli selles keeles veel õigekirja ega grammatikat.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} ja veel {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} tolli

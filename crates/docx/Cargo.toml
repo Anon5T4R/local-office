@@ -3,7 +3,7 @@ name = "localoffice-docx"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "LocalOffice DOCX (OOXML WordprocessingML) reader and writer"
+description = "Local Word DOCX (OOXML WordprocessingML) reader and writer"
 
 [lints]
 workspace = true

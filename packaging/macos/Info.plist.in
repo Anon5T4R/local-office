@@ -7,9 +7,9 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>LocalOffice</string>
+  <string>Local Word</string>
   <key>CFBundleName</key>
-  <string>LocalOffice</string>
+  <string>Local Word</string>
   <key>CFBundleExecutable</key>
   <string>LocalOffice</string>
   <key>CFBundleIdentifier</key>
@@ -43,7 +43,7 @@
   <key>NSRequiresAquaSystemAppearance</key>
   <false/>
   <key>NSHumanReadableCopyright</key>
-  <string>Copyright © the LocalOffice authors. MIT OR Apache-2.0.</string>
+  <string>Copyright © the Local Word authors. MIT OR Apache-2.0.</string>
 
   <!-- Documents LocalOffice opens (system type declarations). -->
   <key>CFBundleDocumentTypes</key>

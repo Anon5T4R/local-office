@@ -1,4 +1,4 @@
-# Română (ro) interface catalog for LocalOffice.
+# Română (ro) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -59,7 +59,7 @@
 	AaBbCcDd	AaBbCcDd
 	AaBbYyZz	AaBbYyZz
 	About	Despre
-	About LocalOffice	Despre LocalOffice
+	About Local Word	Despre Local Word
 	Above Chart	Deasupra graficului
 	Above the item	Deasupra elementului
 	Absolute value cases	Valoare absolută pe cazuri
@@ -239,7 +239,7 @@
 	Automatically Update Document Styles	Actualizați automat stilurile documentului
 	Automatically update document styles	Actualizați automat stilurile documentului
 	AutoSave	Salvare automată
-	AutoSave documents you have saved in LocalOffice	Salvează automat documentele pe care le-ați salvat în LocalOffice
+	AutoSave documents you have saved in Local Word	Salvează automat documentele pe care le-ați salvat în Local Word
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Salvarea automată a eșuat: {error}. Salvați documentul pentru a reactiva salvarea automată.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Salvarea automată nu e disponibilă în browser: nu poate scrie în fișierele dvs.. Salvarea descarcă o copie.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Salvarea automată păstrează doar fișiere .docx, .odt și .rtf; {name} nu poate păstra toată formatarea. Salvați ca .docx pentru a activa salvarea automată.
@@ -319,7 +319,7 @@
 	Breaks	Întreruperi
 	Breve	Breve
 	Bring Forward	Aducere în față
-	Browse in LocalOffice…	Răsfoire în LocalOffice…
+	Browse in Local Word…	Răsfoire în Local Word…
 	Browse…	Răsfoire…
 	Building Block Gallery Content Control	Control de conținut pentru galeria de blocuri de construcție
 	Built-In	Încorporat
@@ -567,7 +567,7 @@
 	Cosine Function	Funcția cosinus
 	Cotangent Function	Funcția cotangentă
 	Couldn't download {name}: {error}	Nu s-a putut descărca {name}: {error}
-	Couldn't make LocalOffice the default: {error}	Nu s-a putut seta LocalOffice ca implicit: {error}
+	Couldn't make Local Word the default: {error}	Nu s-a putut seta Local Word ca implicit: {error}
 	Couldn't open {path}: {error}	Nu s-a putut deschide {path}: {error}
 	Count by:	Numărare după:
 	Count words in text boxes and notes	Numără cuvintele din casetele de text și din note
@@ -1131,7 +1131,7 @@
 	Immersive Reader	Cititor imersiv
 	Immersive\nReader	Cititor\nimersiv
 	Import…	Import…
-	In Default apps, choose LocalOffice for the document types you want it to open.	În Aplicații implicite, alegeți LocalOffice pentru tipurile de documente pe care doriți să le deschidă.
+	In Default apps, choose Local Word for the document types you want it to open.	În Aplicații implicite, alegeți Local Word pentru tipurile de documente pe care doriți să le deschidă.
 	In equations, typing a name after a backslash replaces it with its symbol.	În ecuații, dacă scrieți un nume după o bară oblică inversă, acesta este înlocuit cu simbolul său.
 	In Front of Text	În fața textului
 	In Line with Text	În linie cu textul
@@ -1266,7 +1266,7 @@
 	Keep Lines Together	Păstrare rânduri împreună
 	Keep lines together	Păstrați rândurile împreună
 	Keep Text Only	Păstrare doar text
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Păstrați parola într-un loc sigur: fără ea nimeni, nici măcar LocalOffice, nu poate deschide documentul. Lăsați ambele casete goale pentru a elimina parola.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Păstrați parola într-un loc sigur: fără ea nimeni, nici măcar Local Word, nu poate deschide documentul. Lăsați ambele casete goale pentru a elimina parola.
 	Keep with Next	Păstrare cu următorul
 	Keep with next	Păstrați cu următorul
 	Keeps the fonts and formatting of the copied text.	Păstrează fonturile și formatarea textului copiat.
@@ -1428,7 +1428,7 @@ template	Letter	Scrisoare
 	Mail Merge	Îmbinare corespondență
 	Mailings	Corespondență
 	Main entry:	Intrare principală:
-	Make LocalOffice the default for Word documents…	Setați LocalOffice ca implicit pentru documentele Word…
+	Make Local Word the default for Word documents…	Setați Local Word ca implicit pentru documentele Word…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Face panglica, meniurile și dialogurile mai mari sau mai mici. Auto urmează scalarea ecranului din sistem; 100% înseamnă un pixel de ecran pe punct. Zoomul documentului este separat.
 	Manage Sources	Gestionare surse
 	Manage Styles	Gestionare stiluri
@@ -1593,7 +1593,7 @@ template	Letter	Scrisoare
 	No Soft Edges	Fără margini estompate
 	No sources yet.	Nicio sursă încă.
 	No Spacing	Fără spațiere
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Nu este instalat niciun dicționar ortografic pentru {language}, așa că nu se verifică. LocalOffice caută dicționarul Hunspell {name} în folderul LOCALOFFICE_DICTIONARIES și în locurile uzuale ale sistemului.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Nu este instalat niciun dicționar ortografic pentru {language}, așa că nu se verifică. Local Word caută dicționarul Hunspell {name} în folderul LOCALOFFICE_DICTIONARIES și în locurile uzuale ale sistemului.
 	No templates match your search.	Niciun șablon nu se potrivește căutării.
 	No Transform	Fără transformare
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Niciun cuvânt încă. „Adăugați în dicționar” pe un cuvânt scris greșit îl pune aici.
@@ -1670,7 +1670,7 @@ template	Letter	Scrisoare
 	Omit	Omitere
 	On	Activat
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Activat: cursorul alunecă în noul loc când scrieți sau folosiți tastele săgeți, iar clipirea lui se estompează. Dezactivat: sare și clipește.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Activat: LocalOffice se deschide la Fișier › Pornire, cu un document gol, șabloanele și documentele dvs. recente. Dezactivat: se deschide un document gol.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Activat: Local Word se deschide la Fișier › Pornire, cu un document gol, șabloanele și documentele dvs. recente. Dezactivat: se deschide un document gol.
 	One	Unu
 	One half	O jumătate
 	One label per recipient	O etichetă per destinatar
@@ -1686,11 +1686,11 @@ template	Letter	Scrisoare
 	Only web (http, https) and email (mailto) links can be followed	Se pot urma doar linkurile web (http, https) și de e-mail (mailto)
 	Open	Deschidere
 	Open a document first	Deschideți mai întâi un document
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Deschideți un fișier cu propriul browser al LocalOffice când dialogul de fișiere al sistemului nu apare.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Deschideți un fișier cu propriul browser al Local Word când dialogul de fișiere al sistemului nu apare.
 	OpenDocument Text (*.odt)	Text OpenDocument (*.odt)
 	Opening print dialog…	Se deschide dialogul de imprimare…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	De acum, deschide fișierele .docx, .doc, .rtf și .odt și șabloanele Word cu LocalOffice.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Deschide Setări › Aplicații implicite, unde alegeți LocalOffice pentru .docx și celelalte tipuri de documente.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	De acum, deschide fișierele .docx, .doc, .rtf și .odt și șabloanele Word cu Local Word.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Deschide Setări › Aplicații implicite, unde alegeți Local Word pentru .docx și celelalte tipuri de documente.
 	Operator	Operator
 	Operator Structures	Structuri de operatori
 	Operators	Operatori
@@ -1999,7 +1999,7 @@ template	Letter	Scrisoare
 	Report	Raport
 	Research	Cercetare
 	Researcher	Cercetător
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Cercetătorul necesită un serviciu online; LocalOffice vă păstrează documentele offline.
+	Researcher needs an online service; Local Word keeps your documents offline.	Cercetătorul necesită un serviciu online; Local Word vă păstrează documentele offline.
 	Reset	Resetare
 	Reset All…	Resetare totală…
 	Reset Character Formatting	Resetare formatare caractere
@@ -2229,7 +2229,7 @@ template	Letter	Scrisoare
 	Show the equation on a line of its own	Afișați ecuația pe un rând separat
 	Show the mini toolbar when text is selected	Afișați mini-bara de instrumente când este selectat text
 	Show the ribbon	Afișare panglică
-	Show the Start screen when LocalOffice starts	Afișați ecranul de start când pornește LocalOffice
+	Show the Start screen when Local Word starts	Afișați ecranul de start când pornește Local Word
 	Show/Hide ¶	Afișare/ascundere ¶
 	Show\nComments	Afișare\ncomentarii
 	Showing the first {count} items.	Se afișează primele {count} elemente.
@@ -2500,7 +2500,7 @@ template	Letter	Scrisoare
 	The recipient-list field that fills each part of an address block and greeting line.	Câmpul din lista de destinatari care completează fiecare parte a unui bloc de adresă și a unui rând de salut.
 	The spelling and grammar check is complete.	Verificarea ortografiei și a gramaticii s-a terminat.
 	the Spike is empty	spike-ul este gol
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Dialogul de fișiere al sistemului nu este disponibil, așa că LocalOffice îl afișează pe al lui. Pentru a obține dialogul sistemului, instalați un portal de selectare a fișierelor (cum ar fi xdg-desktop-portal-gtk) sau zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Dialogul de fișiere al sistemului nu este disponibil, așa că Local Word îl afișează pe al lui. Pentru a obține dialogul sistemului, instalați un portal de selectare a fișierelor (cum ar fi xdg-desktop-portal-gtk) sau zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Textul de la punctul de inserare este marcat: Nu verifica ortografia și gramatica.
 	The time right now	Ora de acum
 	Theme Colors	Culori de temă
@@ -2518,7 +2518,7 @@ template	Letter	Scrisoare
 	These settings will be used for new documents.	Aceste setări vor fi folosite pentru documentele noi.
 	Thick	Groasă
 	Thickness	Grosime
-	this chart was made in another program: LocalOffice shows it but can't edit it	această diagramă a fost creată în alt program: LocalOffice o afișează, dar nu o poate edita
+	this chart was made in another program: Local Word shows it but can't edit it	această diagramă a fost creată în alt program: Local Word o afișează, dar nu o poate edita
 	This document	Acest document
 	This document has no bookmarks.	Acest document nu are marcaje.
 	This field has no options.	Acest câmp nu are opțiuni.
@@ -2529,7 +2529,7 @@ template	Letter	Scrisoare
 	This password type isn't supported.	Acest tip de parolă nu este acceptat.
 	This point forward	De aici înainte
 	This section	Această secțiune
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	acest SmartArt a fost creat în alt program: LocalOffice îl afișează, dar nu îl poate edita
+	this SmartArt was made in another program: Local Word shows it but can't edit it	acest SmartArt a fost creat în alt program: Local Word îl afișează, dar nu îl poate edita
 	this text box is already linked: break the link first	această casetă de text este deja legată: întrerupeți mai întâi legătura
 	Three	Trei
 	Through	Prin
@@ -2541,7 +2541,7 @@ preview	Title	Titlu
 	Title Bar	Bară de titlu
 	Title from the document properties	Titlu din proprietățile documentului
 	Title:	Titlu:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Pentru a deschide implicit documentele Word cu LocalOffice: selectați unul în Finder, alegeți Fișier › Obține informații, alegeți LocalOffice la Deschide cu, apoi faceți clic pe Schimbă tot.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Pentru a deschide implicit documentele Word cu Local Word: selectați unul în Finder, alegeți Fișier › Obține informații, alegeți Local Word la Deschide cu, apoi faceți clic pe Schimbă tot.
 	To:	Până la:
 	TOA Heading	Titlu TOA
 	TOC Heading	Titlu cuprins
@@ -2731,8 +2731,8 @@ preview	Title	Titlu
 	Word XML Document (*.xml)	Document XML Word (*.xml)
 	WordArt	WordArt
 	WordArt Styles	Stiluri WordArt
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice este acum aplicația implicită pentru documentele Word.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word este acum aplicația implicită pentru documentele Word.
 	Words	Cuvinte
 	Words only	Doar cuvinte
 	Wrap Text	Încadrare text
@@ -2767,7 +2767,7 @@ preview	Title	Titlu
 	{language} (no dictionary)	{language} (fără dicționar)
 	{language} is now the document's default language.	{language} este acum limba implicită a documentului.
 	{language}: no dictionary found	{language}: nu s-a găsit niciun dicționar
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice nu verifică încă ortografia și gramatica în această limbă.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word nu verifică încă ortografia și gramatica în această limbă.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} și încă {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} in

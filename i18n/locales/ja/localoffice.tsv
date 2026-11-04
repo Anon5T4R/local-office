@@ -1,4 +1,4 @@
-# 日本語 (ja) interface catalog for LocalOffice.
+# 日本語 (ja) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -41,7 +41,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbYyZz	AaBbYyZz あア亜
 	About	情報
-	About LocalOffice	LocalOffice について
+	About Local Word	Local Word について
 	Above Chart	グラフの上
 	Above the item	項目の上
 	Accent	アクセント
@@ -184,7 +184,7 @@
 	Automatically Update Document Styles	文書のスタイルを自動的に更新
 	Automatically update document styles	文書のスタイルを自動的に更新する
 	AutoSave	自動保存
-	AutoSave documents you have saved in LocalOffice	LocalOffice で保存した文書を自動保存する
+	AutoSave documents you have saved in Local Word	Local Word で保存した文書を自動保存する
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	自動保存できませんでした: {error}。文書を保存し直すと、自動保存が再開します。
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	ブラウザーでは自動保存を使えません（ファイルに書き込めないため）。保存するとコピーがダウンロードされます。
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	自動保存の対象は .docx、.odt、.rtf ファイルだけです。{name} ではすべての書式を保持できません。自動保存をオンにするには .docx として保存してください。
@@ -240,7 +240,7 @@
 	Break Link	リンクの解除
 	Breaks	区切り
 	Bring Forward	前面へ移動
-	Browse in LocalOffice…	LocalOffice で参照…
+	Browse in Local Word…	Local Word で参照…
 	Building Block Gallery Content Control	構成要素ギャラリー コンテンツ コントロール
 	Built-In	組み込み
 	Built-in style	組み込みスタイル
@@ -416,7 +416,7 @@
 	Correct TWo INitial CApitals	先頭 2 文字の大文字を修正する
 	Corrections	修整
 	Couldn't download {name}: {error}	{name} をダウンロードできませんでした: {error}
-	Couldn't make LocalOffice the default: {error}	LocalOffice を既定のアプリにできませんでした: {error}
+	Couldn't make Local Word the default: {error}	Local Word を既定のアプリにできませんでした: {error}
 	Couldn't open {path}: {error}	{path} を開けませんでした: {error}
 	Count by:	増分:
 	Count words in text boxes and notes	テキスト ボックス、脚注、文末脚注の単語も数える
@@ -835,7 +835,7 @@
 	Immersive Reader	イマーシブ リーダー
 	Immersive\nReader	イマーシブ リーダー
 	Import…	インポート…
-	In Default apps, choose LocalOffice for the document types you want it to open.	既定のアプリで、LocalOffice で開きたい文書の種類ごとに LocalOffice を選んでください。
+	In Default apps, choose Local Word for the document types you want it to open.	既定のアプリで、Local Word で開きたい文書の種類ごとに Local Word を選んでください。
 	In equations, typing a name after a backslash replaces it with its symbol.	数式では、円記号 (バックスラッシュ) の後に名前を入力すると記号に置き換わります。
 	In Front of Text	前面
 	In Line with Text	行内
@@ -929,7 +929,7 @@
 	Keep Lines Together	段落を分割しない
 	Keep lines together	段落を分割しない
 	Keep Text Only	テキストのみ保持
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	パスワードは安全な場所に保管してください。パスワードがないと、LocalOffice を含め誰も文書を開けません。パスワードを削除するには両方のボックスを空にします。
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	パスワードは安全な場所に保管してください。パスワードがないと、Local Word を含め誰も文書を開けません。パスワードを削除するには両方のボックスを空にします。
 	Keep with Next	次の段落と分離しない
 	Keep with next	次の段落と分離しない
 	Keeps the fonts and formatting of the copied text.	コピーしたテキストのフォントと書式を保持します。
@@ -1031,7 +1031,7 @@
 	Mail Merge	差し込み印刷
 	Mailings	差し込み文書
 	Main entry:	主項目:
-	Make LocalOffice the default for Word documents…	LocalOffice を Word 文書の既定のアプリにする…
+	Make Local Word the default for Word documents…	Local Word を Word 文書の既定のアプリにする…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	リボン、メニュー、ダイアログを拡大または縮小します。自動はシステムの表示倍率に従います。100% は 1 ポイントあたり画面の 1 ピクセルです。文書のズームは別に設定します。
 	Manage Sources	資料文献の管理
 	Manage Styles	スタイルの管理
@@ -1164,7 +1164,7 @@
 	No Shadow	影なし
 	No Soft Edges	ぼかしなし
 	No sources yet.	資料文献はまだありません。
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	{language}のスペルチェック辞書がインストールされていないため、チェックされません。LocalOffice は Hunspell 辞書 {name} を LOCALOFFICE_DICTIONARIES フォルダーと通常のシステムの場所から探します。
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	{language}のスペルチェック辞書がインストールされていないため、チェックされません。Local Word は Hunspell 辞書 {name} を LOCALOFFICE_DICTIONARIES フォルダーと通常のシステムの場所から探します。
 	No templates match your search.	検索に一致するテンプレートはありません。
 	No Transform	変形なし
 	No words yet. Add to Dictionary on a misspelled word puts it here.	まだ単語はありません。スペルミスの単語で [辞書に追加] を選ぶと、ここに追加されます。
@@ -1226,7 +1226,7 @@
 	Offset: Top Right	オフセット: 右上
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	旧メニュー キー: Alt, {keys}。続けて入力するか、Esc キーで取り消します。
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	オン: 入力や矢印キーの操作でカーソルが新しい位置へ滑らかに移動し、点滅もフェードします。オフ: カーソルは瞬時に移動し、点滅は表示と非表示が切り替わるだけです。
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	オン: LocalOffice は [ファイル] › [ホーム] で開き、白紙の文書、テンプレート、最近使った文書を表示します。オフ: 白紙の文書を開きます。
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	オン: Local Word は [ファイル] › [ホーム] で開き、白紙の文書、テンプレート、最近使った文書を表示します。オフ: 白紙の文書を開きます。
 	One	1 段
 	One label per recipient	宛先ごとに 1 枚のラベル
 	One line per item. Enter adds an item.	1 行に 1 項目。Enter キーで項目を追加します。
@@ -1240,11 +1240,11 @@
 	Only the allowed styles can be applied.	使用を許可されたスタイルだけを適用できます。
 	Only web (http, https) and email (mailto) links can be followed	開けるのは Web（http、https）とメール（mailto）のリンクだけです
 	Open a document first	先に文書を開いてください
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	システムのファイル ダイアログが表示されないときに、LocalOffice 独自のブラウザーでファイルを開きます。
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	システムのファイル ダイアログが表示されないときに、Local Word 独自のブラウザーでファイルを開きます。
 	OpenDocument Text (*.odt)	OpenDocument テキスト (*.odt)
 	Opening print dialog…	印刷ダイアログを開いています…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	今後、.docx、.doc、.rtf、.odt ファイルと Word テンプレートを LocalOffice で開きます。
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	設定 › 既定のアプリ を開きます。そこで .docx などの文書の種類ごとに LocalOffice を選びます。
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	今後、.docx、.doc、.rtf、.odt ファイルと Word テンプレートを Local Word で開きます。
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	設定 › 既定のアプリ を開きます。そこで .docx などの文書の種類ごとに Local Word を選びます。
 	Operator	演算子
 	Optional Hyphen	任意指定のハイフン
 	Or	または
@@ -1484,7 +1484,7 @@
 	Replay	再生
 	Research	調査
 	Researcher	リサーチツール
-	Researcher needs an online service; LocalOffice keeps your documents offline.	リサーチツールにはオンライン サービスが必要です。LocalOffice では文書はオフラインのままです。
+	Researcher needs an online service; Local Word keeps your documents offline.	リサーチツールにはオンライン サービスが必要です。Local Word では文書はオフラインのままです。
 	Reset All…	すべてリセット…
 	Reset Character Formatting	文字書式のリセット
 	Reset Crop	トリミングのリセット
@@ -1682,7 +1682,7 @@
 	Show the community button in the title bar	タイトル バーにコミュニティ ボタンを表示する
 	Show the mini toolbar when text is selected	テキストを選択したときにミニ ツール バーを表示する
 	Show the ribbon	リボンを表示
-	Show the Start screen when LocalOffice starts	LocalOffice の起動時にスタート画面を表示する
+	Show the Start screen when Local Word starts	Local Word の起動時にスタート画面を表示する
 	Show/Hide ¶	編集記号の表示/非表示 ¶
 	Show\nComments	コメントの表示
 	Showing the first {count} items.	最初の {count} 項目を表示しています。
@@ -1869,7 +1869,7 @@
 	The printer, two-sided printing and pages per sheet are chosen in that dialog.	プリンター、両面印刷、1 枚あたりのページ数は、そのダイアログで選択します。
 	The recipient-list field that fills each part of an address block and greeting line.	住所ブロックとあいさつ文の各部分に使われる宛先リストのフィールドです。
 	the Spike is empty	スパイクは空です
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	システムのファイル ダイアログを利用できないため、LocalOffice 独自のダイアログを表示しています。システムのダイアログを使うには、ファイル選択ポータル (xdg-desktop-portal-gtk など) または zenity をインストールしてください。
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	システムのファイル ダイアログを利用できないため、Local Word 独自のダイアログを表示しています。システムのダイアログを使うには、ファイル選択ポータル (xdg-desktop-portal-gtk など) または zenity をインストールしてください。
 	The text at the insertion point is marked Do not check spelling or grammar.	挿入ポイントのテキストの設定: スペルチェックと文章校正を行わない
 	The time right now	現在の時刻
 	Theme Colors	テーマの色
@@ -1886,7 +1886,7 @@
 	These merge fields aren't in the recipient list:	次の差し込みフィールドは宛先リストにありません:
 	These settings will be used for new documents.	これらの設定は新しい文書に使用されます。
 	Thick	太線
-	this chart was made in another program: LocalOffice shows it but can't edit it	このグラフは別のプログラムで作成されました: LocalOffice で表示できますが編集はできません
+	this chart was made in another program: Local Word shows it but can't edit it	このグラフは別のプログラムで作成されました: Local Word で表示できますが編集はできません
 	This document	この文書
 	This field has no options.	このフィールドにはオプションがありません。
 	This folder can't be read: {error}	このフォルダーを読み取れません: {error}
@@ -1896,7 +1896,7 @@
 	This password type isn't supported.	この種類のパスワードはサポートされていません。
 	This point forward	これ以降
 	This section	このセクション
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	この SmartArt は別のプログラムで作成されました: LocalOffice で表示できますが編集はできません
+	this SmartArt was made in another program: Local Word shows it but can't edit it	この SmartArt は別のプログラムで作成されました: Local Word で表示できますが編集はできません
 	this text box is already linked: break the link first	このテキスト ボックスは既にリンクされています: 先にリンクを解除してください
 	Three	3 段
 	Through	内部
@@ -1905,7 +1905,7 @@
 	Title Bar	タイトル バー
 	Title from the document properties	文書のタイトル
 	Title:	タイトル:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Word 文書を既定で LocalOffice で開くには: Finder で文書を選び、ファイル › 情報を見る を選んで、「このアプリケーションで開く」で LocalOffice を選び、「すべてを変更」をクリックします。
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Word 文書を既定で Local Word で開くには: Finder で文書を選び、ファイル › 情報を見る を選んで、「このアプリケーションで開く」で Local Word を選び、「すべてを変更」をクリックします。
 	To:	終了:
 	Today	今日
 	Toggle Check Box	チェック ボックスの切り替え
@@ -2034,8 +2034,8 @@
 	Word XML Document (*.xml)	Word XML ドキュメント (*.xml)
 	WordArt	ワードアート
 	WordArt Styles	ワードアートのスタイル
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice が Word 文書の既定のアプリになりました。
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word が Word 文書の既定のアプリになりました。
 	Words only	単語のみ
 	Wrap Text	文字列の折り返し
 	Wrap Text Sides	文字を配置する側
@@ -2065,7 +2065,7 @@
 	{language} (no dictionary)	{language}（辞書なし）
 	{language} is now the document's default language.	{language} がこの文書の既定の言語になりました。
 	{language}: no dictionary found	{language}: 辞書が見つかりません
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice はこの言語のスペルと文法をまだチェックしません。
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word はこの言語のスペルと文法をまだチェックしません。
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} ほか {n} 件
 	{name}   {height} × {width} in	{name}   {height} × {width} インチ

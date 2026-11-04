@@ -1,6 +1,6 @@
 [package]
 name = "localoffice-web"
-description = "LocalOffice in the browser (eframe web runner, WebGPU with WebGL2 fallback)"
+description = "Local Word in the browser (eframe web runner, WebGPU with WebGL2 fallback)"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

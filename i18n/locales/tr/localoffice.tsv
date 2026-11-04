@@ -1,4 +1,4 @@
-# Türkçe (tr) interface catalog for LocalOffice.
+# Türkçe (tr) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -55,7 +55,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaBbCcÇç
 	AaBbYyZz	AaBbYyZz ĞğİıŞş
-	About LocalOffice	LocalOffice Hakkında
+	About Local Word	Local Word Hakkında
 	Above Chart	Grafiğin Üstünde
 	Above the item	Öğenin üstünde
 	Absolute value cases	Mutlak Değer Durumları
@@ -205,7 +205,7 @@
 	Automatically Update Document Styles	Belge Stillerini Otomatik Güncelle
 	Automatically update document styles	Belge stillerini otomatik güncelle
 	AutoSave	Otomatik Kaydet
-	AutoSave documents you have saved in LocalOffice	LocalOffice'ta kaydettiğiniz belgeleri otomatik kaydet
+	AutoSave documents you have saved in Local Word	Local Word'ta kaydettiğiniz belgeleri otomatik kaydet
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Otomatik Kaydet başarısız oldu: {error}. Otomatik Kaydet'i yeniden açmak için belgeyi kaydedin.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Otomatik Kaydet tarayıcıda kullanılamaz: dosyalarınıza yazamaz. Kaydet komutu bir kopya indirir.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Otomatik Kaydet yalnızca .docx, .odt ve .rtf dosyalarıyla çalışır; {name} tüm biçimlendirmeyi koruyamaz. Otomatik Kaydet'i açmak için .docx olarak kaydedin.
@@ -273,7 +273,7 @@
 	Brackets with Separators	Ayırıcılı Köşeli Parantezler
 	Breaks	Sonlar
 	Breve	Kısa İşareti
-	Browse in LocalOffice…	LocalOffice'ta Gözat…
+	Browse in Local Word…	Local Word'ta Gözat…
 	Building Block Gallery Content Control	Yapı Bloğu Galerisi İçerik Denetimi
 	Built-In	Yerleşik
 	Built-in style	Yerleşik stil
@@ -476,7 +476,7 @@
 	Cosine Function	Kosinüs Fonksiyonu
 	Cotangent Function	Kotanjant Fonksiyonu
 	Couldn't download {name}: {error}	{name} indirilemedi: {error}
-	Couldn't make LocalOffice the default: {error}	LocalOffice varsayılan yapılamadı: {error}
+	Couldn't make Local Word the default: {error}	Local Word varsayılan yapılamadı: {error}
 	Couldn't open {path}: {error}	{path} açılamadı: {error}
 	Count by:	Artış:
 	Count words in text boxes and notes	Metin kutularındaki ve notlardaki sözcükleri say
@@ -939,7 +939,7 @@
 	Immersive	Odaklı
 	Immersive Reader	Odaklı Okuyucu
 	Immersive\nReader	Odaklı\nOkuyucu
-	In Default apps, choose LocalOffice for the document types you want it to open.	Varsayılan uygulamalar bölümünde, LocalOffice'ın açmasını istediğiniz belge türlerini seçin.
+	In Default apps, choose Local Word for the document types you want it to open.	Varsayılan uygulamalar bölümünde, Local Word'ın açmasını istediğiniz belge türlerini seçin.
 	In equations, typing a name after a backslash replaces it with its symbol.	Denklemlerde ters eğik çizgiden sonra yazılan ad, simgesiyle değiştirilir.
 	In Front of Text	Metnin Önünde
 	In Line with Text	Metinle Aynı Hizada
@@ -1057,7 +1057,7 @@
 	Keep Lines Together	Satırları Birlikte Tut
 	Keep lines together	Satırları birlikte tut
 	Keep Text Only	Yalnızca Metni Koru
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Parolayı güvenli bir yerde saklayın: parola olmadan LocalOffice dahil hiç kimse belgeyi açamaz. Parolayı kaldırmak için iki kutuyu da boş bırakın.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Parolayı güvenli bir yerde saklayın: parola olmadan Local Word dahil hiç kimse belgeyi açamaz. Parolayı kaldırmak için iki kutuyu da boş bırakın.
 	Keep with Next	Sonrakiyle Birlikte Tut
 	Keep with next	Sonrakiyle birlikte tut
 	Keeps the fonts and formatting of the copied text.	Kopyalanan metnin yazı tiplerini ve biçimlendirmesini korur.
@@ -1185,7 +1185,7 @@
 	Mail Merge	Posta Birleştirme
 	Mailings	Postalar
 	Main entry:	Ana girdi:
-	Make LocalOffice the default for Word documents…	LocalOffice'ı Word belgeleri için varsayılan yap…
+	Make Local Word the default for Word documents…	Local Word'ı Word belgeleri için varsayılan yap…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Şeridi, menüleri ve iletişim kutularını büyütür veya küçültür. Otomatik, sisteminizin ekran ölçeklendirmesini izler; %100, nokta başına bir ekran pikselidir. Belge yakınlaştırması ayrıdır.
 	Manage Sources	Kaynakları Yönet
 	Manage Styles	Stilleri Yönet
@@ -1319,7 +1319,7 @@
 	No Soft Edges	Yumuşak Kenar Yok
 	No sources yet.	Henüz kaynak yok.
 	No Spacing	Aralık Yok
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	{language} için yüklü bir yazım sözlüğü yok, bu yüzden denetlenmiyor. LocalOffice, {name} Hunspell sözlüğünü LOCALOFFICE_DICTIONARIES klasöründe ve olağan sistem konumlarında arar.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	{language} için yüklü bir yazım sözlüğü yok, bu yüzden denetlenmiyor. Local Word, {name} Hunspell sözlüğünü LOCALOFFICE_DICTIONARIES klasöründe ve olağan sistem konumlarında arar.
 	No templates match your search.	Aramanızla eşleşen şablon yok.
 	No Transform	Dönüşüm Yok
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Henüz sözcük yok. Yanlış yazılmış bir sözcükte «Sözlüğe ekle» onu buraya koyar.
@@ -1387,7 +1387,7 @@
 	Offset: Top Right	Kaydırma: Sağ Üst
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Eski menü tuşları: Alt, {keys}. Yazmaya devam edin ya da iptal etmek için Esc tuşuna basın.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Açık: yazarken veya ok tuşlarını kullanırken imleç yeni yerine kayarak gider ve yanıp sönerken solar. Kapalı: imleç yeni yerine atlar, keskin biçimde yanıp söner.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Açık: LocalOffice, Dosya › Giriş sayfasında boş belge, şablonlar ve son belgelerinizle açılır. Kapalı: boş bir belge açar.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Açık: Local Word, Dosya › Giriş sayfasında boş belge, şablonlar ve son belgelerinizle açılır. Kapalı: boş bir belge açar.
 	One	Bir
 	One half	Bir Bölü İki
 	One label per recipient	Alıcı başına bir etiket
@@ -1402,11 +1402,11 @@
 	Only the allowed styles can be applied.	Yalnızca izin verilen stiller uygulanabilir.
 	Only web (http, https) and email (mailto) links can be followed	Yalnızca web (http, https) ve e-posta (mailto) bağlantıları açılabilir
 	Open a document first	Önce bir belge açın
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Sistemin dosya iletişim kutusu açılmadığında dosyayı LocalOffice'ın kendi dosya tarayıcısıyla açın.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Sistemin dosya iletişim kutusu açılmadığında dosyayı Local Word'ın kendi dosya tarayıcısıyla açın.
 	OpenDocument Text (*.odt)	OpenDocument Metni (*.odt)
 	Opening print dialog…	Yazdırma iletişim kutusu açılıyor…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Bundan sonra .docx, .doc, .rtf ve .odt dosyalarını ve Word şablonlarını LocalOffice ile açar.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Ayarlar › Varsayılan uygulamalar bölümünü açar; burada .docx ve diğer belge türleri için LocalOffice'ı seçersiniz.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Bundan sonra .docx, .doc, .rtf ve .odt dosyalarını ve Word şablonlarını Local Word ile açar.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Ayarlar › Varsayılan uygulamalar bölümünü açar; burada .docx ve diğer belge türleri için Local Word'ı seçersiniz.
 	Operator	İşleç
 	Operator Structures	İşleç Yapıları
 	Operators	İşleçler
@@ -1666,7 +1666,7 @@
 	Replay	Yeniden Oynat
 	Research	Araştırma
 	Researcher	Araştırmacı
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Araştırmacı çevrimiçi bir hizmet gerektirir; LocalOffice belgelerinizi çevrimdışı tutar.
+	Researcher needs an online service; Local Word keeps your documents offline.	Araştırmacı çevrimiçi bir hizmet gerektirir; Local Word belgelerinizi çevrimdışı tutar.
 	Reset All…	Tümünü Sıfırla…
 	Reset Character Formatting	Karakter Biçimlendirmesini Sıfırla
 	Reset Crop	Kırpmayı Sıfırla
@@ -1865,7 +1865,7 @@
 	Show the equation on a line of its own	Denklemi ayrı bir satırda göster
 	Show the mini toolbar when text is selected	Metin seçildiğinde mini araç çubuğunu göster
 	Show the ribbon	Şeridi göster
-	Show the Start screen when LocalOffice starts	LocalOffice açılırken Başlangıç ekranını göster
+	Show the Start screen when Local Word starts	Local Word açılırken Başlangıç ekranını göster
 	Show/Hide ¶	Göster/Gizle ¶
 	Show\nComments	Yorumları\nGöster
 	Showing the first {count} items.	İlk {count} öğe gösteriliyor.
@@ -2092,7 +2092,7 @@
 	The printer, two-sided printing and pages per sheet are chosen in that dialog.	Yazıcı, çift taraflı yazdırma ve yaprak başına sayfa sayısı o iletişim kutusunda seçilir.
 	The recipient-list field that fills each part of an address block and greeting line.	Adres bloğunun ve selamlama satırının her bölümünü dolduran alıcı listesi alanı.
 	the Spike is empty	biriktirici boş
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Sistemin dosya iletişim kutusu kullanılamadığı için LocalOffice kendi iletişim kutusunu gösteriyor. Sistem iletişim kutusunu kullanmak için bir dosya seçici portalı (örneğin xdg-desktop-portal-gtk) ya da zenity yükleyin.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Sistemin dosya iletişim kutusu kullanılamadığı için Local Word kendi iletişim kutusunu gösteriyor. Sistem iletişim kutusunu kullanmak için bir dosya seçici portalı (örneğin xdg-desktop-portal-gtk) ya da zenity yükleyin.
 	The text at the insertion point is marked Do not check spelling or grammar.	Ekleme noktasındaki metin şu şekilde işaretli: Yazım ve dil bilgisini denetleme.
 	The time right now	Şu anki saat
 	Theme Colors	Tema Renkleri
@@ -2109,7 +2109,7 @@
 	These merge fields aren't in the recipient list:	Bu birleştirme alanları alıcı listesinde yok:
 	These settings will be used for new documents.	Bu ayarlar yeni belgeler için kullanılacak.
 	Thick	Kalın
-	this chart was made in another program: LocalOffice shows it but can't edit it	bu grafik başka bir programda oluşturuldu: LocalOffice onu gösterir ancak düzenleyemez
+	this chart was made in another program: Local Word shows it but can't edit it	bu grafik başka bir programda oluşturuldu: Local Word onu gösterir ancak düzenleyemez
 	This document	Bu belge
 	This field has no options.	Bu alanın seçeneği yok.
 	This folder can't be read: {error}	Bu klasör okunamıyor: {error}
@@ -2119,7 +2119,7 @@
 	This password type isn't supported.	Bu parola türü desteklenmiyor.
 	This point forward	Bu noktadan itibaren
 	This section	Bu bölüm
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	bu SmartArt başka bir programda oluşturuldu: LocalOffice onu gösterir ancak düzenleyemez
+	this SmartArt was made in another program: Local Word shows it but can't edit it	bu SmartArt başka bir programda oluşturuldu: Local Word onu gösterir ancak düzenleyemez
 	this text box is already linked: break the link first	bu metin kutusu zaten bağlı: önce bağlantıyı kesin
 	Three	Üç
 	Through	Geçişli
@@ -2130,7 +2130,7 @@ preview	Title	Örnek
 	Title Bar	Başlık Çubuğu
 	Title from the document properties	Belge özelliklerindeki başlık
 	Title:	Başlık:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Word belgelerini varsayılan olarak LocalOffice ile açmak için: Finder'da bir belge seçin, Dosya › Bilgi Al'ı seçin, Birlikte aç altında LocalOffice'ı seçin ve Tümünü Değiştir'e tıklayın.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Word belgelerini varsayılan olarak Local Word ile açmak için: Finder'da bir belge seçin, Dosya › Bilgi Al'ı seçin, Birlikte aç altında Local Word'ı seçin ve Tümünü Değiştir'e tıklayın.
 	To:	Bitiş:
 	TOA Heading	Yetki Tablosu Başlığı
 	TOC Heading	İçindekiler Başlığı
@@ -2285,8 +2285,8 @@ preview	Title	Örnek
 	Word XML Document (*.xml)	Word XML Belgesi (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArt Stilleri
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice artık Word belgeleri için varsayılan uygulama.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word artık Word belgeleri için varsayılan uygulama.
 	Words only	Yalnızca sözcükler
 	Wrap Text	Metni Kaydır
 	Wrap Text Sides	Metin Kaydırma Kenarları
@@ -2315,7 +2315,7 @@ preview	Title	Örnek
 	{language} (no dictionary)	{language} (sözlük yok)
 	{language} is now the document's default language.	{language} artık belgenin varsayılan dili.
 	{language}: no dictionary found	{language}: sözlük bulunamadı
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice bu dilde henüz yazım ve dil bilgisi denetimi yapmıyor.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word bu dilde henüz yazım ve dil bilgisi denetimi yapmıyor.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} ve {n} tane daha
 	{name}   {height} × {width} in	{name}   {height} × {width} inç

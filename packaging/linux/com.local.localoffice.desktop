@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=LocalOffice
+Name=Local Word
 GenericName=Word Processor
 Comment=Write and design documents; open and save Word files
 Exec=localoffice %F

@@ -1,4 +1,4 @@
-# Dansk (da) interface catalog for LocalOffice.
+# Dansk (da) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -57,7 +57,7 @@
 	a, b, c, …	a, b, c, …
 	AaBbCcDd	AaBbCcDd
 	AaBbYyZz	AaBbYyZz
-	About LocalOffice	Om LocalOffice
+	About Local Word	Om Local Word
 	Above Chart	Over diagram
 	Above the item	Over elementet
 	Absolute value cases	Tilfælde for absolut værdi
@@ -218,7 +218,7 @@
 	Automatically Update Document Styles	Opdatér dokumentstile automatisk
 	Automatically update document styles	Opdatér dokumentstile automatisk
 	AutoSave	AutoSave
-	AutoSave documents you have saved in LocalOffice	Gem automatisk dokumenter, du har gemt i LocalOffice
+	AutoSave documents you have saved in Local Word	Gem automatisk dokumenter, du har gemt i Local Word
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	AutoSave mislykkedes: {error}. Gem dokumentet for at slå AutoSave til igen.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	AutoSave er ikke tilgængelig i browseren: den kan ikke skrive til dine filer. Gem henter en kopi ned.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	AutoSave gemmer kun .docx-, .odt- og .rtf-filer; {name} kan ikke gemme al formatering. Gem som .docx for at aktivere AutoSave.
@@ -292,7 +292,7 @@
 	Break Link	Ophæv forbindelse
 	Breaks	Skift
 	Breve	Breve
-	Browse in LocalOffice…	Gennemse i LocalOffice…
+	Browse in Local Word…	Gennemse i Local Word…
 	Browse…	Gennemse…
 	Building Block Gallery Content Control	Indholdskontrol til byggeblokgalleri
 	Built-In	Indbygget
@@ -520,7 +520,7 @@
 	Cosine Function	Cosinusfunktion
 	Cotangent Function	Cotangensfunktion
 	Couldn't download {name}: {error}	Kunne ikke hente {name}: {error}
-	Couldn't make LocalOffice the default: {error}	Kunne ikke gøre LocalOffice til standardprogram: {error}
+	Couldn't make Local Word the default: {error}	Kunne ikke gøre Local Word til standardprogram: {error}
 	Couldn't open {path}: {error}	Kunne ikke åbne {path}: {error}
 	Count by:	Tæl efter:
 	Count words in text boxes and notes	Tæl ord i tekstfelter og noter
@@ -997,7 +997,7 @@
 	Immersive	Fordybelse
 	Immersive Reader	Fordybelseslæser
 	Immersive\nReader	Fordybelses\nlæser
-	In Default apps, choose LocalOffice for the document types you want it to open.	I Standardapps vælger du LocalOffice for de dokumenttyper, du vil have den til at åbne.
+	In Default apps, choose Local Word for the document types you want it to open.	I Standardapps vælger du Local Word for de dokumenttyper, du vil have den til at åbne.
 	In equations, typing a name after a backslash replaces it with its symbol.	I formler erstattes et navn, der skrives efter en omvendt skråstreg, med dets symbol.
 	In Front of Text	Foran tekst
 	In Line with Text	På linje med tekst
@@ -1117,7 +1117,7 @@
 	Keep Lines Together	Hold linjer sammen
 	Keep lines together	Hold linjer sammen
 	Keep Text Only	Behold kun tekst
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Opbevar adgangskoden et sikkert sted: uden den kan ingen, heller ikke LocalOffice, åbne dokumentet. Lad begge felter være tomme for at fjerne adgangskoden.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Opbevar adgangskoden et sikkert sted: uden den kan ingen, heller ikke Local Word, åbne dokumentet. Lad begge felter være tomme for at fjerne adgangskoden.
 	Keep with Next	Hold sammen med næste
 	Keep with next	Hold sammen med næste
 	Keeps the fonts and formatting of the copied text.	Bevarer skrifttyper og formatering af den kopierede tekst.
@@ -1242,7 +1242,7 @@
 	Mail Merge	Serielbrev
 	Mailings	Post
 	Main entry:	Hovedelement:
-	Make LocalOffice the default for Word documents…	Gør LocalOffice til standardprogram for Word-dokumenter…
+	Make Local Word the default for Word documents…	Gør Local Word til standardprogram for Word-dokumenter…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Gør båndet, menuerne og dialogboksene større eller mindre. Auto følger systemets skærmskalering; 100% er én skærmpixel pr. punkt. Dokumentzoom er separat.
 	Manage Sources	Administrer kilder
 	Manage Styles	Administrer stile
@@ -1378,7 +1378,7 @@
 	No Soft Edges	Ingen bløde kanter
 	No sources yet.	Ingen kilder endnu.
 	No Spacing	Uden afstand
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Der er ikke installeret nogen staveordbog til {language}, så den bliver ikke kontrolleret. LocalOffice leder efter Hunspell-ordbogen {name} i mappen LOCALOFFICE_DICTIONARIES og på de sædvanlige systemplaceringer.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Der er ikke installeret nogen staveordbog til {language}, så den bliver ikke kontrolleret. Local Word leder efter Hunspell-ordbogen {name} i mappen LOCALOFFICE_DICTIONARIES og på de sædvanlige systemplaceringer.
 	No templates match your search.	Ingen skabeloner matcher din søgning.
 	No Transform	Ingen transformation
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Ingen ord endnu. Tilføj til ordbog på et ord med fejl, så lægges det her ind.
@@ -1447,7 +1447,7 @@
 	Offset: Top Right	Forskydning: Top til højre
 	On	Til
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Til: markøren glider hen til sin nye placering, når du skriver eller bruger piletasterne, og dens blink toner ud. Fra: den hopper og blinker tydeligt.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Til: LocalOffice åbner på Filer › Start med et tomt dokument, skabeloner og dine seneste dokumenter. Fra: Der åbnes et tomt dokument.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Til: Local Word åbner på Filer › Start med et tomt dokument, skabeloner og dine seneste dokumenter. Fra: Der åbnes et tomt dokument.
 	One	En
 	One half	En halv
 	One label per recipient	Én etiket pr. modtager
@@ -1462,11 +1462,11 @@
 	Only the allowed styles can be applied.	Der kan kun anvendes tilladte stile.
 	Only web (http, https) and email (mailto) links can be followed	Kun weblinks (http, https) og e-mail-links (mailto) kan følges
 	Open a document first	Åbn først et dokument
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Åbn en fil i LocalOffices egen filbrowser, når systemets filedialog ikke vises.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Åbn en fil i Local Words egen filbrowser, når systemets filedialog ikke vises.
 	OpenDocument Text (*.odt)	OpenDocument-tekst (*.odt)
 	Opening print dialog…	Åbner udskrivningsdialog…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Åbner .docx-, .doc-, .rtf- og .odt-filer samt Word-skabeloner med LocalOffice fra nu af.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Åbner Indstillinger › Standardapps, hvor du vælger LocalOffice til .docx og de andre dokumenttyper.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Åbner .docx-, .doc-, .rtf- og .odt-filer samt Word-skabeloner med Local Word fra nu af.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Åbner Indstillinger › Standardapps, hvor du vælger Local Word til .docx og de andre dokumenttyper.
 	Operator	Operator
 	Operator Structures	Operatorstrukturer
 	Operators	Operatorer
@@ -1733,7 +1733,7 @@
 	Report	Rapport
 	Research	Forskning
 	Researcher	Forsker
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Researcher kræver en onlinetjeneste; LocalOffice holder dine dokumenter offline.
+	Researcher needs an online service; Local Word keeps your documents offline.	Researcher kræver en onlinetjeneste; Local Word holder dine dokumenter offline.
 	Reset All…	Nulstil alle…
 	Reset Character Formatting	Nulstil tegnformatering
 	Reset Crop	Nulstil beskæring
@@ -1935,7 +1935,7 @@
 	Show the equation in the line of text	Vis formlen i tekstlinjen
 	Show the equation on a line of its own	Vis formlen på en linje for sig
 	Show the mini toolbar when text is selected	Vis miniværktøjslinjen, når tekst markeres
-	Show the Start screen when LocalOffice starts	Vis startskærmen, når LocalOffice starter
+	Show the Start screen when Local Word starts	Vis startskærmen, når Local Word starter
 	Show/Hide ¶	Vis/skjul ¶
 	Show\nComments	Vis\nkommentarer
 	Showing the first {count} items.	Viser de første {count} elementer.
@@ -2177,7 +2177,7 @@
 	The recipient-list field that fills each part of an address block and greeting line.	Modtagerlistefeltet, der udfylder hver del af en adresseblok og en hilseslinje.
 	The spelling and grammar check is complete.	Kontrollen af stavning og grammatik er fuldført.
 	the Spike is empty	klippekartoteket er tomt
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Systemets fildialog er ikke tilgængelig, så LocalOffice viser sin egen. Få systemets dialog ved at installere en filvælgerportal (f.eks. xdg-desktop-portal-gtk) eller zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Systemets fildialog er ikke tilgængelig, så Local Word viser sin egen. Få systemets dialog ved at installere en filvælgerportal (f.eks. xdg-desktop-portal-gtk) eller zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Teksten ved indsætningspunktet er markeret: Kontrollér ikke stavning eller grammatik.
 	The time right now	Det aktuelle klokkeslæt
 	Theme Colors	Temafarver
@@ -2195,7 +2195,7 @@
 	These settings will be used for new documents.	Disse indstillinger bruges til nye dokumenter.
 	Thick	Tyk
 	Thickness	Tykkelse
-	this chart was made in another program: LocalOffice shows it but can't edit it	dette diagram er lavet i et andet program: LocalOffice viser det, men kan ikke redigere det
+	this chart was made in another program: Local Word shows it but can't edit it	dette diagram er lavet i et andet program: Local Word viser det, men kan ikke redigere det
 	This document	Dette dokument
 	This field has no options.	Dette felt har ingen indstillinger.
 	This folder can't be read: {error}	Denne mappe kan ikke læses: {error}
@@ -2205,7 +2205,7 @@
 	This password type isn't supported.	Denne type adgangskode understøttes ikke.
 	This point forward	Fra dette punkt
 	This section	Denne sektion
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	denne SmartArt er lavet i et andet program: LocalOffice viser den, men kan ikke redigere den
+	this SmartArt was made in another program: Local Word shows it but can't edit it	denne SmartArt er lavet i et andet program: Local Word viser den, men kan ikke redigere den
 	this text box is already linked: break the link first	dette tekstfelt er allerede sammenkædet: fjern først sammenkædningen
 	Three	Tre
 	Through	Igennem
@@ -2217,7 +2217,7 @@ preview	Title	Titel
 	Title Bar	Titellinje
 	Title from the document properties	Titel fra dokumentegenskaberne
 	Title:	Titel:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	For at åbne Word-dokumenter med LocalOffice som standard: vælg et i Finder, vælg Filer › Hent oplysninger, vælg LocalOffice under Åbn med, og klik derefter på Skift alle.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	For at åbne Word-dokumenter med Local Word som standard: vælg et i Finder, vælg Filer › Hent oplysninger, vælg Local Word under Åbn med, og klik derefter på Skift alle.
 	To:	Til:
 	TOA Heading	TOA-overskrift
 	TOC Heading	Overskrift for indholdsfortegnelse
@@ -2387,8 +2387,8 @@ preview	Title	Titel
 	Word XML Document (*.xml)	Word XML-dokument (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArt-stile
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice er nu standardprogram for Word-dokumenter.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word er nu standardprogram for Word-dokumenter.
 	Words	Ord
 	Words only	Kun ord
 	Wrap Text	Ombryd tekst
@@ -2417,7 +2417,7 @@ preview	Title	Titel
 	{language} (no dictionary)	{language} (ingen ordbog)
 	{language} is now the document's default language.	{language} er nu dokumentets standardsprog.
 	{language}: no dictionary found	{language}: ingen ordbog fundet
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice kontrollerer endnu ikke stavning eller grammatik på dette sprog.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word kontrollerer endnu ikke stavning eller grammatik på dette sprog.
 	{language}: {file}	{language}: {file}
 	{name}   {height} × {width} in	{name}   {height} × {width} tommer
 	{name}   {height} × {width} mm	{name}   {height} × {width} mm

@@ -1,4 +1,4 @@
-# Српски (sr) interface catalog for LocalOffice.
+# Српски (sr) interface catalog for Local Word.
 # Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
 #   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
 #            word is a label that tells apart two meanings of the same English.
@@ -37,7 +37,7 @@
 	A, B, C, …	A, B, C, …
 	a, b, c, …	a, b, c, …
 	AaBbYyZz	AaBbYyZz ЂђЋћ
-	About LocalOffice	О LocalOffice-у
+	About Local Word	О Local Word-у
 	Above Chart	Изнад графикона
 	Above the item	Изнад ставке
 	Accent	Знак акцента
@@ -174,7 +174,7 @@
 	Automatically Update Document Styles	Аутоматски ажурирај стилове документа
 	Automatically update document styles	Аутоматски ажурирај стилове документа
 	AutoSave	Аутоматско чување
-	AutoSave documents you have saved in LocalOffice	Аутоматски чувај документе које сте већ сачували у LocalOffice-у
+	AutoSave documents you have saved in Local Word	Аутоматски чувај документе које сте већ сачували у Local Word-у
 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Аутоматско чување неуспело: {error}. Сачувајте документ да бисте га поново укључили.
 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Аутоматско чување није доступно у прегледачу: не може да уписује у ваше фајлове. Чување преузима копију.
 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Аутоматско чување чува само .docx, .odt и .rtf фајлове; {name} не може да задржи сво форматирање. Сачувајте као .docx да бисте укључили аутоматско чување.
@@ -225,7 +225,7 @@
 	Box	Оквир
 	Bracket	Заграда
 	Breaks	Прекиди
-	Browse in LocalOffice…	Потражи у LocalOffice-у…
+	Browse in Local Word…	Потражи у Local Word-у…
 	Building Block Gallery Content Control	Контрола садржаја за галерију градивних блокова
 	Built-In	Уграђено
 	Built-in style	Уграђени стил
@@ -386,7 +386,7 @@
 	Correct TWo INitial CApitals	Исправи ДВа ПОчетна велика слова
 	Corrections	Исправке
 	Couldn't download {name}: {error}	Преузимање {name} није успело: {error}
-	Couldn't make LocalOffice the default: {error}	LocalOffice није могао да постане подразумевана апликација: {error}
+	Couldn't make Local Word the default: {error}	Local Word није могао да постане подразумевана апликација: {error}
 	Couldn't open {path}: {error}	Није могуће отворити {path}: {error}
 	Count by:	Корак:
 	Count words in text boxes and notes	Броји речи у оквирима за текст и фуснотама
@@ -776,7 +776,7 @@
 	Immersive Reader	Имерзивни читач
 	Immersive\nReader	Имерзивни\nчитач
 	Import…	Увези…
-	In Default apps, choose LocalOffice for the document types you want it to open.	У подразумеваним апликацијама изаберите LocalOffice за врсте докумената које желите да отвара.
+	In Default apps, choose Local Word for the document types you want it to open.	У подразумеваним апликацијама изаберите Local Word за врсте докумената које желите да отвара.
 	In equations, typing a name after a backslash replaces it with its symbol.	У једначинама се назив откуцан после обрнуте косе црте замењује симболом.
 	In Front of Text	Испред текста
 	In Line with Text	У равни са текстом
@@ -865,7 +865,7 @@
 	Keep Lines Together	Задржи редове заједно
 	Keep lines together	Задржи редове заједно
 	Keep Text Only	Задржи само текст
-	Keep the password somewhere safe: without it nobody, LocalOffice included, can open the document. Leave both boxes empty to remove the password.	Чувајте лозинку на сигурном месту: без ње нико, па ни LocalOffice, не може да отвори документ. Оставите оба поља празна да бисте уклонили лозинку.
+	Keep the password somewhere safe: without it nobody, Local Word included, can open the document. Leave both boxes empty to remove the password.	Чувајте лозинку на сигурном месту: без ње нико, па ни Local Word, не може да отвори документ. Оставите оба поља празна да бисте уклонили лозинку.
 	Keep with Next	Задржи са следећим
 	Keep with next	Задржи са следећим
 	Keeps the fonts and formatting of the copied text.	Задржава фонтове и форматирање копираног текста.
@@ -961,7 +961,7 @@
 	Mail Merge	Спајање поште
 	Mailings	Писма
 	Main entry:	Главна ставка:
-	Make LocalOffice the default for Word documents…	Постави LocalOffice као подразумевану апликацију за Word документе…
+	Make Local Word the default for Word documents…	Постави Local Word као подразумевану апликацију за Word документе…
 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Повећава или смањује траку, меније и дијалоге. Аутоматски прати скалирање екрана у систему; 100% је један пиксел екрана по тачки. Зумирање документа је засебно.
 	Manage Sources	Управљај изворима
 	Manage Styles	Управљање стиловима
@@ -1085,7 +1085,7 @@
 	No Shadow	Без сенке
 	No Soft Edges	Без меких ивица
 	No sources yet.	Још нема извора.
-	No spelling dictionary for {language} is installed, so it isn't checked. LocalOffice looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Правописни речник за {language} није инсталиран, па се текст не проверава. LocalOffice тражи Hunspell речник {name} у фасцикли LOCALOFFICE_DICTIONARIES и на уобичајеним системским локацијама.
+	No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations.	Правописни речник за {language} није инсталиран, па се текст не проверава. Local Word тражи Hunspell речник {name} у фасцикли LOCALOFFICE_DICTIONARIES и на уобичајеним системским локацијама.
 	No templates match your search.	Ниједан шаблон не одговара претрази.
 	No Transform	Без трансформације
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Још нема речи. Додај у речник на погрешно написаној речи ставља је овде.
@@ -1146,7 +1146,7 @@
 	Offset: Top Right	Помак: горе десно
 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Стари тастери менија: Alt, {keys}. Наставите да куцате или притисните Esc да откажете.
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Укључено: курсор клизи на ново место док куцате или користите стрелице, а његово трептање се постепено гаси. Искључено: скаче и трепће нагло.
-	On: LocalOffice opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Укључено: LocalOffice се отвара на Фајл › Почетак, са празним документом, шаблонима и недавним документима. Искључено: отвара празан документ.
+	On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Укључено: Local Word се отвара на Фајл › Почетак, са празним документом, шаблонима и недавним документима. Искључено: отвара празан документ.
 	One	Једна
 	One label per recipient	Једна налепница по примаоцу
 	One line per item. Enter adds an item.	Један ред по ставци. Enter додаје ставку.
@@ -1160,11 +1160,11 @@
 	Only the allowed styles can be applied.	Могу се применити само дозвољени стилови.
 	Only web (http, https) and email (mailto) links can be followed	Могу се отворити само веб (http, https) и везе за е-пошту (mailto)
 	Open a document first	Прво отворите документ
-	Open a file with LocalOffice's own browser when the system file dialog doesn't appear.	Отворите датотеку помоћу LocalOffice-овог прегледача када се системски дијалог за датотеке не појави.
+	Open a file with Local Word's own browser when the system file dialog doesn't appear.	Отворите датотеку помоћу Local Word-овог прегледача када се системски дијалог за датотеке не појави.
 	OpenDocument Text (*.odt)	OpenDocument текст (*.odt)
 	Opening print dialog…	Отвара се дијалог за штампу…
-	Opens .docx, .doc, .rtf and .odt files and Word templates with LocalOffice from now on.	Од сада ће се .docx, .doc, .rtf и .odt датотеке и Word шаблони отварати у LocalOffice-у.
-	Opens Settings › Default apps, where you choose LocalOffice for .docx and the other document types.	Отвара Подешавања › Подразумеване апликације, где бирате LocalOffice за .docx и друге врсте докумената.
+	Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.	Од сада ће се .docx, .doc, .rtf и .odt датотеке и Word шаблони отварати у Local Word-у.
+	Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.	Отвара Подешавања › Подразумеване апликације, где бирате Local Word за .docx и друге врсте докумената.
 	Operator	Оператор
 	Optional Hyphen	Опционална цртица
 	Or	Или
@@ -1393,7 +1393,7 @@
 	Replay	Реприза
 	Research	Истраживање
 	Researcher	Истраживач
-	Researcher needs an online service; LocalOffice keeps your documents offline.	Истраживачу је потребна услуга на мрежи, а LocalOffice ваше документе чува ван мреже.
+	Researcher needs an online service; Local Word keeps your documents offline.	Истраживачу је потребна услуга на мрежи, а Local Word ваше документе чува ван мреже.
 	Reset All…	Ресетуј све…
 	Reset Character Formatting	Поништи форматирање знакова
 	Reset Crop	Поништи исецање
@@ -1578,7 +1578,7 @@
 	Show the community button in the title bar	Прикажи дугме заједнице у траци наслова
 	Show the mini toolbar when text is selected	Прикажи мини траку са алаткама при избору текста
 	Show the ribbon	Прикажи траку
-	Show the Start screen when LocalOffice starts	Прикажи почетни екран при покретању програма LocalOffice
+	Show the Start screen when Local Word starts	Прикажи почетни екран при покретању програма Local Word
 	Show/Hide ¶	Прикажи/сакриј ¶
 	Show\nComments	Прикажи\nкоментаре
 	Showing the first {count} items.	Приказане су само прве ставке: {count}.
@@ -1756,7 +1756,7 @@
 	The printer, two-sided printing and pages per sheet are chosen in that dialog.	Штампач, обострана штампа и број страница по листу бирају се у том дијалогу.
 	The recipient-list field that fills each part of an address block and greeting line.	Поље листе прималаца које попуњава сваки део блока адресе и реда поздрава.
 	the Spike is empty	сакупљач је празан
-	The system file dialog isn't available, so LocalOffice shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Системски дијалог за датотеке није доступан, па LocalOffice приказује свој. Да бисте добили системски дијалог, инсталирајте портал за избор датотека (на пример xdg-desktop-portal-gtk) или zenity.
+	The system file dialog isn't available, so Local Word shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Системски дијалог за датотеке није доступан, па Local Word приказује свој. Да бисте добили системски дијалог, инсталирајте портал за избор датотека (на пример xdg-desktop-portal-gtk) или zenity.
 	The text at the insertion point is marked Do not check spelling or grammar.	Текст на месту уметања је означен: Не проверавај правопис ни граматику.
 	The time right now	Тренутно време
 	Theme Colors	Боје теме
@@ -1773,7 +1773,7 @@
 	These merge fields aren't in the recipient list:	Ова поља за спајање нису у листи прималаца:
 	These settings will be used for new documents.	Ова подешавања ће се користити за нове документе.
 	Thick	Дебело
-	this chart was made in another program: LocalOffice shows it but can't edit it	овај графикон је направљен у другом програму: LocalOffice га приказује, али не може да га уређује
+	this chart was made in another program: Local Word shows it but can't edit it	овај графикон је направљен у другом програму: Local Word га приказује, али не може да га уређује
 	This document	Овај документ
 	This field has no options.	Ово поље нема опција.
 	This folder can't be read: {error}	Ова фасцикла не може да се прочита: {error}
@@ -1783,7 +1783,7 @@
 	This password type isn't supported.	Ова врста лозинке није подржана.
 	This point forward	Од овог места надаље
 	This section	Овај одељак
-	this SmartArt was made in another program: LocalOffice shows it but can't edit it	овај SmartArt је направљен у другом програму: LocalOffice га приказује, али не може да га уређује
+	this SmartArt was made in another program: Local Word shows it but can't edit it	овај SmartArt је направљен у другом програму: Local Word га приказује, али не може да га уређује
 	this text box is already linked: break the link first	овај оквир за текст је већ повезан: прво прекините везу
 	Three	Три
 	Through	Кроз
@@ -1792,7 +1792,7 @@
 	Title Bar	Насловна трака
 	Title from the document properties	Наслов документа
 	Title:	Наслов:
-	To open Word documents with LocalOffice by default: select one in Finder, choose File › Get Info, pick LocalOffice under Open with, then click Change All.	Да би се Word документи подразумевано отварали у LocalOffice-у: изаберите један у Finder-у, изаберите Датотека › Прикажи информације, под „Отвори помоћу” изаберите LocalOffice, па кликните „Промени све”.
+	To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All.	Да би се Word документи подразумевано отварали у Local Word-у: изаберите један у Finder-у, изаберите Датотека › Прикажи информације, под „Отвори помоћу” изаберите Local Word, па кликните „Промени све”.
 	To:	До:
 	Today	Данас
 	Toggle Check Box	Промени поље за потврду
@@ -1912,8 +1912,8 @@
 	Word XML Document (*.xml)	Word XML документ (*.xml)
 	WordArt	WordArt
 	WordArt Styles	WordArt стилови
-	LocalOffice	LocalOffice
-	LocalOffice is now the default app for Word documents.	LocalOffice је сада подразумевана апликација за Word документе.
+	Local Word	Local Word
+	Local Word is now the default app for Word documents.	Local Word је сада подразумевана апликација за Word документе.
 	Words only	Само речи
 	Wrap Text	Преломи текст
 	Wrap Text Sides	Стране прелома текста
@@ -1940,7 +1940,7 @@
 	{language} (no dictionary)	{language} (нема речника)
 	{language} is now the document's default language.	{language} је сада подразумевани језик документа.
 	{language}: no dictionary found	{language}: речник није пронађен
-	{language}: LocalOffice doesn't check spelling or grammar in this language yet.	{language}: LocalOffice још не проверава правопис ни граматику на овом језику.
+	{language}: Local Word doesn't check spelling or grammar in this language yet.	{language}: Local Word још не проверава правопис ни граматику на овом језику.
 	{language}: {file}	{language}: {file}
 	{names} and {n} more	{names} и још {n}
 	{name}   {height} × {width} in	{name}   {height} × {width} инча

@@ -88,7 +88,7 @@ fn create_directly(path: &Path, refused: io::Error, prepare: impl FnOnce(&mut Fi
                 "This folder doesn't let LocalOffice create the temporary file a safe save needs, so the existing file was left unchanged.",
             ));
         }
-        Err(e) if e.kind() == io::ErrorKind::PermissionDenied => return Err(guided(e, "LocalOffice can't create files in this folder.")),
+        Err(e) if e.kind() == io::ErrorKind::PermissionDenied => return Err(guided(e, "Local Word can't create files in this folder.")),
         Err(e) => return Err(e),
     };
     let Err(failed) = prepare(&mut file) else {

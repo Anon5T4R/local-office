@@ -5,14 +5,14 @@
   <id>com.local.localoffice</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT OR Apache-2.0</project_license>
-  <name>LocalOffice</name>
+  <name>Local Word</name>
   <summary>Write and design documents; open and save Word files</summary>
   <developer id="com.local.localoffice">
-    <name>LocalOffice contributors</name>
+    <name>Local Word contributors</name>
   </developer>
   <description>
     <p>
-      LocalOffice is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.
+      Local Word is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.
     </p>
   </description>
   <launchable type="desktop-id">com.local.localoffice.desktop</launchable>
