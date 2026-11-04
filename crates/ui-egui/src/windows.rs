@@ -562,7 +562,7 @@ impl WordApp {
     /// The drawn window's title: its document's name as View › Window › Switch Windows gives it.
     pub(crate) fn window_title(&self) -> String {
         if !self.has_document() {
-            return "LocalOffice".to_string();
+            return "Local Word".to_string();
         }
         let name = self.windows.menu_title(self.windows.shown).map(str::to_string).unwrap_or_else(|| self.title_stem());
         title(&name, self.session.dirty)

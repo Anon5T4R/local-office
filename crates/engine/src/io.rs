@@ -348,10 +348,10 @@ fn open_by_content(
     let (mut doc, encrypted) = if bytes.starts_with(OLE_SIG) && localoffice_docx::is_encrypted(bytes) {
         (localoffice_docx::read_with_password(bytes, password).map_err(|e| e.to_string())?, true)
     } else if bytes.starts_with(ZIP_SIG) {
-        (localoffice_docx::read(bytes).map_err(|e| format!("{name}: not a document LocalOffice can open ({e})"))?, false)
+        (localoffice_docx::read(bytes).map_err(|e| format!("{name}: not a document Local Word can open ({e})"))?, false)
     } else if bytes.starts_with(OLE_SIG) {
         open_binary_doc(bytes, password)
-            .map_err(|e| if needs_password(&e) || wrong_password(&e) { e } else { format!("{name}: not a document LocalOffice can open ({e})") })?
+            .map_err(|e| if needs_password(&e) || wrong_password(&e) { e } else { format!("{name}: not a document Local Word can open ({e})") })?
     } else if bytes.starts_with(b"{\\rtf") {
         (localoffice_formats::rtf::import(bytes)?, false)
     } else if is_word_xml(bytes) {
@@ -362,7 +362,7 @@ fn open_by_content(
     } else if localoffice_formats::txt::is_text(bytes) {
         (localoffice_formats::txt::import_on(bytes, page), false)
     } else if ext.is_empty() {
-        return Err(format!("{name}: not a document or text file LocalOffice can open"));
+        return Err(format!("{name}: not a document or text file Local Word can open"));
     } else {
         return Err(format!("{name}: unsupported format `.{ext}` (not a document or text file)"));
     };

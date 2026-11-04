@@ -85,7 +85,7 @@ fn create_directly(path: &Path, refused: io::Error, prepare: impl FnOnce(&mut Fi
         Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {
             return Err(guided(
                 refused,
-                "This folder doesn't let LocalOffice create the temporary file a safe save needs, so the existing file was left unchanged.",
+                "This folder doesn't let Local Word create the temporary file a safe save needs, so the existing file was left unchanged.",
             ));
         }
         Err(e) if e.kind() == io::ErrorKind::PermissionDenied => return Err(guided(e, "Local Word can't create files in this folder.")),
@@ -116,7 +116,7 @@ impl std::error::Error for Guided {}
 /// `e`, then `why`, then how to save anyway: Save As to another folder, or access to this one.
 fn guided(e: io::Error, why: &str) -> io::Error {
     let access = if cfg!(target_os = "macos") {
-        "allow LocalOffice to use this folder in System Settings › Privacy & Security › Files and Folders"
+        "allow Local Word to use this folder in System Settings › Privacy & Security › Files and Folders"
     } else {
         "get write access to this folder"
     };
