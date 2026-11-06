@@ -20,7 +20,8 @@ Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de t
 - `apps/localoffice` — app desktop; `apps/localoffice-cli` — CLI/MCP; `apps/localoffice-web` — wasm
 - `libs/` — forks vendored: `craft-libs` (b926b5c), `egui` (6d518fc), `winit` (a517b38),
   `winprint.rs` (5f80b9b) e `winprint-gdi` (417ac3c — o craft-libs pina dois revs do
-  winprint.rs; o gdi só existe no rev antigo)
+  winprint.rs; o gdi só existe no rev antigo), `local-ai` (BYOK — chave de API/config;
+  fonte em `C:\Dev\underworld\local-ai`, NÃO é o app LocalAI da suíte antiga)
 - `i18n/locales/` — catálogos de tradução (common.tsv + localoffice.tsv por locale,
   do craft-i18n @ 9205108), embutidos pelo `crates/ui-egui/build.rs`
 - `assets/craft-fonts/` — fontes CJK/árabe/etc. (craft-fonts @ b076417, build input
