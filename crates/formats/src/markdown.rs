@@ -5,7 +5,11 @@
 //! bottom-border paragraph), bullet and ordered lists (nested by indentation), GFM pipe tables,
 //! and inlines: emphasis/strong (the CommonMark delimiter algorithm), `~~strike~~`, code spans,
 //! inline links, autolinks, images (`data:` URIs become pictures, others their alt text),
-//! backslash escapes, entities, HTML comments (`<!-- ... -->`), `<br>` and `<a id>` anchors.
+//! backslash escapes, entities, HTML comments (`<!-- ... -->`), `<br>` and `<a id>` anchors,
+//! and inline HTML tags: `<a href>` links, `<b>`/`<i>`/`<u>`/`<s>`/`<code>`/`<sub>`/`<sup>`
+//! emphasis, `<img>` alt text, and the block tags README files are written with
+//! (`<p align="center">` paragraphs, `<hN>` headings, `<picture>`/`<source>`/`<table>`
+//! scaffolding) read as what they hold, not as raw markup.
 //!
 //! Export writes the same constructs; pictures become `![alt](media-name)` placeholders.
 
@@ -359,17 +363,18 @@ fn interrupts(l: &str) -> bool {
         || list_marker(t).is_some_and(|m| (!m.ordered || m.start == 1) && !is_blank(t.get(m.len..).unwrap_or("")))
 }
 
-fn flush_para(lines: &mut Vec<String>, out: &mut Vec<FBlock>, depth: usize, refs: &Refs) {
+fn flush_para(lines: &mut Vec<String>, out: &mut Vec<FBlock>, depth: usize, refs: &Refs, align: Option<Align>) {
     if lines.is_empty() {
         return;
     }
     let text = join_lines(lines);
     lines.clear();
     let inlines = parse_inlines(&text, &Fmt::default(), depth, refs);
-    if inlines.is_empty() {
+    // HTML scaffolding lines leave nothing but the spaces between their tags.
+    if inlines.is_empty() || inlines.iter().all(|x| matches!(x, Inline::Text(t, _) if t.trim().is_empty())) {
         return;
     }
-    let p = Para { inlines, ..Default::default() };
+    let p = Para { inlines, align, ..Default::default() };
     out.push(FBlock::Para(p));
 }
 
@@ -405,10 +410,12 @@ fn code_para(line: &str) -> FBlock {
 fn parse_blocks(lines: &[String], depth: usize, level: u8, refs: &Refs) -> Vec<FBlock> {
     let mut out = Vec::new();
     let mut para: Vec<String> = Vec::new();
+    // An HTML block's `align="…"` (or `<center>`), held for the paragraph it opens.
+    let mut p_align: Option<Align> = None;
     let mut i = 0;
     while let Some(line) = lines.get(i) {
         if is_blank(line) {
-            flush_para(&mut para, &mut out, depth, refs);
+            flush_para(&mut para, &mut out, depth, refs, p_align.take());
             i += 1;
             continue;
         }
@@ -453,7 +460,7 @@ fn parse_blocks(lines: &[String], depth: usize, level: u8, refs: &Refs) -> Vec<F
             }
         }
         if let Some((n, body)) = atx_heading(t) {
-            flush_para(&mut para, &mut out, depth, refs);
+            flush_para(&mut para, &mut out, depth, refs, p_align.take());
             let mut p = Para::new(Kind::Heading(n));
             p.inlines = parse_inlines(body, &Fmt::default(), depth, refs);
             out.push(FBlock::Para(p));
@@ -461,13 +468,13 @@ fn parse_blocks(lines: &[String], depth: usize, level: u8, refs: &Refs) -> Vec<F
             continue;
         }
         if thematic_break(t) {
-            flush_para(&mut para, &mut out, depth, refs);
+            flush_para(&mut para, &mut out, depth, refs, p_align.take());
             out.push(FBlock::Para(Para::new(Kind::Rule)));
             i += 1;
             continue;
         }
         if let Some((fc, fl)) = fence(t) {
-            flush_para(&mut para, &mut out, depth, refs);
+            flush_para(&mut para, &mut out, depth, refs, p_align.take());
             i += 1;
             while let Some(l) = lines.get(i) {
                 i += 1;
@@ -480,7 +487,7 @@ fn parse_blocks(lines: &[String], depth: usize, level: u8, refs: &Refs) -> Vec<F
             continue;
         }
         if t.starts_with("<!--") {
-            flush_para(&mut para, &mut out, depth, refs);
+            flush_para(&mut para, &mut out, depth, refs, p_align.take());
             while let Some(l) = lines.get(i) {
                 i += 1;
                 if l.contains("-->") {
@@ -489,8 +496,55 @@ fn parse_blocks(lines: &[String], depth: usize, level: u8, refs: &Refs) -> Vec<F
             }
             continue;
         }
+        // An HTML heading: `<h2 align="center">Title</h2>`, the shape README files give theirs.
+        // It may sit on one line or run on over several, closed by `</h`.
+        if para.is_empty()
+            && let Some((lvl, align, first)) = html_heading(t)
+        {
+            let mut heading = vec![first.to_string()];
+            let closed = first.to_ascii_lowercase().contains("</h");
+            i += 1;
+            while !closed && let Some(l) = lines.get(i) {
+                if is_blank(l) {
+                    break;
+                }
+                heading.push(l.trim_start_matches([' ', '\t']).trim_end().to_string());
+                i += 1;
+                if l.to_ascii_lowercase().contains("</h") {
+                    break;
+                }
+            }
+            let mut p = Para::new(Kind::Heading(lvl));
+            p.align = align;
+            p.inlines = parse_inlines(heading.join(" ").trim(), &Fmt::default(), depth, refs);
+            out.push(FBlock::Para(p));
+            continue;
+        }
+        // A `<p align="center">` line opens an HTML block: the alignment belongs to the
+        // paragraph that follows, and the tag itself is not its text.
+        if para.is_empty()
+            && let Some((align, first)) = html_block_open(t)
+        {
+            if align.is_some() {
+                p_align = align;
+            }
+            if is_blank(first) {
+                i += 1;
+                continue;
+            }
+            para.push(first.to_string());
+            i += 1;
+            continue;
+        }
+        // A closing block tag on its own line ends the paragraph there; the opener was dropped
+        // with its own line, and without this the text around it would run together.
+        if matches!(t.trim_end(), "</p>" | "</div>" | "</center>") {
+            flush_para(&mut para, &mut out, depth, refs, p_align.take());
+            i += 1;
+            continue;
+        }
         if t.starts_with('>') {
-            flush_para(&mut para, &mut out, depth, refs);
+            flush_para(&mut para, &mut out, depth, refs, p_align.take());
             let mut inner: Vec<String> = Vec::new();
             while let Some(l) = lines.get(i) {
                 let lt = l.trim_start_matches([' ', '\t']);
@@ -503,6 +557,10 @@ fn parse_blocks(lines: &[String], depth: usize, level: u8, refs: &Refs) -> Vec<F
                     break;
                 }
                 i += 1;
+            }
+            // A GitHub alert marker (`> [!NOTE]`) labels the callout; it is not its text.
+            if inner.first().is_some_and(|l| is_alert_marker(l)) {
+                inner.remove(0);
             }
             if depth >= MAX_NEST {
                 let mut p = Para::new(Kind::Quote);
@@ -549,14 +607,14 @@ fn parse_blocks(lines: &[String], depth: usize, level: u8, refs: &Refs) -> Vec<F
         if let Some(m) = list_marker(t)
             && (para.is_empty() || ((!m.ordered || m.start == 1) && !is_blank(t.get(m.len..).unwrap_or(""))))
         {
-            flush_para(&mut para, &mut out, depth, refs);
+            flush_para(&mut para, &mut out, depth, refs, p_align.take());
             i = parse_list(lines, i, depth, level, &mut out, refs);
             continue;
         }
         para.push(line.clone());
         i += 1;
     }
-    flush_para(&mut para, &mut out, depth, refs);
+    flush_para(&mut para, &mut out, depth, refs, p_align.take());
     out
 }
 
@@ -898,6 +956,96 @@ fn tag_attr(tag: &str, name: &str) -> Option<String> {
     None
 }
 
+/// The name of a well-formed HTML tag's contents (`name` or `/name`), if it starts like one.
+fn tag_name(inner: &str) -> Option<&str> {
+    let body = inner.strip_prefix('/').unwrap_or(inner);
+    let n = body.chars().take_while(|c| c.is_ascii_alphanumeric() || *c == '-').count();
+    (n > 0 && body.starts_with(|c: char| c.is_ascii_alphabetic())).then(|| body.get(..n).unwrap_or(""))
+}
+
+/// The character formatting an inline HTML tag applies, as a setter on [`Fmt`].
+fn html_fmt(name: &str) -> Option<fn(&mut Fmt)> {
+    Some(match name {
+        "b" | "strong" => |f: &mut Fmt| f.bold = true,
+        "i" | "em" | "cite" | "dfn" | "var" => |f: &mut Fmt| f.italic = true,
+        "u" | "ins" => |f: &mut Fmt| f.underline = true,
+        "s" | "strike" | "del" => |f: &mut Fmt| f.strike = true,
+        "code" | "kbd" | "samp" => |f: &mut Fmt| f.code = true,
+        "sub" => |f: &mut Fmt| f.sub = true,
+        "sup" => |f: &mut Fmt| f.sup = true,
+        _ => return None,
+    })
+}
+
+/// `</name …>` at or after `from`: where it starts, and where its `>` ends. Only `budget` bytes
+/// are searched, and what was searched is spent either way, so unclosed tags cannot make this
+/// quadratic on hostile input.
+fn find_close(s: &str, from: usize, name: &str, budget: &mut usize) -> Option<(usize, usize)> {
+    if *budget == 0 {
+        return None;
+    }
+    let win = within(s.get(from..).unwrap_or(""), (*budget).min(MAX_TAG * 16));
+    *budget -= win.len();
+    let lower = win.to_ascii_lowercase();
+    lower.find(&format!("</{name}")).and_then(|k| {
+        // `</a>` closes `a`; `</aside>` does not, and neither does `</a b>`.
+        let rest = lower.get(k + 2 + name.len()..)?;
+        if !rest.starts_with(['>', '/', ' ', '\t']) {
+            return None;
+        }
+        let gt = rest.find('>')?;
+        Some((from + k, from + k + 2 + name.len() + gt + 1))
+    })
+}
+
+/// An `align="…"` value as paragraph alignment.
+fn html_align(a: String) -> Option<Align> {
+    match a.to_ascii_lowercase().as_str() {
+        "left" => Some(Align::Left),
+        "center" => Some(Align::Center),
+        "right" => Some(Align::Right),
+        "justify" => Some(Align::Justify),
+        _ => None,
+    }
+}
+
+/// `<hN …>` opening an HTML heading line: its level, alignment, and the rest of the line.
+fn html_heading(t: &str) -> Option<(u8, Option<Align>, &str)> {
+    let h = t.strip_prefix("<h")?;
+    let lvl = h.chars().next()?.to_digit(10)? as u8;
+    let after_lvl = h.get(1..)?;
+    if !(1..=6).contains(&lvl) || !after_lvl.starts_with([' ', '\t', '>']) {
+        return None;
+    }
+    let end = within(after_lvl, MAX_TAG).find('>')?;
+    let align = tag_attr(h.get(..1 + end).unwrap_or(""), "align").and_then(html_align);
+    Some((lvl, align, after_lvl.get(end + 1..)?))
+}
+
+/// `<p …>`, `<div …>` or `<center>` opening an HTML block line: its alignment, and the rest of
+/// the line after the tag. `<pre`/`<picture` do not match: what follows `<p` is not a delimiter.
+fn html_block_open(t: &str) -> Option<(Option<Align>, &str)> {
+    for tag in ["<p", "<div", "<center"] {
+        let Some(body) = t.strip_prefix(tag) else { continue };
+        if !body.starts_with([' ', '\t', '>']) {
+            continue;
+        }
+        let end = within(body, MAX_TAG).find('>')?;
+        let mut align = tag_attr(body.get(..end).unwrap_or(""), "align").and_then(html_align);
+        if tag == "<center" {
+            align = Some(align.unwrap_or(Align::Center));
+        }
+        return Some((align, body.get(end + 1..)?));
+    }
+    None
+}
+
+/// A GitHub alert marker line (`[!NOTE]`, `[!IMPORTANT]`, …): a label, not text.
+fn is_alert_marker(l: &str) -> bool {
+    let t = l.trim();
+    t.len() > 4 && t.starts_with("[!") && t.ends_with(']') && t[2..t.len() - 1].chars().all(|c| c.is_ascii_uppercase() || c == '_')
+}
+
 fn tokenize(s: &str, base: &Fmt, depth: usize, refs: &Refs) -> Vec<Node> {
     let mut nodes: Vec<Node> = Vec::new();
     // Bytes the link and image scans below may look ahead in total. Each unmatched `[` or `![(`
@@ -1079,6 +1227,63 @@ fn tokenize(s: &str, base: &Fmt, depth: usize, refs: &Refs) -> Vec<Node> {
                     }
                     i += inner.len() + 2 + 4;
                     text_start = i;
+                } else if let Some(e) = end
+                    && tag_name(inner).is_some()
+                {
+                    // A well-formed HTML tag. CommonMark leaves its raw source in the text; a
+                    // reader wants what it *means* — a link, bold, an image's alt text — with
+                    // the tag itself invisible, the way a browser shows the page (#2225).
+                    let name = tag_name(inner).unwrap_or_default().to_ascii_lowercase();
+                    let after = i + e + 2;
+                    let is_link = name == "a" && depth < MAX_NEST && base.link.is_none() && tag_attr(inner, "href").is_some_and(|d| !d.is_empty());
+                    let span = if inner.starts_with('/') || name == "img" {
+                        None
+                    } else if is_link || (depth < MAX_NEST && html_fmt(&name).is_some()) {
+                        Some(name.clone())
+                    } else {
+                        None
+                    };
+                    match span.as_deref().and_then(|n| find_close(s, after, n, &mut scan_budget)) {
+                        Some((close, past)) => {
+                            flush!();
+                            let mut f = base.clone();
+                            if is_link {
+                                // A destination too long to keep leaves its text unlinked.
+                                let dest = tag_attr(inner, "href").unwrap_or_default();
+                                f.link = (dest.len() <= model::MAX_LINK).then(|| Arc::from(unescape(&dest)));
+                                if f.link.is_none() {
+                                    model::dropped(model::Dropped::Link);
+                                }
+                            }
+                            if let Some(g) = html_fmt(&name) {
+                                g(&mut f);
+                            }
+                            for x in parse_inlines(s.get(after..close).unwrap_or(""), &f, depth + 1, refs) {
+                                nodes.push(Node::Inl(x));
+                            }
+                            i = past;
+                            text_start = i;
+                        }
+                        _ if name == "img" => {
+                            flush!();
+                            let alt = tag_attr(inner, "alt").unwrap_or_default();
+                            let src = tag_attr(inner, "src").unwrap_or_default();
+                            match model::data_uri(&Arc::from(src.as_str())).and_then(|d| make_img(d, None, None, &alt)) {
+                                Some(im) => nodes.push(Node::Inl(Inline::Image(im))),
+                                None => push_text(&mut nodes, &alt, base),
+                            }
+                            i = after;
+                            text_start = i;
+                        }
+                        _ => {
+                            // Every other tag — a closing tag, a block container (`<p>`,
+                            // `<picture>`, `<source>`, `<table>`, …), anything without its
+                            // closing half nearby — is dropped whole.
+                            flush!();
+                            i = after;
+                            text_start = i;
+                        }
+                    }
                 } else {
                     i += 1;
                 }
@@ -1663,6 +1868,55 @@ mod tests {
 
     fn spans(s: &str) -> Vec<(String, bool, bool)> {
         inl(s).into_iter().filter_map(|i| if let Inline::Text(t, f) = i { Some((t, f.bold, f.italic)) } else { None }).collect()
+    }
+
+    /// Inline and block HTML read as what they mean, not as raw tags: README files are written
+    /// this way (`<p align="center">` badge rows, `<a href>` links, `<img>` alt text), and
+    /// before, every tag reached the document as literal text (#2225).
+    #[test]
+    fn html_tags_render_not_spill() {
+        // Links, emphasis, images, and unknown tags (dropped, like a browser shows nothing).
+        let s =
+            inl("See <a href=\"https://x.org\"><b>Bold *site*</b></a> and <img alt=\"badge\" src=\"b.png\" width=\"16\"> plus <picture>x</picture>.");
+        let text: String = s.iter().filter_map(|i| if let Inline::Text(t, _) = i { Some(t.as_str()) } else { None }).collect();
+        assert!(text.contains("See Bold site and badge plus x."), "{text}");
+        assert!(!text.contains('<'), "{text}");
+        let bold_link = s.iter().find_map(|i| match i {
+            Inline::Text(t, f) if f.bold && f.link.is_some() => Some((t.clone(), f.link.as_deref().unwrap_or("").to_string())),
+            _ => None,
+        });
+        assert_eq!(bold_link, Some(("Bold ".into(), "https://x.org".into())), "{text}");
+        // Unclosed tags fall back to plain text around them, and comparison-like `<3` stays.
+        assert_eq!(spans("a <b c"), vec![("a <b c".into(), false, false)]);
+
+        // Block HTML: `<p align="center">` paragraphs, `<h1 align>` headings, scaffolding.
+        let f = parse(
+            "<p align=\"center\">\n  <a href=\"https://x.org\">Site</a>\n</p>\n\n<h1 align=\"center\">Title</h1>\n\n<table> <tr> <td width=\"50%\">\n\n- a\n- b\n\n</td> </tr> </table>\n\n<div align=\"right\">footer</div>\n\n> [!NOTE]\n> quoted\n",
+        );
+        let doc = model::to_doc(&f);
+        let text = doc.plain_text(localoffice_doc::StoryRef::Body);
+        assert!(!text.contains('<') && !text.contains("align"), "{text}");
+        let para = |n: usize| {
+            f.blocks.get(n).map(|b| match b {
+                FBlock::Para(p) => (p.kind, p.align, p.list.is_some()),
+                _ => (Kind::Normal, None, false),
+            })
+        };
+        assert_eq!(para(0), Some((Kind::Normal, Some(Align::Center), false)), "the `<p align>` paragraph is centered");
+        assert_eq!(para(1), Some((Kind::Heading(1), Some(Align::Center), false)), "the `<h1 align>` line is a centered heading");
+        assert_eq!(para(2).map(|x| x.2), Some(true), "the `<td>` content is a list");
+        let footer = f.blocks.iter().find_map(|b| match b {
+            FBlock::Para(p) if p.align == Some(Align::Right) => Some(p),
+            _ => None,
+        });
+        assert!(footer.is_some_and(|p| p.kind == Kind::Normal), "the `<div align>` paragraph is right-aligned");
+        let quote = f.blocks.iter().find_map(|b| match b {
+            FBlock::Para(p) if p.kind == Kind::Quote => Some(p),
+            _ => None,
+        });
+        let qt = quote.map(|p| p.inlines.iter().filter_map(|x| if let Inline::Text(t, _) = x { Some(t.clone()) } else { None }).collect::<String>());
+        assert_eq!(qt.as_deref(), Some("quoted"), "the alert marker is not the quote's text");
+        assert!(text.contains("footer"), "{text}");
     }
 
     #[test]
