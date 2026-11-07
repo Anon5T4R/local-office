@@ -1046,6 +1046,38 @@ fn is_alert_marker(l: &str) -> bool {
     t.len() > 4 && t.starts_with("[!") && t.ends_with(']') && t[2..t.len() - 1].chars().all(|c| c.is_ascii_uppercase() || c == '_')
 }
 
+/// Attribute values escape HTML entities (`B&amp;W`, `…?a=1&amp;b=2`); decode them for the
+/// text and URLs the document keeps.
+fn decode_entities(s: &str) -> String {
+    if !s.contains('&') {
+        return s.to_string();
+    }
+    let mut out = String::with_capacity(s.len());
+    let mut rest = s;
+    while !rest.is_empty() {
+        match rest.find('&') {
+            Some(k) => {
+                out.push_str(&rest[..k]);
+                let from_amp = &rest[k..];
+                if let Some(e) = from_amp.find(';').filter(|&e| e <= 32)
+                    && let Some(ch) = decode_entity(from_amp.get(1..e).unwrap_or(""))
+                {
+                    out.push_str(&ch);
+                    rest = from_amp.get(e + 1..).unwrap_or("");
+                } else {
+                    out.push('&');
+                    rest = &from_amp[1..];
+                }
+            }
+            None => {
+                out.push_str(rest);
+                rest = "";
+            }
+        }
+    }
+    out
+}
+
 fn tokenize(s: &str, base: &Fmt, depth: usize, refs: &Refs) -> Vec<Node> {
     let mut nodes: Vec<Node> = Vec::new();
     // Bytes the link and image scans below may look ahead in total. Each unmatched `[` or `![(`
@@ -1250,6 +1282,7 @@ fn tokenize(s: &str, base: &Fmt, depth: usize, refs: &Refs) -> Vec<Node> {
                             if is_link {
                                 // A destination too long to keep leaves its text unlinked.
                                 let dest = tag_attr(inner, "href").unwrap_or_default();
+                                let dest = decode_entities(&dest);
                                 f.link = (dest.len() <= model::MAX_LINK).then(|| Arc::from(unescape(&dest)));
                                 if f.link.is_none() {
                                     model::dropped(model::Dropped::Link);
@@ -1266,8 +1299,8 @@ fn tokenize(s: &str, base: &Fmt, depth: usize, refs: &Refs) -> Vec<Node> {
                         }
                         _ if name == "img" => {
                             flush!();
-                            let alt = tag_attr(inner, "alt").unwrap_or_default();
-                            let src = tag_attr(inner, "src").unwrap_or_default();
+                            let alt = tag_attr(inner, "alt").map(|a| decode_entities(&a)).unwrap_or_default();
+                            let src = tag_attr(inner, "src").map(|a| decode_entities(&a)).unwrap_or_default();
                             match model::data_uri(&Arc::from(src.as_str())).and_then(|d| make_img(d, None, None, &alt)) {
                                 Some(im) => nodes.push(Node::Inl(Inline::Image(im))),
                                 None => push_text(&mut nodes, &alt, base),
@@ -1876,16 +1909,17 @@ mod tests {
     #[test]
     fn html_tags_render_not_spill() {
         // Links, emphasis, images, and unknown tags (dropped, like a browser shows nothing).
-        let s =
-            inl("See <a href=\"https://x.org\"><b>Bold *site*</b></a> and <img alt=\"badge\" src=\"b.png\" width=\"16\"> plus <picture>x</picture>.");
+        let s = inl(
+            "See <a href=\"https://x.org?a=1&amp;b=2\"><b>Bold *site*</b></a> and <img alt=\"badge\" src=\"b.png\" width=\"16\"> plus <picture>x</picture> or <img alt=\"B&amp;W\" src=\"x.png\">.",
+        );
         let text: String = s.iter().filter_map(|i| if let Inline::Text(t, _) = i { Some(t.as_str()) } else { None }).collect();
-        assert!(text.contains("See Bold site and badge plus x."), "{text}");
+        assert!(text.contains("See Bold site and badge plus x or B&W."), "{text}");
         assert!(!text.contains('<'), "{text}");
         let bold_link = s.iter().find_map(|i| match i {
             Inline::Text(t, f) if f.bold && f.link.is_some() => Some((t.clone(), f.link.as_deref().unwrap_or("").to_string())),
             _ => None,
         });
-        assert_eq!(bold_link, Some(("Bold ".into(), "https://x.org".into())), "{text}");
+        assert_eq!(bold_link, Some(("Bold ".into(), "https://x.org?a=1&b=2".into())), "{text}");
         // Unclosed tags fall back to plain text around them, and comparison-like `<3` stays.
         assert_eq!(spans("a <b c"), vec![("a <b c".into(), false, false)]);
 
