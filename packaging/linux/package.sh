@@ -81,6 +81,8 @@ has() { local item="$1"; case " $FORMATS " in *" $item "*) return 0 ;; *) return
 if has tar; then
   mkdir -p "$WORK/tar"
   cp -R "$STAGE/usr" "$WORK/tar/$BASENAME"
+  # install.sh na raiz do tarball: extraído, ./install.sh instala no ~/.local do usuário.
+  install -m 755 "$HERE/install.sh" "$WORK/tar/$BASENAME/install.sh"
   tar -C "$WORK/tar" -czf "$DIST/$BASENAME.tar.gz" "$BASENAME"
   echo "wrote $DIST/$BASENAME.tar.gz"
 fi
