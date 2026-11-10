@@ -52,7 +52,7 @@ jobs:
           curl -sSfL https://github.com/goreleaser/nfpm/releases/download/v2.48.0/nfpm_2.48.0_amd64.deb -o /tmp/nfpm.deb
           sudo dpkg -i /tmp/nfpm.deb
       - name: Build e pacote
-        run: packaging/linux/package.sh --formats "appimage deb rpm tar"
+        run: packaging/linux/package.sh --formats "appimage deb rpm tar cli"
       - uses: actions/upload-artifact@v7
         with:
           name: linux
@@ -69,10 +69,15 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           path: dist
+      - name: Checksums
+        run: |
+          set -euo pipefail
+          cd dist
+          find . -type f ! -name 'SHA256SUMS.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
       - name: Publica a release
         run: |
           set -euo pipefail
-          gh release create "${GITHUB_REF_NAME}" dist/windows/* dist/linux/* \
+          gh release create "${GITHUB_REF_NAME}" dist/windows/* dist/linux/* dist/SHA256SUMS.txt \
             --title "Local Word ${GITHUB_REF_NAME}" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
