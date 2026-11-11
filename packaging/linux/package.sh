@@ -91,7 +91,7 @@ fi
 # The stripped localoffice-cli (headless converter/runner) with the licences, for machines that
 # never open a window. Like the other formats it needs glibc >= the build host's.
 if has cli; then
-  CLI_NAME="localoffice-cli-$VERSION$LABEL_SUFFIX-linux-$ARCH"
+  CLI_NAME="localoffice-cli-$VERSION-linux-$ARCH"
   CLI_DIR="$WORK/cli/$CLI_NAME"
   mkdir -p "$CLI_DIR"
   cp "$STAGE/usr/bin/localoffice-cli" "$CLI_DIR/"
