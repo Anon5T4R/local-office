@@ -33,4 +33,3 @@ fn has_recipient(rest: &str) -> bool {
     let (to, headers) = rest.split_once('?').unwrap_or((rest, ""));
     !to.trim().is_empty() || headers.split('&').any(|h| h.split_once('=').is_some_and(|(k, v)| k.eq_ignore_ascii_case("to") && !v.trim().is_empty()))
 }
-

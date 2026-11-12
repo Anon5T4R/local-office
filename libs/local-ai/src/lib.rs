@@ -29,9 +29,7 @@ fn pure_provider() -> Arc<rustls::crypto::CryptoProvider> {
 fn agent() -> &'static ureq::Agent {
     static AGENT: OnceLock<ureq::Agent> = OnceLock::new();
     AGENT.get_or_init(|| {
-        let tls = ureq::tls::TlsConfig::builder()
-            .unversioned_rustls_crypto_provider(pure_provider())
-            .build();
+        let tls = ureq::tls::TlsConfig::builder().unversioned_rustls_crypto_provider(pure_provider()).build();
         ureq::Agent::config_builder().tls_config(tls).build().new_agent()
     })
 }

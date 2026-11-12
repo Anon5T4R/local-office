@@ -30,8 +30,7 @@ pub fn compare_single_page(actual: &DynamicImage, expected: &DynamicImage) -> f6
     let expected_rgb = expected.to_rgb8();
     let (w, h) = expected_rgb.dimensions();
     let resized_actual = fit_and_pad(&actual_rgb, w, h);
-    let result = image_compare::rgb_hybrid_compare(&resized_actual, &expected_rgb)
-        .expect("SSIM comparison failed");
+    let result = image_compare::rgb_hybrid_compare(&resized_actual, &expected_rgb).expect("SSIM comparison failed");
     result.score
 }
 
@@ -45,10 +44,7 @@ pub struct VisualExpectation {
 
 impl VisualExpectation {
     pub const fn new(expected_tiff_path: PathBuf) -> Self {
-        Self {
-            expected_path: expected_tiff_path,
-            min_score: DEFAULT_MIN_SCORE,
-        }
+        Self { expected_path: expected_tiff_path, min_score: DEFAULT_MIN_SCORE }
     }
 
     #[allow(dead_code)]
@@ -58,31 +54,18 @@ impl VisualExpectation {
     }
 
     pub fn assert(&self, actual_pages: &[DynamicImage]) {
-        let expected_pages =
-            loader::load_pages_from_tiff(&self.expected_path).expect("load expected TIFF");
+        let expected_pages = loader::load_pages_from_tiff(&self.expected_path).expect("load expected TIFF");
 
-        assert_eq!(
-            actual_pages.len(),
-            expected_pages.len(),
-            "page count mismatch: actual={}, expected={}",
-            actual_pages.len(),
-            expected_pages.len()
-        );
+        assert_eq!(actual_pages.len(), expected_pages.len(), "page count mismatch: actual={}, expected={}", actual_pages.len(), expected_pages.len());
 
         let mut failures = Vec::new();
-        for (i, (actual_image, expected_image)) in
-            actual_pages.iter().zip(expected_pages.iter()).enumerate()
-        {
+        for (i, (actual_image, expected_image)) in actual_pages.iter().zip(expected_pages.iter()).enumerate() {
             let score = compare_single_page(actual_image, expected_image);
             if score < self.min_score {
                 failures.push(format!("page {}, score: {:.2}", i + 1, score));
             }
         }
 
-        assert!(
-            failures.is_empty(),
-            "visual regression failures:\n  - {}",
-            failures.join("\n  - ")
-        );
+        assert!(failures.is_empty(), "visual regression failures:\n  - {}", failures.join("\n  - "));
     }
 }

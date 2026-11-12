@@ -1190,7 +1190,6 @@ impl Writer<'_> {
         w.close("wps:wsp");
     }
 
-    #[allow(clippy::too_many_arguments)]
     /// A `w:drawing` holding `graphic` (an `a:graphic`) in a frame of the object's size and place.
     #[allow(clippy::too_many_arguments)]
     fn graphic_frame(&mut self, w: &mut W, float: &Float, (gw, gh): (f32, f32), docpr: &str, name: &str, alt: &str, graphic: &crate::xml::El) {

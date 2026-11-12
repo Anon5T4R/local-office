@@ -13,10 +13,8 @@ where
 {
     let device = FilePrinterDevice::<PwgRaster>::new().expect("install virtual PWG printer");
     print(device.device());
-    wait_for_stable_file(device.file_path(), Duration::from_mins(10))
-        .expect("PWG port file should settle after print");
-    let actual_pages =
-        loader::load_pages_from_pwg(device.file_path()).expect("decode PWG raster output");
+    wait_for_stable_file(device.file_path(), Duration::from_mins(10)).expect("PWG port file should settle after print");
+    let actual_pages = loader::load_pages_from_pwg(device.file_path()).expect("decode PWG raster output");
     return actual_pages;
 }
 
@@ -58,11 +56,7 @@ fn wait_for_stable_file(path: &Path, timeout: Duration) -> std::io::Result<()> {
         if std::time::Instant::now() >= deadline {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::TimedOut,
-                format!(
-                    "timed out waiting for spooler to flush {} (last size = {:?})",
-                    path.display(),
-                    last_size
-                ),
+                format!("timed out waiting for spooler to flush {} (last size = {:?})", path.display(), last_size),
             ));
         }
         std::thread::sleep(POLL_INTERVAL);

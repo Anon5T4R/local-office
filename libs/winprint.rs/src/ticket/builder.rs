@@ -7,10 +7,7 @@ use thiserror::Error;
 use windows::{
     core::{BSTR, PCWSTR},
     Win32::{
-        Graphics::Printing::PrintTicket::{
-            kPTJobScope, PTCloseProvider, PTMergeAndValidatePrintTicket, PTOpenProvider,
-            HPTPROVIDER,
-        },
+        Graphics::Printing::PrintTicket::{kPTJobScope, PTCloseProvider, PTMergeAndValidatePrintTicket, PTOpenProvider, HPTPROVIDER},
         UI::Shell::SHCreateMemStream,
     },
 };
@@ -42,41 +39,21 @@ impl PrintTicketBuilder {
     /// Create a new print ticket builder for the given printer device.
     pub fn new(device: &PrinterDevice) -> Result<Self, PrintTicketBuilderError> {
         let provider = unsafe {
-            PTOpenProvider(PCWSTR(wchar::to_wide_chars(device.os_name()).as_ptr()), 1)
-                .map_err(PrintTicketBuilderError::OpenProviderFailed)?
+            PTOpenProvider(PCWSTR(wchar::to_wide_chars(device.os_name()).as_ptr()), 1).map_err(PrintTicketBuilderError::OpenProviderFailed)?
         };
-        Ok(Self {
-            xml: DEFAULT_PRINT_TICKET_XML.into(),
-            provider,
-        })
+        Ok(Self { xml: DEFAULT_PRINT_TICKET_XML.into(), provider })
     }
 
     /// Merge the given print ticket into the current print ticket.
     pub fn merge(&mut self, delta: impl Into<PrintTicket>) -> Result<(), PrintTicketBuilderError> {
         unsafe {
-            let base = SHCreateMemStream(Some(self.xml.as_ref()))
-                .ok_or(PrintTicketBuilderError::StreamNotAllocated)?;
-            let delta = SHCreateMemStream(Some(delta.into().get_xml()))
-                .ok_or(PrintTicketBuilderError::StreamNotAllocated)?;
-            let result =
-                SHCreateMemStream(None).ok_or(PrintTicketBuilderError::StreamNotAllocated)?;
+            let base = SHCreateMemStream(Some(self.xml.as_ref())).ok_or(PrintTicketBuilderError::StreamNotAllocated)?;
+            let delta = SHCreateMemStream(Some(delta.into().get_xml())).ok_or(PrintTicketBuilderError::StreamNotAllocated)?;
+            let result = SHCreateMemStream(None).ok_or(PrintTicketBuilderError::StreamNotAllocated)?;
             let mut error_message = BSTR::default();
-            PTMergeAndValidatePrintTicket(
-                self.provider,
-                &base,
-                &delta,
-                kPTJobScope,
-                Some(&result),
-                Some(&mut error_message),
-            )
-            .map_err(|win32_error| {
-                PrintTicketBuilderError::MergePrintTicketsFailed(
-                    error_message.to_string(),
-                    win32_error,
-                )
-            })?;
-            copy_com_stream_to_vec(&mut self.xml, &result)
-                .map_err(PrintTicketBuilderError::DecodePrintTicketFailed)?;
+            PTMergeAndValidatePrintTicket(self.provider, &base, &delta, kPTJobScope, Some(&result), Some(&mut error_message))
+                .map_err(|win32_error| PrintTicketBuilderError::MergePrintTicketsFailed(error_message.to_string(), win32_error))?;
+            copy_com_stream_to_vec(&mut self.xml, &result).map_err(PrintTicketBuilderError::DecodePrintTicketFailed)?;
         }
         Ok(())
     }
@@ -133,9 +110,6 @@ mod tests {
         let mut builder = PrintTicketBuilder::new(&device).unwrap();
         let delta = r#"This is not a valid print ticket"#;
         let result = builder.merge(PrintTicket::from_xml(delta));
-        assert!(matches!(
-            result,
-            Err(PrintTicketBuilderError::MergePrintTicketsFailed(..))
-        ));
+        assert!(matches!(result, Err(PrintTicketBuilderError::MergePrintTicketsFailed(..))));
     }
 }
