@@ -26,7 +26,7 @@ Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de t
   do craft-i18n @ 9205108), embutidos pelo `crates/ui-egui/build.rs`
 - `assets/craft-fonts/` — fontes CJK/árabe/etc. (craft-fonts @ b076417, build input
   `CRAFT_FONTS_DIR`)
-- `packaging/` — Windows (WiX/MSI), Linux (AppImage/deb/rpm/tar), Arch (PKGBUILD), macOS, web
+- `packaging/` — Windows (WiX/MSI), Linux (AppImage/deb/rpm/tar FHS com `install.sh`), Arch (PKGBUILD), macOS, web
 - `xtask/` — tarefas de build/CI (`cargo xtask ci`)
 
 ## Build
