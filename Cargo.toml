@@ -66,7 +66,7 @@ vello_cpu = "0.2"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "gif", "bmp", "tiff"] }
 # Vendored craft-libs (rev b926b5c03e256c86ca10934f58d03f628810b5b7) under libs/.
 craft-pdf = { path = "libs/craft-libs/crates/pdf/", default-features = false, features = ["write"] }
-craft-update = { path = "libs/craft-libs/crates/update/", features = ["egui"] }
+craft-update = { path = "libs/craft-libs/crates/update/", features = ["egui", "icons"] }
 # BYOK AI shared by the suite's apps (rev 7340a2ba7fc30952a4c2e8aa32210fde29a7a47c) under libs/:
 # one OpenAI-compatible client for every provider, keys in the OS keychain. `crates/ai` gives it
 # LocalOffice's identity (config folder, keychain service, OpenRouter headers).
