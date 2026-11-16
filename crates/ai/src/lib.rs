@@ -8,6 +8,9 @@
 
 use std::path::PathBuf;
 
+pub mod actions;
+pub mod prompts;
+
 pub use local_ai::{Connection, Job, Msg, PROVIDERS, Provider, provider};
 
 /// LocalOffice's identity in the shared `local-ai` crate: config folder and keychain service both
@@ -54,6 +57,11 @@ pub fn clear_key(conn: &Connection) -> Result<(), String> {
 /// the caller.
 pub fn chat(conn: &Connection, history: &[Msg]) -> Result<String, String> {
     local_ai::chat(&APP, conn, history)
+}
+
+/// One streamed answer: `on_delta` receives each piece as it arrives and the whole text comes back.
+pub fn chat_stream(conn: &Connection, history: &[Msg], on_delta: &mut dyn FnMut(&str)) -> Result<String, String> {
+    local_ai::chat_stream(&APP, conn, history, on_delta)
 }
 
 /// The provider's model list, sorted for the picker.
