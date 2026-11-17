@@ -470,6 +470,21 @@ mod tests {
             );
             h.ctx.set_theme(theme);
             save(&mut h, &format!("ai-dialog-{name}"));
+
+            // The whole shell, with the panel beside the page.
+            let mut c = app();
+            c.ai.open = true;
+            c.ai.seed_for_visual_qa();
+            let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1400.0, 900.0)).with_accessibility_check(false).build_ui_state(
+                |ui, app: &mut WordApp| {
+                    let ctx = ui.ctx().clone();
+                    app.logic(&ctx);
+                    app.ui(ui);
+                },
+                c,
+            );
+            h.ctx.set_theme(theme);
+            save(&mut h, &format!("ai-shell-{name}"));
         }
     }
 }
