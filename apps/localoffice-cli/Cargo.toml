@@ -19,5 +19,7 @@ localoffice-engine = { workspace = true }
 localoffice-render = { workspace = true }
 localoffice-mcp = { workspace = true }
 localoffice-zotero = { workspace = true }
+# The suite's MCP plumbing: `--connect PORT` normalization (loopback only), as every Craft app.
+craft-mcp = { workspace = true }
 serde_json = { workspace = true }
 sys-locale = "0.3"

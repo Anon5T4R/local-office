@@ -68,6 +68,9 @@ image = { version = "0.25", default-features = false, features = ["png", "jpeg",
 craft-pdf = { path = "libs/craft-libs/crates/pdf/", default-features = false, features = ["write"] }
 craft-ai-ui = { path = "libs/craft-libs/crates/ai-ui/" }
 craft-update = { path = "libs/craft-libs/crates/update/", features = ["egui", "icons"] }
+# Shared MCP plumbing of the suite (stdio server skeleton, script/batch steps and the automation
+# root flags); source of truth in local-libs, vendored here and replicated by its sync.ps1.
+craft-mcp = { path = "libs/craft-libs/crates/mcp/" }
 # BYOK AI shared by the suite's apps (rev 7340a2ba7fc30952a4c2e8aa32210fde29a7a47c) under libs/:
 # one OpenAI-compatible client for every provider, keys in the OS keychain. `crates/ai` gives it
 # LocalOffice's identity (config folder, keychain service, OpenRouter headers).

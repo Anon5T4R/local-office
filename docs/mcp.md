@@ -6,8 +6,12 @@ Claude and other agents can write and edit documents.
 ```sh
 localoffice-cli mcp                          # headless session (no window)
 localoffice --control 7981 &                 # or: drive the running app…
-localoffice-cli mcp --connect 127.0.0.1:7981 # …including clicks, keys and screenshots
+localoffice-cli mcp --connect 7981           # …including clicks, keys and screenshots
+localoffice-cli mcp --connect 127.0.0.1:7981 # the same address, spelled in full
 ```
+
+`--connect` takes `HOST:PORT` or a bare `PORT` (which means `127.0.0.1`, where the app listens); a
+host that isn't loopback is refused before anything connects.
 
 Claude Code: `claude mcp add localoffice -- localoffice-cli mcp`.
 
@@ -41,6 +45,27 @@ open another one and make it active; later commands and the saves work on the ac
 `view.switchWindows` lists the open documents (with `--print` their ids show), and
 `view.switchWindows={"id": n}` makes one active. A failing command stops the run with `command N (id): …` and exit
 status 1, and nothing is saved. Every output is checked (known extension, folder exists) before the first is written. Paths inside command params (a picture to insert, say) are relative to the working folder, not the script's. Scripts are capped at 4 MiB.
+
+A script may also be just the steps, without the job wrapper: a **JSON array** of them, or **one
+step per line** (JSON Lines, blank lines skipped; a byte order mark is skipped), as the rest of the
+suite takes its job files. They run in order and are saved with `--save`; the job form stays for
+`file`, `template` and `save`:
+
+```text
+{"command": "text.insert", "params": {"text": "Hi"}}
+{"command": "format.bold"}
+```
+
+## The command catalogue from the command line
+
+`localoffice-cli commands` prints every command (id, label, shortcut and menu location);
+`commands --json` prints the same as JSON, and `commands --search TEXT` keeps the ones whose id,
+label or location contains `TEXT` (case-insensitive) — the same idea as `list_commands`'s `query`
+over MCP:
+
+```sh
+localoffice-cli commands --search "track changes"
+```
 
 ## Tracked changes by an agent
 

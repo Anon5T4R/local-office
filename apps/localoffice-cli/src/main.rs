@@ -34,17 +34,22 @@ USAGE:
                                               who tracked changes and comments are by).
                                               --script runs a JSON file (- is stdin) first:
                                               {\"file\"?, \"template\"?, \"commands\": [{\"command\": id,
-                                              \"params\"?: {…}} | id, …], \"save\"?: [OUT, …]}; save
+                                              \"params\"?: {…}} | id, …], \"save\"?: [OUT, …]} — or a JSON
+                                              array of steps, or one step per line (JSON Lines); save
                                               formats follow the extension (docx and pdf in one run);
                                               relative paths resolve against the script's folder.
                                               file.new and file.open open another document and
                                               make it active; later commands and the saves work on
                                               the active one; view.switchWindows lists the open
                                               documents and with {\"id\": N} makes one active
-  localoffice-cli commands [--json]             list every command
+  localoffice-cli commands [--json] [--search TEXT]
+                                              list every command (--search keeps those whose id,
+                                              label or location contains TEXT)
   localoffice-cli parity [--markdown]           feature-catalog parity
-  localoffice-cli mcp [--connect HOST:PORT | --author NAME] [--automation-read-root DIR] [--automation-write-root DIR]
+  localoffice-cli mcp [--connect ADDR|PORT | --author NAME] [--automation-read-root DIR] [--automation-write-root DIR]
                                               MCP server on stdio (headless, or bridged to the app).
+                                              --connect takes HOST:PORT or a bare PORT (loopback);
+                                              a host that isn't loopback is refused.
                                               --automation-read-root / --automation-write-root confine
                                               the files the agent's commands read (open, insert text
                                               or picture, mail-merge data, templates…) and write (save,
@@ -321,7 +326,7 @@ const RUN_OPTIONS: &[OptionSpec] = &[
     OptionSpec { name: "--print", takes_value: false },
     OptionSpec { name: "--author", takes_value: true },
 ];
-const COMMANDS_OPTIONS: &[OptionSpec] = &[OptionSpec { name: "--json", takes_value: false }];
+const COMMANDS_OPTIONS: &[OptionSpec] = &[OptionSpec { name: "--json", takes_value: false }, OptionSpec { name: "--search", takes_value: true }];
 const PARITY_OPTIONS: &[OptionSpec] = &[OptionSpec { name: "--markdown", takes_value: false }];
 const MCP_OPTIONS: &[OptionSpec] = &[OptionSpec { name: "--connect", takes_value: true }, OptionSpec { name: "--author", takes_value: true }];
 const ZOTERO_OPTIONS: &[OptionSpec] = &[
@@ -381,14 +386,6 @@ fn write_stdout(write: impl FnOnce(&mut std::io::StdoutLock<'static>) -> std::io
 fn script_operand<S: AsRef<OsStr>>(raw: &[S]) -> Option<PathBuf> {
     let at = raw.iter().position(|a| a.as_ref() == OsStr::new("--script"))?;
     raw.get(at + 1).map(|a| PathBuf::from(a.as_ref()))
-}
-
-/// Whether `addr` (`HOST:PORT`, as `--connect` gives it) is at least shaped like an address: a
-/// host of some kind and a numeric port. Malformed addresses fail at startup — a lazy remote
-/// would otherwise retry one on every call and never say why nothing connects.
-fn valid_connect_addr(addr: &str) -> bool {
-    let Some((host, port)) = addr.rsplit_once(':') else { return false };
-    !host.is_empty() && port.parse::<u16>().is_ok()
 }
 
 /// Run the subcommand named by `args` (the command line after the program name). Files named
@@ -560,13 +557,23 @@ fn run<S: AsRef<OsStr>>(args: &[S]) -> Result<(), Failure> {
         }
         "commands" => {
             validate_options("commands", &rest, COMMANDS_OPTIONS)?;
+            let search = arg_value(&rest, "--search").map(|s| s.to_lowercase());
+            let hit = |v: &str| search.as_deref().is_none_or(|needle| v.to_lowercase().contains(needle));
             let s = session(localoffice_doc::Document::new());
             if rest.iter().any(|a| a == "--json") {
-                let list = serde_json::to_string_pretty(&s.registry.describe()).unwrap_or_default();
+                let mut list = s.registry.describe();
+                if let (Some(needle), Some(all)) = (search.as_deref(), list.as_array_mut()) {
+                    all.retain(|c| {
+                        ["id", "label", "location"]
+                            .iter()
+                            .any(|k| c.get(*k).and_then(Value::as_str).is_some_and(|v| v.to_lowercase().contains(needle)))
+                    });
+                }
+                let list = serde_json::to_string_pretty(&list).unwrap_or_default();
                 write_stdout(|o| writeln!(o, "{list}"))
             } else {
                 write_stdout(|o| {
-                    for c in s.registry.all() {
+                    for c in s.registry.all().iter().filter(|c| hit(c.id) || hit(c.label) || hit(c.location)) {
                         writeln!(o, "{:<32} {:<36} {:<24} {}", c.id, c.label, c.shortcut, c.location)?;
                     }
                     Ok(())
@@ -600,11 +607,10 @@ fn run<S: AsRef<OsStr>>(args: &[S]) -> Result<(), Failure> {
                     return Err("mcp: --author applies to the headless server; with --connect, run file.setAuthor".into());
                 }
                 Some(addr) => {
-                    // A malformed address must fail at startup, not on every tool call the lazy
-                    // remote would retry it with.
-                    if !valid_connect_addr(&addr) {
-                        return Err(format!("mcp: --connect needs HOST:PORT with a numeric port, got `{addr}`").into());
-                    }
+                    // The suite's `--connect`: a bare port means loopback (`--connect 7981`),
+                    // `HOST:PORT` and `localhost:PORT` are taken, and a host that isn't loopback is
+                    // refused before any connection is attempted.
+                    let addr = craft_mcp::remote::normalize_addr(&addr).map_err(|e| format!("mcp: {e}"))?;
                     match localoffice_mcp::Remote::connect(&addr) {
                         Ok(remote) => {
                             eprintln!("localoffice-cli mcp: connected to Local Word at {addr}");
@@ -872,8 +878,10 @@ mod tests {
         // The app's user name is the person's own; a bridge flag must not rewrite it.
         assert!(run(&args(&["mcp", "--connect", "127.0.0.1:9", "--author", "Claude"])).is_err_and(|e| e.to_string().contains("--author")));
         // A malformed address fails at startup, not on every retried call.
-        assert!(run(&args(&["mcp", "--connect", "127.0.0.1:notaport"])).is_err_and(|e| e.to_string().contains("numeric port")));
-        assert!(run(&args(&["mcp", "--connect", "notaport"])).is_err_and(|e| e.to_string().contains("numeric port")));
+        assert!(run(&args(&["mcp", "--connect", "127.0.0.1:notaport"])).is_err_and(|e| e.to_string().contains("a port is 1 to 65535")));
+        assert!(run(&args(&["mcp", "--connect", "notaport"])).is_err_and(|e| e.to_string().contains("give PORT or HOST:PORT")));
+        // A host that isn't loopback is refused before anything connects (the suite's contract).
+        assert!(run(&args(&["mcp", "--connect", "192.168.1.5:7981"])).is_err_and(|e| e.to_string().contains("loopback only")));
         // The flag goes through the same protection check as the command.
         let mut s = Session::new(localoffice_doc::Document::new());
         s.run("review.restrict", &json!({"mode": "readOnly"})).unwrap();

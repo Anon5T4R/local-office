@@ -1157,6 +1157,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "craft-mcp"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
 name = "craft-pdf"
 version = "0.1.0"
 dependencies = [
@@ -3358,6 +3365,7 @@ dependencies = [
 name = "localoffice-cli"
 version = "0.11.33"
 dependencies = [
+ "craft-mcp",
  "localoffice-doc",
  "localoffice-engine",
  "localoffice-mcp",

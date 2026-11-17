@@ -71,35 +71,64 @@ fn opt_string(obj: &serde_json::Map<String, Value>, key: &str) -> Result<Option<
 }
 
 pub fn parse(text: &str, base: Option<&Path>) -> Result<Script, String> {
-    let v: Value = serde_json::from_str(text).map_err(|e| format!("bad JSON: {e}"))?;
-    let obj = v.as_object().ok_or("a script is a JSON object with a `commands` list")?;
-    let list = match obj.get("commands") {
-        Some(Value::Array(a)) => a,
-        _ => return Err("`commands` must be a list".into()),
-    };
+    let text = text.strip_prefix('\u{feff}').unwrap_or(text);
+    match serde_json::from_str::<Value>(text) {
+        // A list of steps, run in order: `[{"command": id, "params": {…}}, "caret.docEnd", …]`.
+        Ok(Value::Array(list)) => Ok(Script { file: None, template: None, commands: steps(&list)?, save: Vec::new() }),
+        Ok(value) => script_from_object(value, base),
+        Err(single) => {
+            // One step per line (JSON Lines), as the rest of the suite takes job files. A single
+            // line that isn't JSON is still the plain document error, not a line-numbered one.
+            let lines: Vec<(usize, &str)> = text.lines().enumerate().filter(|(_, l)| !l.trim().is_empty()).collect();
+            if lines.len() <= 1 {
+                return Err(format!("bad JSON: {single}"));
+            }
+            let mut commands = Vec::with_capacity(lines.len());
+            for (line, body) in lines {
+                let v: Value = serde_json::from_str(body).map_err(|e| format!("step {} (line {}): {e}", commands.len() + 1, line + 1))?;
+                commands.push(step(v, commands.len() + 1)?);
+            }
+            Ok(Script { file: None, template: None, commands, save: Vec::new() })
+        }
+    }
+}
+
+/// The steps of a `commands` list, or of an array script.
+fn steps(list: &[Value]) -> Result<Vec<(String, Value)>, String> {
     if list.is_empty() {
         return Err("`commands` is empty".into());
     }
     if list.len() > MAX_COMMANDS {
         return Err(format!("too many commands (over {MAX_COMMANDS})"));
     }
-    let mut commands = Vec::with_capacity(list.len());
-    for (i, c) in list.iter().enumerate() {
-        let n = i + 1;
-        let entry = match c {
-            Value::String(id) => Some((id.clone(), Value::Object(Default::default()))),
-            Value::Object(o) => match o.get("command") {
-                Some(Value::String(id)) => Some((id.clone(), o.get("params").cloned().unwrap_or_else(|| Value::Object(Default::default())))),
-                _ => None,
-            },
+    list.iter().enumerate().map(|(i, c)| step(c.clone(), i + 1)).collect()
+}
+
+/// One step: a command id, or `{"command": id, "params": {…}}`.
+fn step(c: Value, n: usize) -> Result<(String, Value), String> {
+    let entry = match c {
+        Value::String(id) => Some((id, Value::Object(Default::default()))),
+        Value::Object(o) => match o.get("command") {
+            Some(Value::String(id)) => Some((id.clone(), o.get("params").cloned().unwrap_or_else(|| Value::Object(Default::default())))),
             _ => None,
-        };
-        match entry {
-            Some((id, _)) if id.is_empty() => return Err(format!("command {n}: empty command id")),
-            Some(e) => commands.push(e),
-            None => return Err(format!("command {n}: expected a command id or {{\"command\": id, \"params\": {{…}}}}")),
-        }
+        },
+        _ => None,
+    };
+    match entry {
+        Some((id, _)) if id.is_empty() => Err(format!("command {n}: empty command id")),
+        Some(e) => Ok(e),
+        None => Err(format!("command {n}: expected a command id or {{\"command\": id, \"params\": {{…}}}}")),
     }
+}
+
+/// The job form: `{"file"?, "template"?, "commands": […], "save"?}`.
+fn script_from_object(v: Value, base: Option<&Path>) -> Result<Script, String> {
+    let obj = v.as_object().ok_or("a script is a JSON object with a `commands` list, a list of steps, or one step per line")?;
+    let list = match obj.get("commands") {
+        Some(Value::Array(a)) => a,
+        _ => return Err("`commands` must be a list".into()),
+    };
+    let commands = steps(list)?;
     let save = match obj.get("save") {
         None | Some(Value::Null) => Vec::new(),
         Some(Value::String(s)) => vec![resolve(s, base)],

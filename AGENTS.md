@@ -29,6 +29,16 @@ Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de t
 - `packaging/` — Windows (WiX/MSI), Linux (AppImage/deb/rpm/tar FHS com `install.sh`), Arch (PKGBUILD), macOS, web
 - `xtask/` — tarefas de build/CI (`cargo xtask ci`)
 
+## Agent-native (MCP)
+O app já é agent-native de origem (herdado do wordcraft): `crates/mcp` (servidor stdio + backends
+headless/remote), `crates/control-key` (chave do control channel, em arquivo ou
+`LOCALOFFICE_CONTROL_KEY`), `localoffice-cli mcp` e `mcp --connect ADDR|PORT`. Com `--connect` o
+bridge fala com o app aberto (porta loopback; a chave só vai para 127.0.0.1) e re-tenta a cada
+chamada até ele abrir. O molde da suíte vive em **`craft-mcp`** (fonte `local-libs`, espelho em
+`libs/craft-libs/crates/mcp`) e é usado aqui para o `--connect` (porta nua/loopback). `run --script`
+aceita o job (`{file, template, commands, save}`), uma lista de passos ou JSON Lines;
+`commands --search TEXT` filtra o catálogo. Docs: `docs/mcp.md` e `docs/control-protocol.md`.
+
 ## Build
 ```
 cargo build --locked          # debug

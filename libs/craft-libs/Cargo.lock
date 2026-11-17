@@ -973,6 +973,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "craft-mcp"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
 name = "craft-media"
 version = "0.1.0"
 dependencies = [
