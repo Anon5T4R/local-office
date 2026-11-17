@@ -26,6 +26,8 @@ pub struct AiState {
     connections: ui::ConnectionsPanel,
     /// The connection in use, loaded from the suite's store.
     connection: Option<ai::Connection>,
+    /// Whether the store was read already (once per state: the panel is drawn every frame).
+    loaded: bool,
     stream: Option<ai::Stream>,
     /// A model list fetched from the provider, waiting for the form.
     models_job: Option<std::sync::mpsc::Receiver<Result<Vec<String>, String>>>,
@@ -46,6 +48,7 @@ impl Default for AiState {
             strip: ui::StatusStrip::default(),
             connections: ui::ConnectionsPanel::default(),
             connection: None,
+            loaded: false,
             stream: None,
             models_job: None,
             artifact: crate::ai_artifact::Artifact::default(),
@@ -55,11 +58,12 @@ impl Default for AiState {
 }
 
 impl AiState {
-    /// Loads the saved connection, if there is one (once, when the panel first opens).
+    /// Loads the saved connection, if there is one (once: the panel is drawn every frame).
     pub fn load(&mut self) {
-        if self.connection.is_some() {
+        if self.loaded {
             return;
         }
+        self.loaded = true;
         match ai::load_all() {
             Ok(all) => self.connection = all.into_iter().next(),
             Err(error) => self.error = Some(error),
