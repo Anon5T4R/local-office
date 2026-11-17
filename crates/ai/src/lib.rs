@@ -64,6 +64,61 @@ pub fn chat_stream(conn: &Connection, history: &[Msg], on_delta: &mut dyn FnMut(
     local_ai::chat_stream(&APP, conn, history, on_delta)
 }
 
+/// [`chat_stream`] with the key handed in instead of read from the OS keychain: for the tests that
+/// exercise the transport end to end (a loopback provider, a real provider) without the keychain.
+pub fn chat_stream_with_key(conn: &Connection, key: &str, history: &[Msg], on_delta: &mut dyn FnMut(&str)) -> Result<String, String> {
+    local_ai::chat_stream_with_key(&APP, conn, key, history, on_delta)
+}
+
+/// A streaming answer on a worker thread: the pieces arrive on `deltas` as the provider sends them,
+/// and the joined text (or the error) on `done`. Both channels close when the request ends.
+pub struct Stream {
+    pub deltas: std::sync::mpsc::Receiver<String>,
+    pub done: std::sync::mpsc::Receiver<Result<String, String>>,
+    cancelled: std::sync::Arc<std::sync::atomic::AtomicBool>,
+}
+
+impl Stream {
+    /// Starts the request on a worker thread. The UI polls [`Stream::poll`] every frame.
+    pub fn start(conn: Connection, history: Vec<Msg>) -> Self {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        use std::sync::mpsc::channel;
+        let (deltas_tx, deltas) = channel();
+        let (done_tx, done) = channel();
+        let cancelled = std::sync::Arc::new(AtomicBool::new(false));
+        let stop = cancelled.clone();
+        std::thread::Builder::new()
+            .name("ai-chat".into())
+            .spawn(move || {
+                let result = local_ai::chat_stream(&APP, &conn, &history, |delta| {
+                    // A cancelled request stops forwarding: closing the panel must not keep
+                    // spending the user's tokens.
+                    if stop.load(Ordering::Relaxed) {
+                        return;
+                    }
+                    let _ = deltas_tx.send(delta.to_owned());
+                });
+                let _ = done_tx.send(result);
+            })
+            .ok();
+        Self { deltas, done, cancelled }
+    }
+
+    /// What arrived since the last frame, and the final result once there is one.
+    pub fn poll(&self) -> (Vec<String>, Option<Result<String, String>>) {
+        let mut pieces = Vec::new();
+        while let Ok(delta) = self.deltas.try_recv() {
+            pieces.push(delta);
+        }
+        (pieces, self.done.try_recv().ok())
+    }
+
+    /// Tells the worker to stop forwarding (the answer in flight is discarded by the caller).
+    pub fn cancel(&self) {
+        self.cancelled.store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
 /// The provider's model list, sorted for the picker.
 pub fn list_models(conn: &Connection) -> Result<Vec<String>, String> {
     local_ai::list_models(&APP, conn)
@@ -72,6 +127,77 @@ pub fn list_models(conn: &Connection) -> Result<Vec<String>, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A provider on the loopback: it answers the first POST with `body` as an SSE response and
+    /// sends back the request's head. The CI gate for the streaming path with no network and no
+    /// keychain.
+    fn serve_sse(body: String) -> (String, std::sync::mpsc::Receiver<String>) {
+        use std::io::{BufRead, BufReader, Read, Write};
+        use std::net::TcpListener;
+        let listener = TcpListener::bind("127.0.0.1:0").expect("a loopback port");
+        let port = listener.local_addr().expect("the bound address").port();
+        let (tx, rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let Ok((mut stream, _)) = listener.accept() else { return };
+            let mut reader = BufReader::new(stream.try_clone().expect("a reading handle"));
+            let mut head = String::new();
+            loop {
+                let mut line = String::new();
+                if reader.read_line(&mut line).unwrap_or(0) == 0 || line == "\r\n" {
+                    break;
+                }
+                head.push_str(&line);
+            }
+            // The body carries the model and the messages: read it so the test can check them.
+            let length = head
+                .lines()
+                .find_map(|line| line.to_ascii_lowercase().strip_prefix("content-length:").map(str::trim).map(str::to_owned))
+                .and_then(|length| length.parse::<usize>().ok())
+                .unwrap_or(0);
+            let mut posted = vec![0u8; length];
+            let _ = reader.read_exact(&mut posted);
+            let _ = tx.send(format!("{head}\n{}", String::from_utf8_lossy(&posted)));
+            let response = format!("HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nConnection: close\r\n\r\n{body}");
+            let _ = stream.write_all(response.as_bytes());
+            let _ = stream.flush();
+        });
+        (format!("http://127.0.0.1:{port}/v1"), rx)
+    }
+
+    /// One streaming chunk in the OpenAI shape.
+    fn delta(text: &str) -> String {
+        let content = serde_json::to_string(text).expect("a JSON string");
+        format!("data: {{\"choices\":[{{\"delta\":{{\"content\":{content}}}}}]}}\n\n")
+    }
+
+    /// The streaming path end to end over SSE: the pieces arrive in order, the answer joins, and
+    /// the artifact contract reads the whole answer into a document.
+    #[test]
+    fn a_streamed_answer_becomes_a_document() {
+        let answer = "{\"title\":\"Protocolo\",\"blocks\":[\
+            {\"kind\":\"heading\",\"level\":1,\"text\":\"Sepse\"},\
+            {\"kind\":\"paragraph\",\"text\":\"Definição.\"}]}";
+        let cut = answer.char_indices().nth(answer.chars().count() / 2).map(|(i, _)| i).unwrap_or(answer.len());
+        let body = format!("{}{}data: [DONE]\n\n", delta(&answer[..cut]), delta(&answer[cut..]));
+        let (base_url, received) = serve_sse(body);
+        let request = actions::Request::GenerateDoc { topic: "sepse".into(), language: "português".into(), shape: None };
+        let messages = actions::messages(&request, "pt-br").expect("messages");
+        let conn = Connection { id: "loopback".into(), provider: "custom".into(), label: "Loopback".into(), base_url, model: "mock".into() };
+        let mut pieces = Vec::new();
+        let whole =
+            chat_stream_with_key(&conn, "test-key", &messages, &mut |piece: &str| pieces.push(piece.to_owned())).expect("the streamed answer");
+        assert_eq!(whole, answer, "the pieces join into the answer");
+        assert_eq!(pieces, vec![answer[..cut].to_owned(), answer[cut..].to_owned()], "the pieces arrived in order");
+        let head = received.recv().expect("the request");
+        assert!(head.contains("POST /v1/chat/completions"), "{head}");
+        assert!(head.contains("\"stream\":true"), "{head}");
+        match actions::interpret(&request, &whole).expect("a document") {
+            actions::Outcome::Doc { title, blocks } => {
+                assert_eq!(title, "Protocolo");
+                assert_eq!(blocks.len(), 2);
+            }
+        }
+    }
 
     #[test]
     fn the_store_path_lives_under_the_apps_folder() {

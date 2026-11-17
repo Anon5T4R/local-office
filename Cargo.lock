@@ -1123,6 +1123,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "craft-ai-ui"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "log",
+]
+
+[[package]]
 name = "craft-fonts-build"
 version = "0.1.0"
 
@@ -3343,6 +3351,7 @@ version = "0.11.31"
 dependencies = [
  "local-ai",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -3580,6 +3589,7 @@ version = "0.11.31"
 dependencies = [
  "cfb",
  "chrono",
+ "craft-ai-ui",
  "craft-i18n",
  "craft-ui",
  "craft-update",

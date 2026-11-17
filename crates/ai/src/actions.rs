@@ -24,8 +24,9 @@ pub enum Block {
 /// What the user asked for.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Request {
-    /// A free description -> a whole new document, in `language`.
-    GenerateDoc { topic: String, language: String },
+    /// A free description -> a whole new document, in `language`. `shape` is the dialog's preset
+    /// ("a report", "a letter"), appended to the request; `None` asks for nothing.
+    GenerateDoc { topic: String, language: String, shape: Option<String> },
     /// The current document's text plus an instruction -> the whole rewritten document.
     EditDoc { instruction: String, document: String },
 }
@@ -62,12 +63,16 @@ pub fn messages(request: &Request, lang: &str) -> Result<Vec<Msg>, String> {
     let prompts = for_lang(lang);
     let system = Msg::System(fill(prompts.system, &[("answer_in", prompts.answer_in)]));
     let user = match request {
-        Request::GenerateDoc { topic, language } => {
+        Request::GenerateDoc { topic, language, shape } => {
             let topic = topic.trim();
             if topic.is_empty() {
                 return Err("the topic is empty".into());
             }
-            fill(prompts.generate, &[("topic", topic), ("language", language), ("answer_in", prompts.answer_in)])
+            let mut user = fill(prompts.generate, &[("topic", topic), ("language", language), ("answer_in", prompts.answer_in)]);
+            if let Some(shape) = shape.as_deref().map(str::trim).filter(|shape| !shape.is_empty()) {
+                user.push_str(&format!("\n\nThe document's shape: {shape}."));
+            }
+            user
         }
         Request::EditDoc { instruction, document } => {
             let instruction = instruction.trim();
@@ -183,7 +188,7 @@ mod tests {
     use super::*;
 
     fn generate() -> Request {
-        Request::GenerateDoc { topic: "protocolo de sepse".into(), language: "português".into() }
+        Request::GenerateDoc { topic: "protocolo de sepse".into(), language: "português".into(), shape: None }
     }
 
     #[test]
@@ -230,13 +235,13 @@ mod tests {
 
     #[test]
     fn an_empty_topic_or_instruction_is_refused_before_the_request() {
-        assert!(messages(&Request::GenerateDoc { topic: "  ".into(), language: "en".into() }, "en").is_err());
+        assert!(messages(&Request::GenerateDoc { topic: "  ".into(), language: "en".into(), shape: None }, "en").is_err());
         assert!(messages(&Request::EditDoc { instruction: " ".into(), document: "x".into() }, "en").is_err());
     }
 
     #[test]
     fn the_messages_carry_the_contract_and_the_language() {
-        let request = Request::GenerateDoc { topic: "sepse".into(), language: "português".into() };
+        let request = Request::GenerateDoc { topic: "sepse".into(), language: "português".into(), shape: Some("a report".into()) };
         let messages = messages(&request, "pt-br").expect("messages");
         let Msg::System(system) = &messages[0] else { panic!("system turn") };
         assert!(system.contains("português (Brasil)"), "the answer language travels: {system}");

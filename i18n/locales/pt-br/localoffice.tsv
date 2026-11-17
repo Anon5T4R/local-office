@@ -2006,3 +2006,36 @@
 	{width} × {height} pixels	{width} × {height} pixels
 	{words} words	Palavras: {words}
 	“{text}” ({row}, {series}) isn't a number.	“{text}” ({row}, {series}) não é um número.
+	AI assistant	Assistente de IA
+	AI connections	Conexões de IA
+	API key	Chave de API
+	Article	Artigo
+	Ask about the document.	Pergunte sobre o documento.
+	Base URL	URL base
+	Choose a model first	Escolha um modelo primeiro
+	Configure a connection first.	Configure uma conexão primeiro.
+	Empty uses the provider's own address.	Vazio usa o endereço do próprio provedor.
+	Fetch models	Buscar modelos
+	Provider	Provedor
+	reading: {label} · {sent} of {total} chars · {kept} of {turns} turns	lendo: {label} · {sent} de {total} caracteres · {kept} de {turns} turnos
+	Repeat last	Repetir o último
+	Retry	Tentar de novo
+	Rewrite a copy	Reescrever numa cópia
+	Save the document first: the copy is written beside it.	Salve o documento primeiro: a cópia é gravada ao lado dele.
+	Send	Enviar
+	The AI wrote a new document.	A IA escreveu um documento novo.
+	The AI wrote the copy beside the original: {name}	A IA gravou a cópia ao lado do original: {name}
+	The connection has no API key	A conexão não tem chave de API
+	the document	o documento
+	The document has no text to rewrite.	O documento não tem texto para reescrever.
+	The document is too long for a rewrite.	O documento é longo demais para uma reescrita.
+	The key stays in the operating system's keychain.	A chave fica no cofre do sistema operacional.
+	The original stays as it is: the copy is saved beside it as {name}.	O original fica como está: a cópia é salva ao lado dele como {name}.
+	To the end	Até o fim
+	What should change?	O que deve mudar?
+	What should the new document be about?	Sobre o que deve ser o documento novo?
+	Write	Escrever
+	Write to the assistant.	Escreva para o assistente.
+	Write what should change.	Escreva o que deve mudar.
+	Write what the new document should be about.	Escreva sobre o que deve ser o documento novo.
+	Write with AI	Escrever com IA

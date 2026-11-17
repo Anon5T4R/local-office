@@ -22,6 +22,8 @@ macro_rules! tl {
 
 pub mod a11y;
 pub mod a11y_pane;
+/// The AI artifact actions: a new document, or the open one rewritten into a copy beside it.
+pub mod ai_artifact;
 pub mod ai_ui;
 pub mod async_saves;
 pub mod autoscroll;
@@ -2940,6 +2942,8 @@ impl WordApp {
                 }
                 chrome::status_bar(self, ui);
                 panes::show(self, ui);
+                // The AI panel is the suite's chat panel, anchored on the right before the page.
+                crate::ai_ui::panel(self, ui);
             }
             if moved(self) {
                 return;

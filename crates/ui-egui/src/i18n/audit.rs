@@ -174,12 +174,11 @@ impl<'a> Exempt<'a> {
         }
         // The AI panel's setup (Home ▸ AI): the connection names and models the user picked, and
         // the providers' brand names, which the shared crate lists untranslated by design.
-        for c in &app.ai.connections {
+        if let Some(c) = app.ai.connection() {
             names.insert(c.label.clone());
             names.insert(c.model.clone());
             if let Some(p) = localoffice_ai::provider(&c.provider) {
                 names.insert(p.label.to_owned());
-                names.insert(format!("{} — {}", c.label, p.label));
             }
         }
         names.extend(localoffice_ai::PROVIDERS.iter().map(|p| p.label.to_owned()));

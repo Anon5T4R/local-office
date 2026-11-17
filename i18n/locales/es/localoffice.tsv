@@ -2303,3 +2303,36 @@ preview	Title	Título
 	{words} words	{words} palabras
 	“{text}” ({row}, {series}) isn't a number.	«{text}» ({row}, {series}) no es un número.
 	✓ None	✓ Ninguno
+	AI assistant	Asistente de IA
+	AI connections	Conexiones de IA
+	API key	Clave de API
+	Article	Artículo
+	Ask about the document.	Pregunta sobre el documento.
+	Base URL	URL base
+	Choose a model first	Elige un modelo primero
+	Configure a connection first.	Configura una conexión primero.
+	Empty uses the provider's own address.	Vacío usa la dirección del propio proveedor.
+	Fetch models	Obtener modelos
+	Provider	Proveedor
+	reading: {label} · {sent} of {total} chars · {kept} of {turns} turns	leyendo: {label} · {sent} de {total} caracteres · {kept} de {turns} turnos
+	Repeat last	Repetir el último
+	Retry	Reintentar
+	Rewrite a copy	Reescribir en una copia
+	Save the document first: the copy is written beside it.	Guarda el documento primero: la copia se escribe junto a él.
+	Send	Enviar
+	The AI wrote a new document.	La IA escribió un documento nuevo.
+	The AI wrote the copy beside the original: {name}	La IA guardó la copia junto al original: {name}
+	The connection has no API key	La conexión no tiene clave de API
+	the document	el documento
+	The document has no text to rewrite.	El documento no tiene texto que reescribir.
+	The document is too long for a rewrite.	El documento es demasiado largo para reescribirlo.
+	The key stays in the operating system's keychain.	La clave se queda en el llavero del sistema operativo.
+	The original stays as it is: the copy is saved beside it as {name}.	El original queda como está: la copia se guarda junto a él como {name}.
+	To the end	Hasta el final
+	What should change?	¿Qué debe cambiar?
+	What should the new document be about?	¿De qué debe tratar el documento nuevo?
+	Write	Escribir
+	Write to the assistant.	Escribe al asistente.
+	Write what should change.	Escribe qué debe cambiar.
+	Write what the new document should be about.	Escribe de qué debe tratar el documento nuevo.
+	Write with AI	Escribir con IA

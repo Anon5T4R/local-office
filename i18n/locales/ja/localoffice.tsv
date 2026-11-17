@@ -2082,3 +2082,36 @@
 	{width} × {height} pixels	{width} × {height} ピクセル
 	{words} words	{words} 語
 	“{text}” ({row}, {series}) isn't a number.	「{text}」（{row}、{series}）は数値ではありません。
+	AI assistant	AI アシスタント
+	AI connections	AI 接続
+	API key	API キー
+	Article	記事
+	Ask about the document.	文書について質問する。
+	Base URL	ベース URL
+	Choose a model first	先にモデルを選んでください
+	Configure a connection first.	先に接続を設定してください。
+	Empty uses the provider's own address.	空欄ならプロバイダー自身のアドレスを使います。
+	Fetch models	モデルを取得
+	Provider	プロバイダー
+	reading: {label} · {sent} of {total} chars · {kept} of {turns} turns	読み込み中: {label} · {total} 文字中 {sent} 文字 · {turns} ターン中 {kept} ターン
+	Repeat last	前回を繰り返す
+	Retry	再試行
+	Rewrite a copy	コピーを書き直す
+	Save the document first: the copy is written beside it.	先に文書を保存してください。コピーはその隣に書き込まれます。
+	Send	送信
+	The AI wrote a new document.	AI が新しい文書を書きました。
+	The AI wrote the copy beside the original: {name}	AI が元のファイルの隣にコピーを書き込みました: {name}
+	The connection has no API key	接続に API キーがありません
+	the document	文書
+	The document has no text to rewrite.	文書に書き直すテキストがありません。
+	The document is too long for a rewrite.	文書が長すぎて書き直せません。
+	The key stays in the operating system's keychain.	キーは OS のキーチェーンに保存されます。
+	The original stays as it is: the copy is saved beside it as {name}.	元のファイルはそのままです。コピーはその隣に {name} として保存されます。
+	To the end	最後へ
+	What should change?	何を変えますか?
+	What should the new document be about?	新しい文書は何について書きますか?
+	Write	書く
+	Write to the assistant.	アシスタントに書く。
+	Write what should change.	何を変えるか書いてください。
+	Write what the new document should be about.	新しい文書の内容を書いてください。
+	Write with AI	AI で書く
