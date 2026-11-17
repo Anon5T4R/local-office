@@ -576,7 +576,9 @@ mod tests {
     /// The layout of an answer: one line per paragraph, list items each on their own line.
     #[test]
     fn the_layout_keeps_one_paragraph_per_line() {
-        let blocks = match doc("x") { Outcome::Doc { blocks, .. } => blocks };
+        let blocks = match doc("x") {
+            Outcome::Doc { blocks, .. } => blocks,
+        };
         let (text, placed) = layout(&blocks);
         assert_eq!(text, "Sepse\nDefinição.\nfebre\nleucocitose");
         assert_eq!(
