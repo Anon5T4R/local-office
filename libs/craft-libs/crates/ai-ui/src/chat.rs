@@ -170,6 +170,16 @@ impl ChatPanel {
         true
     }
 
+    /// Asks a question the panel did not type: a tool entry's action ("Summarize the document"),
+    /// sent through the same path as the composer. Returns whether a request is waiting.
+    pub fn ask(&mut self, question: impl Into<String>) -> bool {
+        if self.busy {
+            return false;
+        }
+        self.input = question.into();
+        self.submit()
+    }
+
     /// Builds the request for `question`, applying the window policy.
     fn build(&mut self, question: &str) -> Vec<Line> {
         let history: Vec<(Role, String)> = self.lines.iter().map(|line| (line.role, line.text.clone())).collect();
@@ -456,5 +466,17 @@ mod tests {
         assert!(panel.submit());
         panel.input = "outra".into();
         assert!(!panel.submit(), "one request at a time");
+    }
+
+    #[test]
+    fn an_asked_question_takes_the_composer_and_the_same_path() {
+        let mut panel = panel();
+        assert!(panel.ask("Resuma o documento"), "an entry's action sends");
+        assert!(panel.busy());
+        assert!(panel.input.is_empty(), "the question left the composer");
+        let request = panel.take_request().expect("the request");
+        assert!(request.iter().any(|line| line.role == Role::User && line.text == "Resuma o documento"));
+        assert!(!panel.ask("outra"), "one request at a time");
+        assert!(panel.lines().iter().any(|line| line.role == Role::User && line.text == "Resuma o documento"));
     }
 }
