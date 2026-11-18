@@ -5,13 +5,6 @@
 //! the menus, ribbon, shortcuts, control channel and MCP all reach the same behaviour.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
-/// What the operating system says about light and dark. macOS and Windows answer through winit;
-/// winit reports nothing on Linux, where the desktop portal does ([`desktop_theme`]). `None` means
-/// nobody answered, not a preference.
-fn system_theme(ctx: &egui::Context, desktop_dark: Option<bool>) -> Option<egui::Theme> {
-    ctx.system_theme().or_else(|| desktop_dark.map(|dark| if dark { egui::Theme::Dark } else { egui::Theme::Light }))
-}
-
 /// An English UI string in the current interface language ([`i18n::t`]).
 #[macro_export]
 macro_rules! tl {
@@ -36,7 +29,6 @@ pub mod content_controls;
 pub mod control;
 pub mod credits;
 pub mod crop;
-pub mod desktop_theme;
 pub mod dialogs;
 pub mod dialogs_chart;
 pub mod dialogs_controls;
@@ -661,10 +653,6 @@ pub struct WordApp {
     /// that knows the display's scale, to become the absolute size it drew at
     /// ([`theme::migrate_legacy_interface_size`]).
     legacy_interface_size: Option<f64>,
-    /// The desktop's light/dark choice, watched while the app runs (Linux has no winit answer).
-    desktop_theme: desktop_theme::DesktopTheme,
-    /// The last answer [`desktop_theme`] gave, so a frame that asks costs nothing.
-    desktop_dark: Option<bool>,
     /// The interface language and the editing language the session last got for it
     /// ([`i18n::Lang::editing_lang`], or for English the region's English).
     applied_editing: Option<(i18n::Lang, Option<String>)>,
@@ -862,9 +850,6 @@ impl WordApp {
             applied_theme: None,
             native_scale: 1.0,
             legacy_interface_size: None,
-            // Inert until the app binary calls `watch_desktop_theme`.
-            desktop_theme: desktop_theme::DesktopTheme::default(),
-            desktop_dark: None,
             applied_editing: None,
             system_animations: None,
             applied_animations: None,
@@ -1791,17 +1776,10 @@ impl WordApp {
         log::warn!("dropped a request for document {document}, which no window shows: {req}");
     }
 
-    /// Follow the desktop's light/dark choice while the app runs (Linux, where winit reports no
-    /// system theme; see [`desktop_theme`]). The desktop app calls this once at start-up; unit
-    /// tests and `ui_shot` don't, so what they draw doesn't depend on the host's desktop theme.
-    pub fn watch_desktop_theme(&mut self, ctx: &egui::Context) {
-        let ctx = ctx.clone();
-        self.desktop_theme = desktop_theme::DesktopTheme::start(move || ctx.request_repaint());
-    }
-
-    /// Whether the interface theme setting currently resolves to dark (`System` asks the OS).
+    /// Whether the interface theme setting currently resolves to dark (`System` asks the OS; on
+    /// Linux the desktop portal answers through `craft_desktop_theme`, which the app binary starts).
     pub fn ui_is_dark(&self) -> bool {
-        self.ui.theme.is_dark(self.ctx.as_ref().and_then(|ctx| system_theme(ctx, self.desktop_dark)))
+        self.ui.theme.is_dark(self.ctx.as_ref().and_then(egui::Context::system_theme))
     }
 
     /// Whether animation effects are on: the Animation effects setting, where `System` follows
@@ -2489,21 +2467,12 @@ impl WordApp {
         self.ensure_recent_fonts();
         self.ensure_find_fonts();
         self.install_ui_fonts(ctx, lang);
-        if let Some(answer) = self.desktop_theme.take_change() {
-            self.desktop_dark = Some(answer);
-        }
         // Both palettes are installed and egui picks one: with `System` it follows an OS appearance
-        // change live (winit reports it and repaints, #311). Where winit is silent (Linux) the
-        // desktop portal's answer fills in instead. The interface follows the Interface theme
-        // setting alone; Dark page only changes how pages are drawn (#312).
-        let effective = match self.ui.theme {
-            theme::Appearance::System if ctx.system_theme().is_none() => match self.desktop_dark {
-                Some(true) => theme::Appearance::Dark,
-                Some(false) => theme::Appearance::Light,
-                None => theme::Appearance::System,
-            },
-            other => other,
-        };
+        // change live (winit reports it and repaints, #311). Where winit is silent (Linux)
+        // `craft_desktop_theme` fills the answer in from the desktop portal and pins the title bar
+        // to it (#537). The interface follows the Interface theme setting alone; Dark page only
+        // changes how pages are drawn (#312).
+        let effective = self.ui.theme;
         if self.applied_theme != Some(effective) {
             theme::apply(ctx, effective);
             self.applied_theme = Some(effective);
@@ -8915,13 +8884,19 @@ mod tests {
     /// and pins the window to it, so GNOME's client-side title bar matches the interface and
     /// follows a theme switch made while the app runs.
     #[test]
+    #[cfg(all(unix, not(target_os = "macos")))]
     fn system_theme_pins_the_title_bar_to_the_desktop_answer() {
-        use egui::{SystemTheme, ViewportCommand};
+        use egui::{SystemTheme, Theme, ViewportCommand};
+        use std::sync::Arc;
+        use std::sync::atomic::{AtomicBool, Ordering};
         let ctx = egui::Context::default();
+        let desktop_dark = Arc::new(AtomicBool::new(false));
+        let answer = Arc::clone(&desktop_dark);
+        craft_desktop_theme::install(&ctx, move || Some(if answer.load(Ordering::Relaxed) { Theme::Dark } else { Theme::Light }));
         let mut a = app();
         a.run("ui.theme", json!({"value": "system"})).unwrap();
         for dark in [false, true, false] {
-            a.desktop_dark = Some(dark);
+            desktop_dark.store(dark, Ordering::Relaxed);
             let sent = theme_frame(&ctx, &mut a, None);
             let want = if dark { SystemTheme::Dark } else { SystemTheme::Light };
             assert!(sent.contains(&ViewportCommand::SetTheme(want)), "desktop dark {dark}: {sent:?}");

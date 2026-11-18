@@ -83,6 +83,8 @@ pollster = "1"
 arboard = { workspace = true, features = ["image-data"] }
 # The control server's random key.
 getrandom = "0.3"
+# Linux: the desktop's light/dark choice for the System theme (inert elsewhere).
+craft-desktop-theme = { workspace = true }
 
 [target.'cfg(windows)'.dependencies]
 craft-update = { workspace = true }

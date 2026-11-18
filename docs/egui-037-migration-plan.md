@@ -125,8 +125,8 @@ strings look uniform.
 
 Relevant cfgs are all in the UI/app boundary, not in lower layers:
 
-- `cfg(target_os = "linux")`: `zbus = "=5.19.0"` in `crates/ui-egui/Cargo.toml`;
-  `desktop_theme.rs` reads the desktop portal. `system_clipboard.rs` and
+- `cfg(target_os = "linux")`: the desktop portal's light/dark answer comes from the suite's
+  `craft-desktop-theme` (vendored in `libs/craft-libs`). `system_clipboard.rs` and
   `apps/localoffice/src/clipboard.rs` use `wl-clipboard-rs` for the **regular** Wayland
   clipboard (formats/text/pictures); they do not read or write PRIMARY
   (`ClipboardType::Regular` only, `clipboard.rs:135-160`). Middle-click on the canvas is

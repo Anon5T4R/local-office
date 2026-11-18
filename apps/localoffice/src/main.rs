@@ -518,7 +518,8 @@ fn main() -> eframe::Result {
                 let doc = app.session.blank_document();
                 app.session.set_document(doc);
             }
-            app.watch_desktop_theme(&cc.egui_ctx);
+            // Linux: the desktop's light/dark choice, which winit does not report.
+            craft_desktop_theme::follow(&cc.egui_ctx);
             if prefs_enabled()
                 && let Some(dir) = localoffice_control_key::settings_dir()
             {

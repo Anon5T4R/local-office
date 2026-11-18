@@ -1131,6 +1131,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "craft-desktop-theme"
+version = "0.1.0"
+dependencies = [
+ "craft-platform",
+ "egui",
+]
+
+[[package]]
 name = "craft-fonts-build"
 version = "0.1.0"
 
@@ -1169,6 +1177,18 @@ version = "0.1.0"
 dependencies = [
  "krilla",
  "thiserror 2.0.21",
+]
+
+[[package]]
+name = "craft-platform"
+version = "0.1.0"
+dependencies = [
+ "async-channel",
+ "async-io",
+ "async-process",
+ "egui",
+ "futures-lite",
+ "zbus",
 ]
 
 [[package]]
@@ -3324,6 +3344,7 @@ dependencies = [
  "arboard",
  "chrono",
  "clipboard-win",
+ "craft-desktop-theme",
  "craft-print",
  "craft-update",
  "dispatch2",
@@ -3598,6 +3619,7 @@ dependencies = [
  "cfb",
  "chrono",
  "craft-ai-ui",
+ "craft-desktop-theme",
  "craft-i18n",
  "craft-ui",
  "craft-update",
@@ -3620,7 +3642,6 @@ dependencies = [
  "sys-locale",
  "toml",
  "web-time",
- "zbus",
  "zip 3.0.0",
 ]
 

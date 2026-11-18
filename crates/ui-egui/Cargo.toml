@@ -38,12 +38,6 @@ image = { workspace = true }
 # the browser's languages (`js`).
 sys-locale = { version = "0.3", features = ["js"] }
 
-# Linux only, where winit reports no system theme: the desktop portal's light/dark answer (see
-# `desktop_theme.rs`). Already in the tree, with these features, through egui's own accessibility
-# bus; pinned to one version so nothing is built twice.
-[target.'cfg(target_os = "linux")'.dependencies]
-zbus = "=5.19.0"
-
 # Comment times in the user's own time zone (`local_time.rs`); the web app asks the browser.
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 chrono = { version = "0.4.45", default-features = false, features = ["clock"] }
@@ -56,6 +50,8 @@ js-sys = "0.3"
 
 [dev-dependencies]
 cfb = { workspace = true }
+# #537: a stand-in desktop answer for the title-bar test (the app binary starts the real one).
+craft-desktop-theme = { workspace = true }
 # Producer tests simulate a globally exhausted IME revision allocator through the engine's
 # explicit test-support feature; production builds of this crate never enable it.
 localoffice-engine = { workspace = true, features = ["test-support"] }
