@@ -120,8 +120,8 @@ Manufacturer="Local Word contributors"
            Explorer's "Open with". The Word, RTF and ODT types are also LocalOffice's Capabilities
            (RegisteredApplications), so it appears in Settings › Default apps, where the user
            makes it the default (File › Options › General opens that page). Nothing here sets an
-           extension's default: the installer never takes over .docx from another app. Markdown and
-           plain text are only "Open with" candidates. Removed again on uninstall. -->
+           extension's default: the installer never takes over .docx from another app. Markdown, HTML,
+           LaTeX and plain text are only "Open with" candidates, outside the Capabilities. Removed again on uninstall. -->
       <Component Id="LocalOfficeFileTypes" Guid="EFF89E6A-F9B8-49F9-B3AE-E243347484B4">
         <RegistryValue Root="HKMU" Key="Software\RegisteredApplications" Name="LocalOffice" Value="Software\LocalOffice\Capabilities" Type="string" KeyPath="yes" />
         <RegistryValue Root="HKMU" Key="Software\LocalOffice\Capabilities" Name="ApplicationName" Value="Local Word" Type="string" />
@@ -182,6 +182,24 @@ Manufacturer="Local Word contributors"
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalOffice.Markdown\shell\open\command" Value="&quot;[#LocalOfficeExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.md\OpenWithProgids" Name="LocalOffice.Markdown" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe\SupportedTypes" Name=".md" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.markdown\OpenWithProgids" Name="LocalOffice.Markdown" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe\SupportedTypes" Name=".markdown" Value="" Type="string" />
+
+        <ProgId Id="LocalOffice.Html" Description="Web Page" Icon="LocalOfficeExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalOffice.Html\shell\open\command" Value="&quot;[#LocalOfficeExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.html\OpenWithProgids" Name="LocalOffice.Html" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe\SupportedTypes" Name=".html" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.htm\OpenWithProgids" Name="LocalOffice.Html" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe\SupportedTypes" Name=".htm" Value="" Type="string" />
+
+        <ProgId Id="LocalOffice.Tex" Description="LaTeX Document" Icon="LocalOfficeExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalOffice.Tex\shell\open\command" Value="&quot;[#LocalOfficeExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.tex\OpenWithProgids" Name="LocalOffice.Tex" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe\SupportedTypes" Name=".tex" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.ltx\OpenWithProgids" Name="LocalOffice.Tex" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe\SupportedTypes" Name=".ltx" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.latex\OpenWithProgids" Name="LocalOffice.Tex" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localoffice.exe\SupportedTypes" Name=".latex" Value="" Type="string" />
 
         <ProgId Id="LocalOffice.PlainText" Description="Text Document" Icon="LocalOfficeExe" IconIndex="0" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalOffice.PlainText\shell\open\command" Value="&quot;[#LocalOfficeExe]&quot; &quot;%1&quot;" Type="string" />
