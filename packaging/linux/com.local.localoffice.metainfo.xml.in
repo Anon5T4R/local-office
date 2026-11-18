@@ -63,7 +63,6 @@
     <mediatype>application/rtf</mediatype>
     <mediatype>text/rtf</mediatype>
     <mediatype>text/markdown</mediatype>
-    <mediatype>text/plain</mediatype>
     <mediatype>text/x-tex</mediatype>
     <mediatype>text/html</mediatype>
   </provides>
