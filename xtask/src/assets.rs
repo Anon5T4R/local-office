@@ -23,9 +23,18 @@ pub fn is_asset(path: &str) -> bool {
     ASSET_DIRS.iter().any(|d| path.starts_with(d)) || ASSET_EXT.contains(&ext.as_str())
 }
 
+/// Whether ATTRIBUTION.md has a row for `path` itself or for a directory above it (`` `assets/craft-fonts/` ``
+/// covers the whole vendored tree, which keeps its own per-file attribution).
+fn attributed(path: &str, assets_md: &str) -> bool {
+    if assets_md.contains(&format!("`{path}`")) {
+        return true;
+    }
+    path.match_indices('/').any(|(i, _)| assets_md.contains(&format!("`{}/`", &path[..i])))
+}
+
 /// Paths that need an ATTRIBUTION.md entry but lack one.
 pub fn missing(files: &[String], assets_md: &str) -> Vec<String> {
-    files.iter().filter(|f| is_asset(f) && !assets_md.contains(&format!("`{f}`"))).cloned().collect()
+    files.iter().filter(|f| is_asset(f) && !attributed(f, assets_md)).cloned().collect()
 }
 
 /// The paths in `git ls-files -z` output: NUL-separated and never quoted, so a name with
@@ -66,6 +75,13 @@ mod tests {
         assert_eq!(missing(&files, md), vec!["docs/images/b.png".to_string(), "tests/fixture.png".into()]);
         assert!(!is_asset("crates/x/src/lib.rs"));
         assert!(is_asset("assets/fonts/OFL.txt"));
+    }
+
+    #[test]
+    fn a_directory_row_covers_what_is_below_it() {
+        let files = vec!["assets/craft-fonts/fonts/x/X.ttf".to_string(), "assets/other/y.png".into(), "assets/craft-fonts-extra/z.png".into()];
+        let md = "| `assets/craft-fonts/` | set | here | OFL |";
+        assert_eq!(missing(&files, md), vec!["assets/other/y.png".to_string(), "assets/craft-fonts-extra/z.png".into()]);
     }
 
     #[test]
