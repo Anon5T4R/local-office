@@ -27,7 +27,8 @@ Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de t
 - `assets/craft-fonts/` — fontes CJK/árabe/etc. (craft-fonts @ b076417, build input
   `CRAFT_FONTS_DIR`)
 - `packaging/` — Windows (WiX/MSI), Linux (AppImage/deb/rpm/tar FHS com `install.sh`), Arch (PKGBUILD), macOS, web
-- `xtask/` — tarefas de build/CI (`cargo xtask ci`)
+- `xtask/` — tarefas de build/CI (`cargo xtask ci`, `fmt`)
+- `scripts/check-mirror.sh` — confere as crates e os assets (`craft-fonts`) espelhados do `local-libs` contra a fonte (CI e `xtask ci`)
 
 ## Agent-native (MCP)
 O app já é agent-native de origem (herdado do wordcraft): `crates/mcp` (servidor stdio + backends
@@ -42,7 +43,9 @@ aceita o job (`{file, template, commands, save}`), uma lista de passos ou JSON L
 ## Build
 ```
 cargo build --locked          # debug
-cargo test --locked           # testes
+cargo test --locked           # as fontes vendored entram sempre (.cargo/config.toml), igual ao CI
+cargo xtask ci                # o gate local: fmt, clippy, testes, i18n, assets, camadas, wasm,
+                              # cargo-deny e espelhos do local-libs
 packaging/windows/package.ps1 # MSI + portable (Windows)
 packaging/linux/package.sh    # AppImage/deb/rpm/tar (Linux)
 ```
