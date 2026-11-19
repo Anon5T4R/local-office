@@ -48,6 +48,9 @@ pub const TABLE: &[(&str, Class)] = &[
     ("engine", Class::Layer(4)),
     ("mcp", Class::Layer(5)),
     ("zotero", Class::Layer(5)),
+    // BYOK AI (OpenAI-compatible providers, keychain): depends on no workspace crate, only `ui-egui` uses it.
+    // Not standalone: its `local-ai` dependency is a path crate, which the metadata counts as workspace.
+    ("ai", Class::Layer(5)),
     ("ui-egui", Class::Layer(6)),
     ("testkit", Class::Testkit),
     // apps and tooling
