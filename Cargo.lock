@@ -3652,7 +3652,6 @@ dependencies = [
  "eframe",
  "egui",
  "js-sys",
- "localoffice-doc",
  "localoffice-engine",
  "localoffice-fonts",
  "localoffice-ui-egui",

@@ -19,7 +19,6 @@ localoffice-ui-egui = { workspace = true }
 egui = { workspace = true }
 log = { workspace = true }
 serde_json = { workspace = true }
-localoffice-doc = { workspace = true }
 localoffice-fonts = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
