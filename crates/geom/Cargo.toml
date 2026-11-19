@@ -3,6 +3,7 @@ name = "localoffice-geom"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+publish.workspace = true
 description = "Local Word geometry and units: points, twips, EMU, inches, centimetres; rectangles; measurement parsing"
 
 [lints]

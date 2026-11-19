@@ -3,7 +3,7 @@ name = "localoffice"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-publish = false
+publish.workspace = true
 default-run = "localoffice"
 description = "Local Word desktop app"
 

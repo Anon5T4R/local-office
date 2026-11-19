@@ -3,6 +3,7 @@ name = "localoffice-engine"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+publish.workspace = true
 description = "Local Word engine: session, selection, undo, the command registry (every action is a command), Word's command catalog, file I/O dispatch"
 
 [lints]

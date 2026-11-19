@@ -6,7 +6,7 @@ license.workspace = true
 rust-version.workspace = true
 repository = "https://github.com/Anon5T4R/local-office"
 description = "BYOK AI for Local Word: OpenAI-compatible providers, OS-keychain keys, models list and chat"
-publish = false
+publish.workspace = true
 
 [dependencies]
 local-ai = { workspace = true }

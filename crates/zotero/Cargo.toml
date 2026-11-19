@@ -3,6 +3,7 @@ name = "localoffice-zotero"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+publish.workspace = true
 description = "Local Word Zotero integration: Zotero's word-processor wire protocol, answered against an engine Session"
 
 [lints]

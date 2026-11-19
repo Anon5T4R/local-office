@@ -3,6 +3,7 @@ name = "localoffice-render"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+publish.workspace = true
 description = "Local Word rasteriser: pages and thumbnails from the layout display list (vello_cpu), PNG/JPEG export"
 
 [lints]
