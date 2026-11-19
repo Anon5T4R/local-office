@@ -1,0 +1,83 @@
+# cargo-deny: a política de dependências da suíte (o CI roda `cargo deny check bans licenses sources
+# advisories`; local: `cargo xtask ci`). Só licenças permissivas no código: copyleft (GPL, AGPL, LGPL)
+# nunca é linkado — ferramenta assim só roda como processo externo.
+
+[graph]
+all-features = true
+
+[licenses]
+confidence-threshold = 0.9
+allow = [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "BSL-1.0",
+    "CC0-1.0",
+]
+
+[licenses.private]
+ignore = true
+
+# As fontes padrão do egui (Ubuntu-Light, Hack, emoji-icon-font): licenças de fonte permitidas,
+# atribuídas em assets/ATTRIBUTION.md como assets que vêm com a dependência.
+[[licenses.exceptions]]
+crate = "epaint_default_fonts"
+allow = ["OFL-1.1", "Ubuntu-font-1.0"]
+
+# A lista de CAs que o rustls-platform-verifier traz no Linux é dado CDLA-Permissive-2.0 (permissiva).
+[[licenses.exceptions]]
+crate = "webpki-root-certs"
+allow = ["CDLA-Permissive-2.0"]
+
+# Idem: webpki-roots (raízes de CA do rustls usadas pelo BYOK/local-ai), dado CDLA-Permissive-2.0.
+[[licenses.exceptions]]
+crate = "webpki-roots"
+allow = ["CDLA-Permissive-2.0"]
+
+# MPL-2.0 é copyleft só no nível de arquivo e o option-ext (dep de dirs, via local-ai) entra sem
+# modificação; nada do app é derivado dele. Exceção só para esta crate, não entra no allow geral.
+[[licenses.exceptions]]
+crate = "option-ext"
+allow = ["MPL-2.0"]
+
+[bans]
+multiple-versions = "allow"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+# Nenhuma dependência git: tudo vem do crates.io (pinado pelo lock) ou de libs/ (vendored, path).
+allow-git = []
+
+[advisories]
+yanked = "warn"
+# Cada exceção diz por que não atinge o app. Sem motivo concreto, não entra.
+ignore = [
+    # TLS 100% Rust do craft-update (fork vendored do rustls-rustcrypto): só VERIFICA assinatura do
+    # servidor com chave pública; não decifra, não assina, não opera chave privada.
+    { id = "RUSTSEC-2023-0071", reason = "rsa sem patch (Marvin); o cliente só verifica com chave pública" },
+    { id = "RUSTSEC-2026-0387", reason = "crypto-bigint/elliptic-curve via rustls-rustcrypto; sem operação com chave privada" },
+    { id = "RUSTSEC-2026-0543", reason = "chrono unmaintained (craft-update); troca por jiff/std no backlog" },
+    { id = "RUSTSEC-2024-0436", reason = "paste unmaintained; proc macro só em tempo de compilação" },
+    { id = "RUSTSEC-2026-0370", reason = "zvariant unmaintained; pilha D-Bus do Linux (portal/acessibilidade)" },
+    { id = "RUSTSEC-2026-0371", reason = "zbus_names unmaintained; pilha D-Bus do Linux (portal/acessibilidade)" },
+    { id = "RUSTSEC-2026-0372", reason = "zvariant_derive unmaintained; pilha D-Bus do Linux (portal/acessibilidade)" },
+    # zip 3.0 lê os .docx/.xlsx/.odt: só as features `deflate` (sem AES/crypto) e o código nunca chama
+    # `ZipArchive::extract` nem `ZipStreamReader` (lê entradas por nome, em memória). Subir para o zip 9
+    # muda a API e é decisão de dependência separada.
+    { id = "RUSTSEC-2026-0367", reason = "zip 3.0: ZipArchive::extract nunca é chamado (só leitura de entradas em memória)" },
+    { id = "RUSTSEC-2026-0368", reason = "zip 3.0: ZipArchive::extract nunca é chamado" },
+    { id = "RUSTSEC-2026-0369", reason = "zip 3.0: ZipArchive::extract/ZipStreamReader nunca são chamados" },
+    { id = "RUSTSEC-2026-0429", reason = "zip 3.0: ZipArchive::extract nunca é chamado" },
+    { id = "RUSTSEC-2026-0545", reason = "zip 3.0: sem a feature de AES (só deflate)" },
+    { id = "RUSTSEC-2026-0548", reason = "zip 3.0: ZipStreamReader nunca é usado" },
+    { id = "RUSTSEC-2024-0370", reason = "proc-macro-error unmaintained; proc macro só em tempo de compilação" },
+]
