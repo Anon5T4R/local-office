@@ -1180,13 +1180,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "craft-palette"
-version = "0.1.0"
-dependencies = [
- "egui",
-]
-
-[[package]]
 name = "craft-pdf"
 version = "0.1.0"
 dependencies = [
@@ -3693,7 +3686,6 @@ dependencies = [
  "craft-desktop-theme",
  "craft-i18n",
  "craft-icons",
- "craft-palette",
  "craft-ui",
  "craft-update",
  "craft-window",

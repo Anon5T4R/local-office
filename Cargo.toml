@@ -72,8 +72,6 @@ craft-pdf = { path = "libs/craft-libs/crates/pdf/", default-features = false, fe
 craft-ai-ui = { path = "libs/craft-libs/crates/ai-ui/" }
 # The suite's icons for shared concepts (theme, settings, help, AI...) and the theme button. Source: local-libs.
 craft-icons = { path = "libs/craft-libs/crates/icons/", features = ["egui"] }
-# The suite's command palette (the search icon and Alt+Q). Source: local-libs.
-craft-palette = { path = "libs/craft-libs/crates/palette/" }
 craft-update = { path = "libs/craft-libs/crates/update/", features = ["egui", "icons"] }
 # Linux: the desktop's light/dark choice reaches `ctx.system_theme()` (winit reports none there);
 # source of truth in local-libs, vendored here and replicated by its sync.ps1.

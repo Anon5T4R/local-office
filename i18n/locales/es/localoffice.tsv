@@ -2336,3 +2336,9 @@ preview	Title	Título
 	Write what should change.	Escribe qué debe cambiar.
 	Write what the new document should be about.	Escribe de qué debe tratar el documento nuevo.
 	Write with AI	Escribir con IA
+	Search commands	Buscar comandos
+	Theme: {mode}	Tema: {mode}
+	{name} — set your name in File › Settings	{name} — define tu nombre en Archivo › Configuración
+	Paste the API key first: this provider asks for one.	Pega primero la clave de API: este proveedor la exige.
+	Choose a provider or type its address first.	Elige primero un proveedor o escribe su dirección.
+	Choose a model first (Fetch models lists them).	Elige primero un modelo (Obtener modelos muestra la lista).

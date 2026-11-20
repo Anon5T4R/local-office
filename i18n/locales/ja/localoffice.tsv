@@ -2115,3 +2115,9 @@
 	Write what should change.	何を変えるか書いてください。
 	Write what the new document should be about.	新しい文書の内容を書いてください。
 	Write with AI	AI で書く
+	Search commands	コマンドを検索
+	Theme: {mode}	テーマ: {mode}
+	{name} — set your name in File › Settings	{name} — 名前は ファイル › 設定 で変更できます
+	Paste the API key first: this provider asks for one.	先に API キーを貼り付けてください。このプロバイダーには必要です。
+	Choose a provider or type its address first.	先にプロバイダーを選ぶか、そのアドレスを入力してください。
+	Choose a model first (Fetch models lists them).	先にモデルを選んでください（「モデルを取得」で一覧を表示できます）。
