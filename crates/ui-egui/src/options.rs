@@ -137,7 +137,7 @@ fn pane_label(id: &str) -> &'static str {
 /// The Options page.
 pub fn page(app: &mut WordApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
-    ui.label(RichText::new(tl!("Options")).font(semibold(26.0)));
+    ui.label(RichText::new(tl!("Settings")).font(semibold(26.0)));
     ui.add_space(16.0);
     let current = if PANES.contains(&app.ui.options_pane.as_str()) { app.ui.options_pane.clone() } else { "general".to_string() };
     ui.horizontal_top(|ui| {

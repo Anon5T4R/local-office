@@ -1,4 +1,4 @@
-//! File tab (Backstage): Home/New, Open, Info, Save As, Print, Export, Close, Options, About.
+//! File tab (Backstage): Home/New, Open, Info, Save As, Print, Export, Close, Settings, Exit, About.
 
 use egui::{Align2, Rect, Sense, Stroke, Ui, pos2, vec2};
 use serde_json::json;
@@ -9,7 +9,7 @@ use crate::{WordApp, icons};
 /// The side menu: page id, label and icon (#1714).
 const PAGES: [(&str, &str, &str); 11] = [
     ("home", "Home", "homeFolder"),
-    ("new", "New", "blankPage"),
+    ("new", "New", "new"),
     ("open", "Open", "open"),
     ("info", "Info", "info"),
     ("recover", "Recover", "recover"),
@@ -18,7 +18,7 @@ const PAGES: [(&str, &str, &str); 11] = [
     ("print", "Print", "print"),
     ("export", "Export", "export"),
     ("close", "Close", "close"),
-    ("options", "Options", "options"),
+    ("options", "Settings", "settings"),
 ];
 
 /// The Backstage back chevron's centre on macOS (#1873): beside the traffic lights in a
@@ -132,6 +132,16 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                 ui.painter().text(pos2(r.min.x + 22.0, r.center().y), Align2::LEFT_CENTER, tl!("About"), regular(13.0), egui::Color32::WHITE);
                 if resp.clicked() {
                     app.dialog = crate::dialogs::Dialog::open("about", app);
+                }
+                // Exit quits the app, asking about unsaved documents first (the window's close button does the same).
+                let (r, resp) = ui.allocate_exact_size(vec2(200.0, 32.0), Sense::click());
+                resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, ui.is_enabled(), tl!("Exit")));
+                if resp.hovered() {
+                    ui.painter().rect_filled(r, 0.0, egui::Color32::from_white_alpha(26));
+                }
+                ui.painter().text(pos2(r.min.x + 22.0, r.center().y), Align2::LEFT_CENTER, tl!("Exit"), regular(13.0), egui::Color32::WHITE);
+                if resp.clicked() {
+                    app.ask_before_quit();
                 }
             });
         });
@@ -1432,7 +1442,7 @@ mod tests {
                 h.state_mut().run("ui.backstage", json!({"value": true})).unwrap();
                 h.run_steps(4);
             }
-            h.get_by_role_and_label(egui::accesskit::Role::Button, "Options").click();
+            h.get_by_role_and_label(egui::accesskit::Role::Button, "Settings").click();
             h.run_steps(4);
             assert_eq!(h.state().ui.backstage_page, "options", "mac {mac} start {start}");
             // Into a pane, so the Options page has a focused widget of its own.
