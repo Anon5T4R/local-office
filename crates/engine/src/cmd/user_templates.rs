@@ -37,7 +37,7 @@ const MAX_CORE_XML: u64 = 64 << 10;
 pub fn specs() -> Vec<CommandSpec> {
     vec![
         CommandSpec::new("file.listTemplates", "Personal Templates", "File › New", list)
-            .params(r#"{"dir"?: string (the user templates folder; default: the one saved in File › Options)} → {"dir", "templates": [{"label" (the file name without its extension), "title": string|null (dc:title), "path", "category" ("" at the top level, else the subfolder's name), "modified": ISO-8601|null}] (.dotx and .dotm, at most 500, by category then label), "truncated": bool}; a network folder is refused"#)
+            .params(r#"{"dir"?: string (the user templates folder; default: the one saved in File › Settings)} → {"dir", "templates": [{"label" (the file name without its extension), "title": string|null (dc:title), "path", "category" ("" at the top level, else the subfolder's name), "modified": ISO-8601|null}] (.dotx and .dotm, at most 500, by category then label), "truncated": bool}; a network folder is refused"#)
             .pure(),
     ]
 }

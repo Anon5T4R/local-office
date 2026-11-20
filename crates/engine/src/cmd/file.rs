@@ -149,14 +149,14 @@ pub fn specs() -> Vec<CommandSpec> {
         CommandSpec::new("file.properties", "Properties", "File › Info", properties)
             .params(r#"{"title"?, "subject"?, "author"?, "keywords"?, "comments"?, "category"?, "custom"?: {name: string | null (removes)}}"#),
         CommandSpec::new("file.info", "Info", "File", info).pure(),
-        CommandSpec::new("file.setAuthor", "User Name", "File › Options › General", set_author)
+        CommandSpec::new("file.setAuthor", "User Name", "File › Settings › General", set_author)
             .params(r#"{"name": string (author of new tracked changes and comments)}"#)
             .pure(),
         // Trust Center › Privacy Options: the document's `w:removePersonalInformation` and
         // `w:removeDateAndTime` settings, honoured when it is saved as .docx (#1062).
         // Changing them is a document change (undoable, refused on a protected document); reading
         // them is `file.privacy`, which changes nothing.
-        CommandSpec::new("file.privacyOptions", "Privacy Options", "File › Options › Save", |s, v| {
+        CommandSpec::new("file.privacyOptions", "Privacy Options", "File › Settings › Save", |s, v| {
             let personal = p::bool(v, "removePersonalInfo");
             let date_time = p::bool(v, "removeDateTime");
             if personal.is_none() && date_time.is_none() {
@@ -171,7 +171,7 @@ pub fn specs() -> Vec<CommandSpec> {
             Ok(privacy(s))
         })
         .params(r#"{"removePersonalInfo"?: bool (save comment and revision authors as "Author", no creator or last-modified-by), "removeDateTime"?: bool (save comments and tracked changes without dates)} — at least one; the open document keeps its real names and dates"#),
-        CommandSpec::new("file.privacy", "Privacy Settings", "File › Options › Save", |s, _| Ok(privacy(s)))
+        CommandSpec::new("file.privacy", "Privacy Settings", "File › Settings › Save", |s, _| Ok(privacy(s)))
             .params(r#"{} → {"removePersonalInfo": bool, "removeDateTime": bool} (file.privacyOptions changes them)"#)
             .pure(),
         CommandSpec::new("document.inspect", "Inspect Document", "Agents", inspect).params(r#"{"text"?: bool}"#).pure(),

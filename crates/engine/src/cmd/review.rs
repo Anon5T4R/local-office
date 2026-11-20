@@ -116,7 +116,7 @@ pub fn specs() -> Vec<CommandSpec> {
             sel_result(s)
         })
         .params(r#"{"text": string}"#),
-        CommandSpec::new("review.proofing", "Check Spelling as You Type", "File › Options › Proofing", |s, v| {
+        CommandSpec::new("review.proofing", "Check Spelling as You Type", "File › Settings › Proofing", |s, v| {
             s.view.proofing = p::bool(v, "value").unwrap_or(!s.view.proofing);
             s.prefs.check_spelling = s.view.proofing;
             Ok(json!({"value": s.view.proofing}))
