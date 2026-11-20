@@ -37,12 +37,29 @@ impl Appearance {
         Appearance::ALL.into_iter().find(|a| a.code().eq_ignore_ascii_case(code.trim()))
     }
 
+    /// The suite's theme mode (`craft-icons`) for this setting: the theme button shows and cycles it.
+    pub fn mode(self) -> craft_icons::ThemeMode {
+        match self {
+            Appearance::Light => craft_icons::ThemeMode::Light,
+            Appearance::Dark => craft_icons::ThemeMode::Dark,
+            Appearance::System => craft_icons::ThemeMode::System,
+        }
+    }
+
+    pub fn from_mode(mode: craft_icons::ThemeMode) -> Appearance {
+        match mode {
+            craft_icons::ThemeMode::Light => Appearance::Light,
+            craft_icons::ThemeMode::Dark => Appearance::Dark,
+            craft_icons::ThemeMode::System => Appearance::System,
+        }
+    }
+
     /// The English label (translated with `tl!` where shown).
     pub fn label(self) -> &'static str {
         match self {
             Appearance::Light => "Light",
             Appearance::Dark => "Dark",
-            Appearance::System => "Use system setting",
+            Appearance::System => "Automatic",
         }
     }
 
@@ -747,6 +764,8 @@ fn tracked_job(text: &str, font: &FontId, tracking: f32, color: Color32) -> egui
 /// Setting a concrete theme for `System` would pin the native window too, and macOS then stops
 /// reporting appearance changes (#311).
 pub fn apply(ctx: &egui::Context, appearance: Appearance) {
+    // The SVG loader for the suite's icons (`craft-icons`); installing again is a no-op.
+    egui_extras::install_image_loaders(ctx);
     ctx.set_visuals_of(egui::Theme::Light, visuals(&Tokens::light()));
     ctx.set_visuals_of(egui::Theme::Dark, visuals(&Tokens::dark()));
     ctx.all_styles_mut(|s| {

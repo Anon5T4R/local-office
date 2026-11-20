@@ -352,9 +352,13 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
                     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, tl!("Account")));
                     let initials: String = app.session.user_initials().chars().take(2).collect();
                     ui.painter().text(r.center(), Align2::CENTER_CENTER, initials, semibold(10.5), t.on_accent);
-                    if resp.on_hover_text(format!("{} — set your name in File › Options", app.session.author)).clicked() {
+                    let who = crate::i18n::fmt(tl!("{name} — set your name in File › Settings"), &[("name", &app.session.author)]);
+                    if resp.on_hover_text(who).clicked() {
                         let _ = app.run("ui.backstage", json!({"value": true, "page": "options", "pane": "general"}));
                     }
+                    // The suite's controls, right to left: Settings (the gear), the theme, the search.
+                    ui.add_space(8.0);
+                    shell_buttons(app, ui);
                     ui.add_space(8.0);
                     search_box(app, ui, control_h);
                     right_start = ui.min_rect().min.x;
@@ -408,6 +412,29 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
                 );
             }
         });
+}
+
+/// The suite's controls of the title bar, in a right-to-left layout: the gear that opens Settings, the theme
+/// button (Automatic, Light, Dark) and the magnifier that opens the command search (the same one as Alt+Q and the
+/// Search box; Ctrl+K stays Insert Link, as in Word).
+fn shell_buttons(app: &mut WordApp, ui: &mut Ui) {
+    if craft_icons::ui::button(ui, craft_icons::Icon::Settings, tl!("Settings")).clicked() {
+        let _ = app.run("ui.backstage", json!({"value": true, "page": "options", "pane": "general"}));
+    }
+    ui.add_space(6.0);
+    let mut mode = app.ui.theme.mode();
+    let tooltip = crate::i18n::fmt(tl!("Theme: {mode}"), &[("mode", tl!(mode.label()))]);
+    if craft_icons::ui::theme_button(ui, &mut mode, &tooltip) {
+        let _ = app.run("ui.theme", json!({"value": crate::theme::Appearance::from_mode(mode).code()}));
+    }
+    ui.add_space(6.0);
+    let tip = match crate::widgets::shortcut_text(app, "tools.search") {
+        k if k.is_empty() => tl!("Search commands").to_string(),
+        k => format!("{} ({k})", tl!("Search commands")),
+    };
+    if craft_icons::ui::button(ui, craft_icons::Icon::Search, &tip).clicked() {
+        let _ = app.run("tools.search", json!({}));
+    }
 }
 
 /// Search ("Tell me"): a box that opens command search. In the title bar, and in the Commands bar

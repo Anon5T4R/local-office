@@ -2044,7 +2044,7 @@ impl WordApp {
             // MCP get an error.
             "ui.makeDefaultApp" => {
                 return Some(Err(
-                    "making LocalOffice the default app needs a click in File › Options › General; scripts and agents can't change system defaults"
+                    "making LocalOffice the default app needs a click in File › Settings › General; scripts and agents can't change system defaults"
                         .into(),
                 ));
             }
@@ -3969,6 +3969,28 @@ mod tests {
             },
             a,
         )
+    }
+
+    /// The suite's controls of the title bar: the theme button cycles Automatic, Light, Dark, the
+    /// gear opens File › Settings and the magnifier opens the command search (Ctrl+K stays Insert Link).
+    #[test]
+    fn title_bar_theme_settings_and_search_buttons() {
+        use egui_kittest::kittest::Queryable;
+        let mut h = harness(app());
+        h.run_steps(4);
+        for (now, next) in [("Automatic", theme::Appearance::Light), ("Light", theme::Appearance::Dark), ("Dark", theme::Appearance::System)] {
+            h.get_by_label(&format!("Theme: {now}")).click();
+            h.run_steps(3);
+            assert_eq!(h.state().ui.theme, next, "the button leaves {now}");
+        }
+        h.get_by_label("Search commands (Alt+Q)").click();
+        h.run_steps(3);
+        assert_eq!(h.state().dialog.as_ref().map(|d| d.name()), Some("commands"), "the magnifier opens the command search");
+        h.state_mut().dialog = None;
+        assert!(!h.state().ui.backstage);
+        h.get_by_label("Settings").click();
+        h.run_steps(3);
+        assert!(h.state().ui.backstage && h.state().ui.backstage_page == "options", "the gear opens File › Settings");
     }
 
     /// #766: started with nothing to open, the app shows File › Home (the Start screen) as Word
