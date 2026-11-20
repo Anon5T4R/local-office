@@ -71,8 +71,63 @@ impl Pen<'_> {
     }
 }
 
+/// The suite's icon (`craft-icons`) for a concept every app of the suite shares; the rest of the
+/// names stay the Word-style artwork drawn below.
+fn suite_icon(name: &str) -> Option<craft_icons::Icon> {
+    use craft_icons::Icon;
+    Some(match name {
+        "new" => Icon::New,
+        "open" => Icon::Open,
+        "save" => Icon::Save,
+        "export" => Icon::Export,
+        "print" => Icon::Print,
+        "share" => Icon::Share,
+        "undo" => Icon::Undo,
+        "redo" => Icon::Redo,
+        "paste" => Icon::Paste,
+        "cut" => Icon::Cut,
+        "copy" => Icon::Copy,
+        "zoomIn" => Icon::ZoomIn,
+        "zoomOut" => Icon::ZoomOut,
+        "fullScreen" => Icon::FullScreen,
+        "search" => Icon::Search,
+        "close" => Icon::Close,
+        "more" => Icon::More,
+        "plus" => Icon::Add,
+        "info" => Icon::Info,
+        "about" => Icon::Info,
+        "help" => Icon::Help,
+        "options" | "settings" => Icon::Settings,
+        "checkForUpdates" => Icon::CheckForUpdates,
+        "interfaceTheme" => Icon::ThemeSystem,
+        "themeSystem" => Icon::ThemeSystem,
+        "themeLight" => Icon::ThemeLight,
+        "themeDark" => Icon::ThemeDark,
+        _ => return None,
+    })
+}
+
+/// Paints a suite icon tinted `c`; false when its SVG is not ready (the caller draws the old artwork).
+fn paint_suite(p: &Painter, r: Rect, icon: craft_icons::Icon, c: Color32) -> bool {
+    let side = r.width().min(r.height());
+    let image = egui::Image::new(craft_icons::ui::source(icon));
+    match image.load_for_size(p.ctx(), vec2(side, side)) {
+        Ok(egui::load::TexturePoll::Ready { texture }) => {
+            let uv = Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0));
+            p.image(texture.id, Rect::from_center_size(r.center(), vec2(side, side)), uv, c);
+            true
+        }
+        _ => false,
+    }
+}
+
 /// Paint icon `name` into `r`. `c` is the line colour; the accent comes from the theme.
 pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
+    if let Some(icon) = suite_icon(name)
+        && paint_suite(p, r, icon, c)
+    {
+        return;
+    }
     let pen = Pen { p, r, c, a: accent, w: 1.25 };
     if let Some(kind) = name.strip_prefix("shape.")
         && shape(&pen, kind)
@@ -295,7 +350,7 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
             pen.page(4.0, 2.0, 16.0, 18.0);
             pen.frect(5.5, 7.0, 14.5, 10.0, a);
         }
-        "blankPage" => {
+        "blankPage" | "new" => {
             pen.page(4.0, 2.0, 16.0, 18.0);
             pen.line_c(&[(10.0, 7.0), (10.0, 13.0)], a);
             pen.line_c(&[(7.0, 10.0), (13.0, 10.0)], a);
@@ -1365,7 +1420,7 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
             pen.line_c(&[(15.0, 7.0), (18.0, 10.0), (15.0, 13.0)], a);
         }
         // Options: a gear.
-        "options" => {
+        "options" | "settings" => {
             for k in 0..8 {
                 let t = k as f32 * std::f32::consts::FRAC_PI_4;
                 let at = |radius: f32, dt: f32| (10.0 + radius * (t + dt).cos(), 10.0 + radius * (t + dt).sin());
@@ -1427,7 +1482,7 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
             pen.line_c(&[(7.0, 8.0), (13.0, 14.0)], red);
             pen.line_c(&[(13.0, 8.0), (7.0, 14.0)], red);
         }
-        "help" => {
+        "help" | "about" => {
             pen.circle(10.0, 10.0, 7.0, c);
             pen.text(10.0, 10.0, 10.0, "?", a, true);
         }
