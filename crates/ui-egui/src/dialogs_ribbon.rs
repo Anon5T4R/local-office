@@ -99,7 +99,9 @@ pub fn customize_ribbon(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm) -> b
         }
     });
     ui.separator();
-    let (left, right, h) = (150.0, 230.0, 300.0);
+    // Sized so the whole dialog fits the suite's narrowest window (760): the two lists and the tree
+    // together stay well inside it, and the command line below wraps instead of widening the card.
+    let (left, right, h) = (120.0, 170.0, 300.0);
     ui.add(egui::TextEdit::singleline(&mut f.filter).hint_text(tl!("Search")).desired_width(left + right + 8.0));
     let mut cats: Vec<(String, String)> = categories(app).into_iter().map(|c| (c.clone(), tl!(&c).to_string())).collect();
     cats.push((String::new(), tl!("All Commands").to_string()));
@@ -129,7 +131,8 @@ pub fn customize_ribbon(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm) -> b
         }
     });
     if let Some(spec) = app.session.registry.get(&f.command) {
-        ui.label(egui::RichText::new(format!("{} · {}", crate::i18n::location(spec.location), spec.id)).small().weak());
+        let line = format!("{} · {}", crate::i18n::location(spec.location), spec.id);
+        ui.add(egui::Label::new(egui::RichText::new(line).small().weak()).wrap());
     }
     if !f.message.is_empty() {
         ui.colored_label(ui.visuals().warn_fg_color, f.message.as_str());
@@ -318,7 +321,7 @@ fn ribbon_page(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm, h: f32) {
 /// The ribbon tree: tabs with a box to show or hide them, their custom groups and commands.
 fn tree(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm, rows: &[Row], h: f32) {
     egui::Frame::new().stroke(ui.visuals().widgets.noninteractive.bg_stroke).inner_margin(2.0).show(ui, |ui| {
-        ui.set_width(250.0);
+        ui.set_width(190.0);
         ui.set_height(h);
         egui::ScrollArea::vertical().id_salt("rb_tree").auto_shrink([false, false]).show(ui, |ui| {
             ui.set_width(ui.available_width());
@@ -371,7 +374,7 @@ fn qat_page(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm, h: f32) {
         ui.label(egui::RichText::new(tl!("Quick Access Toolbar")).font(semibold(12.5)));
         ui.horizontal_top(|ui| {
             let rows: Vec<(String, String)> = ids.iter().map(|id| (id.clone(), label_of(app, id))).collect();
-            if let Some(id) = list(ui, "rb_qat", vec2(250.0, h), &rows, &f.qat_selected) {
+            if let Some(id) = list(ui, "rb_qat", vec2(120.0, h), &rows, &f.qat_selected) {
                 f.qat_selected = id;
             }
             ui.vertical(|ui| {

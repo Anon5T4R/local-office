@@ -2920,6 +2920,11 @@ fn rulers(app: &mut WordApp, ui: &mut Ui, h: Rect, v: Rect, rects: &[Rect], layo
         (MarginEdge::Left, Rect::from_min_max(pos2(le - 10.0, bar.min.y), pos2(le + 3.0, bar.max.y))),
         (MarginEdge::Right, Rect::from_min_max(pos2(re - 3.0, bar.min.y), pos2(re + 10.0, bar.max.y))),
     ] {
+        // The page can be wider than the window at 100% zoom: a margin that scrolled out of view
+        // takes no pointer (and announces no control) outside the ruler (#guardas).
+        let Some(zone) = on_window(ui.ctx(), zone) else {
+            continue;
+        };
         margin_handle(app, ui, edge, zone, |p| (p.x - x0) / scale, &sect, mirrored);
     }
     // Indent markers for the caret's paragraph.
@@ -2958,41 +2963,47 @@ fn rulers(app: &mut WordApp, ui: &mut Ui, h: Rect, v: Rect, rects: &[Rect], layo
         // spans the text area, so a border marker keeps its drag) and before the indent markers,
         // which keep the pointer where they overlap.
         crate::table_ruler::columns(app, ui, layout, pi, bar, x0, scale);
-        // Dragging the left-indent marker.
+        // Dragging the left-indent marker. A marker past the window's edge keeps no pointer area.
         let id = ui.scope_id().with("ruler_left");
         let mr = Rect::from_center_size(pos2(left, bar.max.y - 3.0), vec2(12.0, 12.0));
-        let r = ui.interact(mr, id, Sense::click_and_drag());
-        if r.dragged()
-            && let Some(pp) = r.interact_pointer_pos()
-        {
-            let pt = dist_at(pp.x).clamp(-col_x, (w - 18.0).max(-col_x));
-            let snapped = (pt / 4.5).round() * 4.5;
-            if !r.drag_started() {
-                app.session.join_next_undo();
+        if let Some(mr) = on_window(ui.ctx(), mr) {
+            let r = ui.interact(mr, id, Sense::click_and_drag());
+            if r.dragged()
+                && let Some(pp) = r.interact_pointer_pos()
+            {
+                let pt = dist_at(pp.x).clamp(-col_x, (w - 18.0).max(-col_x));
+                let snapped = (pt / 4.5).round() * 4.5;
+                if !r.drag_started() {
+                    app.session.join_next_undo();
+                }
+                let _ = app.run("para.indents", json!({"left": snapped}));
             }
-            let _ = app.run("para.indents", json!({"left": snapped}));
         }
         let fr = Rect::from_center_size(pos2(first, bar.min.y + 3.0), vec2(12.0, 10.0));
-        let r = ui.interact(fr, ui.scope_id().with("ruler_first"), Sense::click_and_drag());
-        if r.dragged()
-            && let Some(pp) = r.interact_pointer_pos()
-        {
-            let pt = dist_at(pp.x) - rp.indent_left;
-            if !r.drag_started() {
-                app.session.join_next_undo();
+        if let Some(fr) = on_window(ui.ctx(), fr) {
+            let r = ui.interact(fr, ui.scope_id().with("ruler_first"), Sense::click_and_drag());
+            if r.dragged()
+                && let Some(pp) = r.interact_pointer_pos()
+            {
+                let pt = dist_at(pp.x) - rp.indent_left;
+                if !r.drag_started() {
+                    app.session.join_next_undo();
+                }
+                let _ = app.run("para.indents", json!({"firstLine": (pt / 4.5).round() * 4.5}));
             }
-            let _ = app.run("para.indents", json!({"firstLine": (pt / 4.5).round() * 4.5}));
         }
         let rr = Rect::from_center_size(pos2(right, bar.max.y - 3.0), vec2(12.0, 12.0));
-        let r = ui.interact(rr, ui.scope_id().with("ruler_right"), Sense::click_and_drag());
-        if r.dragged()
-            && let Some(pp) = r.interact_pointer_pos()
-        {
-            let pt = w - dist_at(pp.x);
-            if !r.drag_started() {
-                app.session.join_next_undo();
+        if let Some(rr) = on_window(ui.ctx(), rr) {
+            let r = ui.interact(rr, ui.scope_id().with("ruler_right"), Sense::click_and_drag());
+            if r.dragged()
+                && let Some(pp) = r.interact_pointer_pos()
+            {
+                let pt = w - dist_at(pp.x);
+                if !r.drag_started() {
+                    app.session.join_next_undo();
+                }
+                let _ = app.run("para.indents", json!({"right": (pt / 4.5).round() * 4.5}));
             }
-            let _ = app.run("para.indents", json!({"right": (pt / 4.5).round() * 4.5}));
         }
     }
     // Vertical.
@@ -3132,6 +3143,13 @@ fn ruler_mark(p: &egui::Painter, at: Pos2, mark: RulerMark, horizontal: bool, ke
         (pos2(at.x - len / 2.0, at.y), pos2(at.x + len / 2.0, at.y))
     };
     p.line_segment([a, b], Stroke::new(1.0, t.ruler_tick));
+}
+
+/// A ruler control's pointer area, kept inside the window: at the narrowest size the page (and its
+/// markers) reach past it, and a control nobody could click is not a control (#guardas).
+pub(crate) fn on_window(ctx: &egui::Context, rect: Rect) -> Option<Rect> {
+    let rect = rect.intersect(ctx.content_rect());
+    (rect.width() > 0.0 && rect.height() > 0.0).then_some(rect)
 }
 
 /// Screen x of a point `d` points from the page's start edge, on a page whose left edge sits at

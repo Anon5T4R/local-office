@@ -185,8 +185,12 @@ pub(crate) fn stops(app: &mut WordApp, ui: &Ui, hp: &Painter, g: &Ruler<'_>, tab
 
     // A click on an empty stretch over the text sets a stop of the selector's kind there; pressing
     // and dragging places it where the button is released. The edges stay with the margin handles
-    // and indent markers, and only the primary button places stops.
-    let add = ui.interact(g.text.shrink2(vec2(4.0, 0.0)), ui.scope_id().with("ruler_tab_add"), Sense::click_and_drag());
+    // and indent markers, and only the primary button places stops. Past the window's edge (the
+    // page can be wider than it) there is no area to click, so none is announced (#guardas).
+    let Some(zone) = crate::canvas::on_window(ui.ctx(), g.text.shrink2(vec2(4.0, 0.0))) else {
+        return;
+    };
+    let add = ui.interact(zone, ui.scope_id().with("ruler_tab_add"), Sense::click_and_drag());
     let kind = app.canvas.tab_kind;
     let placing = |x: f32| TabDrag { from: None, para: para.clone(), align: kind, leader: TabLeader::None, at: snap(x), off: false };
     if add.clicked()
@@ -204,11 +208,12 @@ pub(crate) fn stops(app: &mut WordApp, ui: &Ui, hp: &Painter, g: &Ruler<'_>, tab
     let mut open_dialog = false;
     for (i, tab) in tabs.iter().enumerate() {
         let x = (g.x_of)(tab.pos);
-        let r = ui.interact(
-            Rect::from_center_size(pos2(x, g.bar.max.y - 4.0), vec2(9.0, 10.0)),
-            ui.scope_id().with(("ruler_tab", i)),
-            Sense::click_and_drag(),
-        );
+        let zone = Rect::from_center_size(pos2(x, g.bar.max.y - 4.0), vec2(9.0, 10.0));
+        let Some(zone) = crate::canvas::on_window(ui.ctx(), zone) else {
+            draw_tab_glyph(hp, x, base, tab.align, g.rtl, stroke);
+            continue;
+        };
+        let r = ui.interact(zone, ui.scope_id().with(("ruler_tab", i)), Sense::click_and_drag());
         let starts = r.drag_started_by(egui::PointerButton::Primary);
         if starts {
             app.canvas.tab_drag =

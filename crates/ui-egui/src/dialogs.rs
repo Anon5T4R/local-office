@@ -3313,18 +3313,22 @@ pub(crate) fn recipient_list(
     message: &mut String,
     filter: &mut RecipientFilter,
 ) -> bool {
-    const CELL_W: f32 = 120.0;
     const X_W: f32 = 18.0;
     const ROW_H: f32 = 24.0;
     const NUM_W: f32 = 34.0;
     // Each record's place in the merge (None: filtered out), when there is a filter or sort.
     let order: Option<Vec<Option<usize>>> = (!filter.is_empty()).then(|| filter.order(fields, rows).to_vec());
-    // Wide enough for every field (up to a limit; more scroll sideways).
+    // Wide enough for every field, shrinking the cells to fit the window (the suite's narrowest is
+    // 760) before scrolling sideways (#guardas).
     let gap = ui.spacing().item_spacing.x;
     // Plus the rows' scroll bar, so each row's remove button stays in view (#1576).
     let scroll = ui.spacing().scroll;
     let bar = scroll.bar_width + scroll.bar_inner_margin + scroll.bar_outer_margin;
-    let table_w = NUM_W + gap + fields.len() as f32 * (CELL_W + X_W + 2.0 * gap) + X_W + 2.0 * gap + bar + X_W;
+    let room = ui.available_width().min(720.0);
+    let fixed = NUM_W + 2.0 * gap + X_W + 2.0 * gap + bar + X_W;
+    let per_field = room - fixed;
+    let cell_w = if fields.is_empty() { 120.0 } else { (per_field / fields.len() as f32 - X_W - 2.0 * gap).clamp(80.0, 120.0) };
+    let table_w = NUM_W + gap + fields.len() as f32 * (cell_w + X_W + 2.0 * gap) + X_W + 2.0 * gap + bar + X_W;
     ui.set_min_width(table_w.clamp(340.0, 720.0));
     ui.label(tl!("Type the recipients, or load them from a file."));
     if ui.button(tl!("Use an Existing List…")).clicked() {
@@ -3370,7 +3374,7 @@ pub(crate) fn recipient_list(
             ui.horizontal(|ui| {
                 ui.allocate_exact_size(vec2(NUM_W, ROW_H - 4.0), Sense::hover());
                 for (i, f) in fields.iter_mut().enumerate() {
-                    ui.add_sized([CELL_W, ROW_H - 4.0], egui::TextEdit::singleline(f).font(egui::TextStyle::Button).hint_text(tl!("Field name")))
+                    ui.add_sized([cell_w, ROW_H - 4.0], egui::TextEdit::singleline(f).font(egui::TextStyle::Button).hint_text(tl!("Field name")))
                         .accessible_name(format!("{} {}", tl!("Field name"), i + 1));
                     let x = ui.add_enabled(can_remove, egui::Button::new("×").small().min_size(vec2(X_W, X_W))).on_hover_text(tl!("Remove field"));
                     x_w = x.rect.width();
@@ -3401,7 +3405,7 @@ pub(crate) fn recipient_list(
                             // or moves rows, the keyboard can't land in another record (#1576).
                             let field_name = fields.get(j).map_or("", String::as_str);
                             let cell = ui
-                                .add_sized([CELL_W, ROW_H - 4.0], egui::TextEdit::singleline(c).id_salt(("recipient_cell", r, j)))
+                                .add_sized([cell_w, ROW_H - 4.0], egui::TextEdit::singleline(c).id_salt(("recipient_cell", r, j)))
                                 .accessible_name(crate::i18n::fmt(tl!("{field}, record {n}"), &[("field", field_name), ("n", &(r + 1).to_string())]));
                             if cell.has_focus() {
                                 focused = Some(cell.id);

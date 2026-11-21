@@ -56,6 +56,8 @@ fn grip(app: &mut WordApp, ui: &Ui, layout: &DocLayout, zone: Rect, column: bool
     } else {
         ("ruler_row", tl!("Table Row Height"), egui::CursorIcon::ResizeRow)
     };
+    // A border past the window's edge keeps no pointer area (#guardas).
+    let Some(zone) = crate::canvas::on_window(ui.ctx(), zone) else { return };
     let r = ui.interact(zone, ui.scope_id().with((name, i)), Sense::drag()).on_hover_cursor(cursor);
     r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Splitter, true, label));
     let r = if r.dragged() { r } else { r.on_hover_text(label) };
