@@ -150,7 +150,6 @@ Não pode fazer (exige humano):
 - [ ] Adicionar remote `upstream` apontando para o repo origem (`storytold/<appcraft>`)
 - [ ] Criar `docs/UPSTREAM-MAP.toml` com os caminhos que diferem (crates, .wxs, packaging, CI)
 - [ ] Registrar o primeiro sync como "baseline" (nenhuma mudança aplicada, apenas marca o ponto de partida)
-- [ ] Definir qual versão do upstream é a baseline do rebrand (ex: `wordcraft` @ `2c99a42`)
 - [ ] Validar que o CI próprio (`.github/workflows/ci.yml`) passa antes do primeiro sync
 
 ## Decision Ledger
