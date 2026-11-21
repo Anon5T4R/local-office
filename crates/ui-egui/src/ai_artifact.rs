@@ -201,21 +201,23 @@ impl Artifact {
         ui.add_space(6.0);
         match self.kind {
             Kind::NewDoc => {
-                ui.label(tl!("What should the new document be about?"));
-                ui.add(egui::TextEdit::multiline(&mut self.topic).desired_rows(3).desired_width(f32::INFINITY));
+                let question = ui.label(tl!("What should the new document be about?"));
+                ui.add(egui::TextEdit::multiline(&mut self.topic).desired_rows(3).desired_width(f32::INFINITY)).labelled_by(question.id);
                 ui.add_space(6.0);
                 ui.horizontal(|ui| {
-                    ui.label(tl!("Shape"));
+                    let label = ui.label(tl!("Shape"));
                     egui::ComboBox::from_id_salt("ai-shape").selected_text(self.shape.label()).show_ui(ui, |ui| {
                         for shape in Shape::ALL {
                             ui.selectable_value(&mut self.shape, shape, shape.label());
                         }
-                    });
+                    })
+                    .response
+                    .labelled_by(label.id);
                 });
             }
             Kind::CopyEdit => {
-                ui.label(tl!("What should change?"));
-                ui.add(egui::TextEdit::multiline(&mut self.topic).desired_rows(3).desired_width(f32::INFINITY));
+                let question = ui.label(tl!("What should change?"));
+                ui.add(egui::TextEdit::multiline(&mut self.topic).desired_rows(3).desired_width(f32::INFINITY)).labelled_by(question.id);
                 ui.add_space(4.0);
                 let hint = match copy_name {
                     Some(name) => i18n::fmt(tl!("The original stays as it is: the copy is saved beside it as {name}."), &[("name", name)]),
