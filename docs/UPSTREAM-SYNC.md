@@ -1,5 +1,25 @@
 # Sincronização com o upstream (storytold/wordcraft)
 
+## Base
+
+- Upstream: `storytold/wordcraft`, commit **6a2b520f** (`Merge pull request #4401 from
+  benandez/fix/main-tests-linear-imports`, 2026-10-26). A árvore partiu desse commit no primeiro
+  rebrand (`d2018885`, 27/out), sem histórico.
+- Prova (conferida em 2026-11-21 no clone raso de `C:\Dev\storytold\wordcraft`):
+  `crates/layout/src/tests_linear.rs` daqui traz o import de `doc::props::Rgb` que só existe a partir
+  de `6a2b520f` (`git diff 2c99a427 6a2b520f -- crates/layout/src/tests_linear.rs`), e nenhum dos 14
+  arquivos testáveis de `d859c673` (limpeza Sonar, o commit seguinte no `main`) entrou — ex.:
+  `crates/ui-egui/src/dialogs_layout.rs` ainda tem `!(f.cells > 1 && !f.merge_first)`, a forma de
+  antes. Logo a base é `6a2b520f`, não `d859c673`.
+- `c8631193` (27/out, merge da branch `fix/builtin-styles-bcs-ics-4198`) **não** é a base: falta aqui
+  o que ele agrega sobre a `main` de então (`2cf1d6c7`) — dos 37 arquivos testáveis do PR de layout,
+  nenhum está presente.
+- O clone raso começa em `2c99a427` (pai de `6a2b520f`): commits anteriores a ele não são
+  conferíveis ali, e nada entre os dois existe no `main`.
+- Fork: `Anon5T4R/local-office`, versão própria na linha `0.11.x`.
+- Nada é lido de `C:\Dev\storytold` em build, teste ou release; a pasta é só referência local para a
+  skill `sync-upstream`.
+
 ## Objetivo
 Manter o `local-office` próximo do `storytold/wordcraft` (upstream) sem perder a independência do rebranding: nenhum merge cego, nenhuma dependência de servidor da org deles, nenhum `git+` no lock. Tudo que entrar no main deste repo passa por revisão de arquitetura primeiro.
 
