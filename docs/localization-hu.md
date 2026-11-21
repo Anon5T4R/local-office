@@ -1,8 +1,6 @@
 # Hungarian interface
 
-> **Last reviewed:** 2026-10-11 · **Last updated:** 2026-10-23 · **Change:** trivial (the catalog moved to storytold/craft-i18n, `locales/hu/localoffice.tsv`; previously trivial: interface-language tests: a missing translation never fails a test, `cargo xtask i18n-report` in `cargo xtask ci` prints the strings each language lacks, and lookup and template tests use inline fixture catalogs or the pseudo-language; previously trivial: the interface audit lists missing Hungarian entries instead of failing; previously minor: Hungarian interface catalog and regression checks) · **Target:** LocalOffice 0.5.0
-
-Choose **File › Options › Interface language › Magyar**, or follow a Hungarian system display
+Choose **File › Settings › Interface language › Magyar**, or follow a Hungarian system display
 language (`hu-HU`, `hu_HU.UTF-8`). The catalog code is `hu`; `ui.language` with `{"value":"hu"}`
 selects it explicitly, and `LOCALOFFICE_LANGUAGE=hu-HU` does the same for a headless screenshot or a
 launch while the preference is `auto`. The choice is saved with the other interface settings.
@@ -65,13 +63,3 @@ include Hungarian automatically.
 
 Spelling, grammar and hyphenation stay English-only: this is an interface translation, not
 Hungarian proofing. A native-speaker review of the catalog is welcome.
-
-## Revision history
-
-| Date | Change | Summary |
-|---|---|---|
-| 2026-10-23 | trivial | The catalog moved to storytold/craft-i18n (`locales/hu/localoffice.tsv`) |
-| 2026-10-23 | trivial | Lookup, context, template, style-name and command-search tests use inline fixture catalogs or the pseudo-language; tests that asserted one language's catalog wording removed |
-| 2026-10-23 | trivial | Interface-language tests: a missing translation falls back to English and never fails a test; `cargo xtask i18n-report` (part of `cargo xtask ci`) prints the strings each language lacks; single-language coverage tests removed |
-| 2026-10-23 | trivial | The interface audit lists Hungarian strings the catalog lacks; a missing entry doesn't fail the audit |
-| 2026-10-11 | minor | Hungarian catalog (2,419 entries: built-in style names, equation gallery, citation styles), conventions, terminology, scope and regression checks |

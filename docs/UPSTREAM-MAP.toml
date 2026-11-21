@@ -70,9 +70,9 @@ note = "roadmap do WordCraft; não aplica ao LocalOffice"
 
 [[map]]
 upstream = "docs/gaps.md"
-local = "docs/gaps.md"
+local = "ROADMAP.md"
 strategy = "skip"
-note = "gaps do WordCraft vs Word"
+note = "gaps do WordCraft vs Word; o que ainda valia foi resumido no ROADMAP do Local"
 
 [[map]]
 upstream = "craft-i18n.rev"

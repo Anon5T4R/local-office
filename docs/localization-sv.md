@@ -1,8 +1,6 @@
 # Swedish interface
 
-> **Last reviewed:** 2026-10-13 · **Last updated:** 2026-10-23 · **Change:** trivial (the catalog moved to storytold/craft-i18n, `locales/sv/localoffice.tsv`; previously trivial: interface-language tests: a missing translation never fails a test, `cargo xtask i18n-report` in `cargo xtask ci` prints the strings each language lacks, and lookup and template tests use inline fixture catalogs or the pseudo-language; previously trivial: the interface audit lists missing Swedish entries instead of failing; previously minor: Swedish interface catalog and regression checks) · **Target:** LocalOffice 0.6.1
-
-Choose **File › Options › Interface language › Svenska**, or follow a Swedish system display
+Choose **File › Settings › Interface language › Svenska**, or follow a Swedish system display
 language (`sv-SE`, `sv_SE.UTF-8`, and `sv-FI` for Swedish in Finland). The catalog code is `sv`;
 `ui.language` with `{"value":"sv"}` selects it explicitly, and `LOCALOFFICE_LANGUAGE=sv-SE` does the
 same for a headless screenshot or a launch while the preference is `auto`. The choice is saved with
@@ -86,13 +84,3 @@ include Swedish automatically.
 
 Spelling, grammar and hyphenation stay English-only: this is an interface translation, not
 Swedish proofing.
-
-## Revision history
-
-| Date | Change | Summary |
-|---|---|---|
-| 2026-10-23 | trivial | The catalog moved to storytold/craft-i18n (`locales/sv/localoffice.tsv`) |
-| 2026-10-23 | trivial | Lookup, context, template, style-name and command-search tests use inline fixture catalogs or the pseudo-language; tests that asserted one language's catalog wording removed |
-| 2026-10-23 | trivial | Interface-language tests: a missing translation falls back to English and never fails a test; `cargo xtask i18n-report` (part of `cargo xtask ci`) prints the strings each language lacks; single-language coverage tests removed |
-| 2026-10-23 | trivial | The interface audit lists Swedish strings the catalog lacks; a missing entry doesn't fail the audit |
-| 2026-10-13 | minor | Swedish catalog (2,504 entries), conventions, terminology, known compromises and regression checks |

@@ -2670,7 +2670,7 @@ fn change_case_follows_turkic_case_mapping() {
 }
 
 // Spelling as you type (#1552): the word being typed gets no red squiggle until the caret leaves
-// it; F7 and the Spelling pane still report it. See docs/typing-parity.md. Paragraphs start with
+// it; F7 and the Spelling pane still report it. Paragraphs start with
 // a correct word so AutoCorrect's sentence capital doesn't change the misspelled one.
 
 /// The words body paragraph `i` has a spelling squiggle under, in order.

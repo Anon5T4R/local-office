@@ -1,10 +1,6 @@
-# LocalOffice architecture
+# Local Word architecture
 
-> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-10 · **Change:** minor (`proof` is per language: English and Polish; previously major: first committed version; `plan/architecture.md` is local-only) · **Target:** Microsoft Word (Microsoft 365) for Mac 16.113.4
-
-How LocalOffice is built today (origin/main `40c5d51`). The longer design notes in
-`plan/architecture.md` are gitignored and local to the original author's machine; this file is the
-committed, current summary. Rules for working in the code are in [`AGENTS.md`](../AGENTS.md).
+How Local Word is built today. Rules for working in the code are in [`AGENTS.md`](../AGENTS.md).
 
 ## Layers
 
@@ -50,19 +46,11 @@ winit or rfd.
 
 ## Testing and gates
 
-- 821 `#[test]` functions and 10 property-test blocks: model, layout, DOCX round-trip and hostile
+- `#[test]` functions and 10 property-test blocks: model, layout, DOCX round-trip and hostile
   input, `.doc`, formats, typing parity (`engine/src/tests_typing.rs`), bidi, i18n catalogs, UI
   interaction (egui_kittest), MCP acceptance; `hostile_params_never_panic` runs every command with
   junk params.
-- `cargo xtask ci`: fmt, clippy `-D warnings`, tests, asset attribution, layering, wasm build.
-- `cargo xtask parity` regenerates [`parity-checklist.md`](parity-checklist.md); a test keeps the
-  catalog percentage above a floor that only rises.
-- GitHub Actions on PRs: packaging lint, and FreeBSD / Windows ARM64 when build files change;
-  release builds on pushes to `release`.
-
-## Revision history
-
-| Date | Change | Summary |
-|---|---|---|
-| 2026-10-10 | minor | `proof`: proofing languages (English, Polish), affix engine, Polish patterns; layout and engine route each run by its language |
-| 2026-10-10 | major | First committed architecture doc, from the crates' sources and `AGENTS.md` |
+- `cargo xtask ci`: fmt, clippy `-D warnings`, tests, asset attribution, layering, cargo-deny,
+  wasm build, local-libs mirrors.
+- `cargo xtask parity` writes the feature-catalog coverage to `target/parity-checklist.md`.
+- GitHub Actions on PRs runs the same gate on Linux and Windows; release builds on tags `vX.Y.Z`.
