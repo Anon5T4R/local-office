@@ -2908,8 +2908,17 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                     );
                 }
             }
-            let (ok, cancel) = buttons(ui, tl!("Close"));
-            ok || cancel
+            // The About window only closes: one button, no Cancel (Enter and Escape close it too).
+            ui.add_space(8.0);
+            ui.horizontal(|ui| {
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.add(crate::widgets::primary_button(ui, tl!("Close"))).clicked()
+                        || ui.input(|i| i.key_pressed(egui::Key::Enter))
+                        || ui.input(|i| i.key_pressed(egui::Key::Escape))
+                })
+                .inner
+            })
+            .inner
         }
         Dialog::DiscardRecovery { name, .. } => {
             ui.label(crate::i18n::fmt(tl!("Discard the recovery copy of {name}?"), &[("name", name)]));
