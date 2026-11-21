@@ -76,7 +76,8 @@ Se tudo verde e você aprovar:
 - Qualquer nova dependência de crate (mesmo que seja só "uma linha"). É decisão de negócio de independência (WORKFLOW.md).
 - Workflows da org `storytold` (`.github/workflows/*`).
 - Marca/trademark (`docs/brand/*`, `getartcraft.com`, Discord).
-- `ROADMAP.md`, `docs/gaps.md` — são do WordCraft vs Word, não do Local.
+- `ROADMAP.md`, `docs/gaps.md` — são do WordCraft vs Word, não do Local (os de paridade, gaps e
+  planos do upstream foram apagados; o que valia foi para o `ROADMAP.md` daqui).
 - `craft-i18n.rev` — nossos catálogos já são in-repo (`i18n/locales/`).
 
 ---

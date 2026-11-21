@@ -1,8 +1,6 @@
 # Turkish interface
 
-> **Last reviewed:** 2026-10-11 · **Last updated:** 2026-10-23 · **Change:** trivial (the catalog moved to storytold/craft-i18n, `locales/tr/localoffice.tsv`; previously trivial: interface-language tests: a missing translation never fails a test, `cargo xtask i18n-report` in `cargo xtask ci` prints the strings each language lacks, and lookup and template tests use inline fixture catalogs or the pseudo-language; previously minor: Turkish interface catalog completed, 2,325 entries, #774; previously minor: Turkish interface catalog and regression checks) · **Target:** LocalOffice 0.5.0
-
-Choose **File › Options › Interface language › Türkçe**, or follow a Turkish system display language
+Choose **File › Settings › Interface language › Türkçe**, or follow a Turkish system display language
 (`tr-TR`, `tr-CY`, `tr_TR.UTF-8`). The catalog code is `tr`; `ui.language` with `{"value":"tr"}`
 selects it explicitly, and `LOCALOFFICE_LANGUAGE=tr-TR` does the same for a headless screenshot or a
 launch while the preference is `auto`. The choice is saved with the other interface settings.
@@ -55,14 +53,3 @@ include Turkish automatically.
 Turkish proofing (`crates/proof/src/tr`) provides spelling against installed Hunspell `tr_TR`
 dictionaries, spelling suggestions tuned for Turkish diacritics and detached particles, rule-based grammar
 checks (reduplications, conjunction commas, capitalization), and syllable hyphenation by TDK rules.
-
-## Revision history
-
-| Date | Change | Summary |
-|---|---|---|
-| 2026-10-23 | trivial | The catalog moved to storytold/craft-i18n (`locales/tr/localoffice.tsv`) |
-| 2026-10-23 | trivial | Lookup, context, template, style-name and command-search tests use inline fixture catalogs or the pseudo-language; tests that asserted one language's catalog wording removed |
-| 2026-10-23 | trivial | Interface-language tests: a missing translation falls back to English and never fails a test; `cargo xtask i18n-report` (part of `cargo xtask ci`) prints the strings each language lacks; single-language coverage tests removed |
-| 2026-10-13 | minor | Turkish proofing added: spelling, suggestions, grammar rules and TDK syllable hyphenation |
-| 2026-10-11 | minor | Turkish catalog completed (2,325 entries, #774), covering all math structures, built-in styles, presets and preview tiles |
-| 2026-10-11 | minor | Turkish catalog (1,307 entries), terminology, scope and regression checks |

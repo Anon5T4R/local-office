@@ -450,7 +450,7 @@ fn a_command_that_only_arms_the_caret_formatting_is_an_edit() {
     let depth = s.undo_depth();
     run(&mut s, "format.bold", json!({}));
     assert_eq!(s.undo_depth(), depth + 1, "one undo step");
-    // Undo takes the armed formatting back, as Word does (docs/typing-parity.md).
+    // Undo takes the armed formatting back, as Word does.
     run(&mut s, "edit.undo", json!({}));
     run(&mut s, "text.insert", json!({"text": "x"}));
     assert_eq!(s.doc.para_at(&s.sel.focus).map(|p| p.props_of_char(0).bold), Some(None));
