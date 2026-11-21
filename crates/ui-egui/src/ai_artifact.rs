@@ -206,13 +206,15 @@ impl Artifact {
                 ui.add_space(6.0);
                 ui.horizontal(|ui| {
                     let label = ui.label(tl!("Shape"));
-                    egui::ComboBox::from_id_salt("ai-shape").selected_text(self.shape.label()).show_ui(ui, |ui| {
-                        for shape in Shape::ALL {
-                            ui.selectable_value(&mut self.shape, shape, shape.label());
-                        }
-                    })
-                    .response
-                    .labelled_by(label.id);
+                    egui::ComboBox::from_id_salt("ai-shape")
+                        .selected_text(self.shape.label())
+                        .show_ui(ui, |ui| {
+                            for shape in Shape::ALL {
+                                ui.selectable_value(&mut self.shape, shape, shape.label());
+                            }
+                        })
+                        .response
+                        .labelled_by(label.id);
                 });
             }
             Kind::CopyEdit => {
