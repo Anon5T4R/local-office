@@ -462,14 +462,13 @@ mod tests {
             a.ai.seed_for_visual_qa();
             let mut h = egui_kittest::Harness::builder()
                 .with_size(egui::vec2(1100.0, 760.0))
-                .with_accessibility_check(false)
                 .build_ui_state(|ui, app: &mut WordApp| crate::ai_ui::panel(app, ui), a);
             h.ctx.set_theme(theme);
             save(&mut h, &format!("ai-panel-{name}"));
 
             let mut b = app();
             b.ai.artifact.dialog = true;
-            let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(900.0, 700.0)).with_accessibility_check(false).build_ui_state(
+            let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(900.0, 700.0)).build_ui_state(
                 |ui, app: &mut WordApp| {
                     let ctx = ui.ctx().clone();
                     crate::ai_ui::show(app, &ctx);
@@ -483,7 +482,7 @@ mod tests {
             let mut c = app();
             c.ai.open = true;
             c.ai.seed_for_visual_qa();
-            let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1400.0, 900.0)).with_accessibility_check(false).build_ui_state(
+            let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_ui_state(
                 |ui, app: &mut WordApp| {
                     let ctx = ui.ctx().clone();
                     app.logic(&ctx);
