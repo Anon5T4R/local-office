@@ -40,7 +40,7 @@ unsaved documents leaves a copy of each, and the next start lists them all.
 Copies live in `recovery/` under the app's profile folder. `LOCALOFFICE_PROFILE_DIR` selects a
 separate profile for isolated runs, including preferences, logs and control keys.
 `LOCALOFFICE_NO_PREFS` disables recovery as well as preferences. Headless engine/CLI sessions
-and the browser do not create recovery files implicitly.
+do not create recovery files implicitly.
 
 One worker thread and one store serve every open document, so a record is locked once per
 process. Every frame the desktop host compares each open document's revision and timer without
@@ -78,7 +78,7 @@ not retried until the document changes; other failures, such as a lock or I/O er
 again at the next interval. Base64 takes 4/3 of a part's size (a 27 MiB picture makes a 36 MiB
 copy), and DOCX compresses, so a copy can still be larger than the DOCX it came from. This first
 version has a fixed
-interval, English fallback for new labels, and no cloud, version-history or browser recovery.
+interval, English fallback for new labels, and no cloud or version-history recovery.
 
 ## Commands and verification
 
