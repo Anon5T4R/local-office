@@ -3712,24 +3712,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-web"
-version = "0.11.41"
-dependencies = [
- "eframe",
- "egui",
- "js-sys",
- "localoffice-engine",
- "localoffice-fonts",
- "localoffice-ui-egui",
- "log",
- "rfd",
- "serde_json",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
 name = "localoffice-zotero"
 version = "0.11.41"
 dependencies = [
