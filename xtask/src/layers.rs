@@ -56,7 +56,6 @@ pub const TABLE: &[(&str, Class)] = &[
     // apps and tooling
     ("localoffice", Class::Exempt),
     ("cli", Class::Exempt),
-    ("web", Class::Exempt),
     ("xtask", Class::Exempt),
 ];
 
@@ -314,7 +313,7 @@ mod tests {
 
     #[test]
     fn apps_and_xtask_exempt() {
-        for app in ["localoffice", "localoffice-cli", "localoffice-web", "xtask"] {
+        for app in ["localoffice", "localoffice-cli", "xtask"] {
             assert!(check(&[c(app, &[("egui", Normal, false), ("localoffice-ui-egui", Normal, true)])]).is_empty());
         }
     }
