@@ -15,9 +15,7 @@ localoffice-doc = { workspace = true }
 localoffice-fonts = { workspace = true }
 localoffice-layout = { workspace = true }
 localoffice-metafile = { workspace = true }
-vello_cpu = { workspace = true }
+vello_cpu = { workspace = true, features = ["multithreading"] }
 image = { workspace = true }
 log = { workspace = true }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-vello_cpu = { workspace = true, features = ["multithreading"] }

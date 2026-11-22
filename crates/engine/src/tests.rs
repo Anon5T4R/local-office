@@ -4697,7 +4697,6 @@ fn mailings_results_are_new_untitled_documents() {
 
 /// #2376: a note.txt opened and saved stayed unsaved, so closing asked to save it forever. Saving
 /// the document's own file is a save in any format; Save As to plain text elsewhere is a copy.
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn saving_a_text_file_over_itself_saves_the_document() {
     let dir = std::env::temp_dir().join(format!("localoffice-engine-own-txt-{}", std::process::id()));
@@ -4757,7 +4756,6 @@ fn a_failed_save_leaves_the_save_stamps_untouched() {
     assert!(s.dirty, "still unsaved");
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn html_pictures_load_relative_to_the_file() {
     // Issue #98: `<img src="logo.png">` beside an HTML file is embedded when it is opened.
@@ -4780,7 +4778,6 @@ fn html_pictures_load_relative_to_the_file() {
 }
 
 /// A fresh, empty scratch folder for one test.
-#[cfg(not(target_arch = "wasm32"))]
 fn scratch_dir(name: &str) -> std::path::PathBuf {
     let dir = std::env::temp_dir().join(format!("localoffice-{name}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
@@ -4788,7 +4785,6 @@ fn scratch_dir(name: &str) -> std::path::PathBuf {
     dir
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 fn tiny_png() -> Vec<u8> {
     let mut png = Vec::new();
     image::RgbaImage::from_pixel(2, 2, image::Rgba([200, 30, 30, 255]))
@@ -4797,7 +4793,6 @@ fn tiny_png() -> Vec<u8> {
     png
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn html_pictures_outside_the_folder_are_not_loaded() {
     // #98 review: `..` must not reach files outside the HTML file's folder.
@@ -4982,7 +4977,6 @@ fn file_head_and_capped_reads_refuse_a_named_pipe_without_blocking() {
 }
 
 /// #3666: a folder is not a file to read, whichever helper reads it.
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn file_head_and_capped_reads_refuse_a_folder() {
     let dir = scratch_dir("read-helpers-dir");
@@ -4996,7 +4990,6 @@ fn file_head_and_capped_reads_refuse_a_folder() {
 
 /// #3666: `read_file_capped` reads a file of up to `max` bytes whole and refuses a larger one;
 /// `read_file_head` returns at most `max` bytes.
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn file_capped_read_refuses_content_over_the_cap() {
     let dir = scratch_dir("read-helpers-cap");
@@ -5016,7 +5009,6 @@ fn file_capped_read_refuses_content_over_the_cap() {
 
 /// #3666: `read_regular_file_within` (Paste Special's copied picture file) reads a file of up to
 /// `limit` bytes whole and refuses one whose handle reports more, before reading any of it.
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn regular_file_read_within_a_limit_refuses_a_larger_file() {
     let dir = scratch_dir("read-within");
@@ -5033,7 +5025,6 @@ fn regular_file_read_within_a_limit_refuses_a_larger_file() {
     assert_eq!(large, None);
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn html_picture_size_limit_holds_whatever_length_the_file_reports() {
     use crate::io::LocalImages;
@@ -5056,7 +5047,6 @@ fn html_picture_size_limit_holds_whatever_length_the_file_reports() {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn html_pictures_share_one_read_and_a_per_document_budget() {
     // #98 review: a picture referenced many times is read once, and every reference counts
@@ -6338,7 +6328,6 @@ fn border_sides_apply_exactly() {
 
 /// Encrypt with Password (#55): a document saved with a password opens only with it, keeps it
 /// for the next save, and saves unencrypted once the password is removed.
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn password_protected_documents_round_trip() {
     let dir = scratch_dir("password");
@@ -8983,7 +8972,6 @@ fn outline_many_collapsed_headings_stay_fast_after_edits() {
 /// #745: layout keeps a picture's size, so pictures read from HTML, Markdown, ODT or RTF at
 /// their pixel size are fitted to the text width when the file is opened (and when pasted),
 /// keeping their proportions; small pictures keep their size.
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn imported_pictures_fit_the_text_width() {
     let png = |w: u32, h: u32| {
@@ -9428,7 +9416,6 @@ fn find_replace_and_go_to_open_like_word() {
 
 /// #802: Insert › Picture takes Windows Metafiles (and EMF) at their own frame size, stored under
 /// their own extension so a save writes them as WMF/EMF parts.
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn insert_picture_takes_a_windows_metafile() {
     use localoffice_doc::para::InlineObject;
@@ -9480,7 +9467,6 @@ fn insert_picture_takes_a_windows_metafile() {
 /// Change Picture must keep the replacement's own format: the part's name and content type
 /// come from the extension, so a JPEG stored as `imageN.png` saves declared `image/png` (Word
 /// and LibreOffice then show a broken picture).
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn picture_change_keeps_the_replacement_format() {
     let dir = scratch_dir("picture-change-format");
@@ -10831,7 +10817,6 @@ fn headless_ui_requests_stay_bounded() {
 
 /// `file.exportPng` writes only to `.png` paths, so automation can't replace other files with
 /// page images (#3696).
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn export_png_refuses_a_path_that_is_not_png() {
     let dir = scratch_dir("export-png-extension");

@@ -27,7 +27,6 @@ winit or rfd.
 | L6 | `ui-egui` | 13.1k | Word-style front end: ribbon, keytips, mini-toolbar, Backstage, canvas, rulers, panes, dialogs, Equation tab, i18n catalogs, themes, control channel, headless `ui_shot` example |
 | apps | `localoffice` | 1.6k | Desktop app (eframe + wgpu; logging, window geometry, file associations) |
 | apps | `localoffice-cli` | 0.4k | `convert`, `text`, `inspect`, `run`, `commands`, `parity`, `mcp`, `zotero` |
-| apps | `localoffice-web` | 0.3k | Browser build (eframe web runner, WebGPU with WebGL2 fallback) |
 
 ## Data flow
 
@@ -51,6 +50,6 @@ winit or rfd.
   interaction (egui_kittest), MCP acceptance; `hostile_params_never_panic` runs every command with
   junk params.
 - `cargo xtask ci`: fmt, clippy `-D warnings`, tests, asset attribution, layering, cargo-deny,
-  wasm build, local-libs mirrors.
+  local-libs mirrors.
 - `cargo xtask parity` writes the feature-catalog coverage to `target/parity-checklist.md`.
 - GitHub Actions on PRs runs the same gate on Linux and Windows; release builds on tags `vX.Y.Z`.

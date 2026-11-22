@@ -37,7 +37,6 @@ fn font_json(f: &UserFont) -> Value {
 }
 
 /// Read a font file named by the user, refusing one larger than the cap before reading it.
-#[cfg(not(target_arch = "wasm32"))]
 fn read_font_file(path: &str) -> Result<Vec<u8>, CmdError> {
     // Through `io`, which keeps automation inside its read root (#769).
     crate::io::read_file_capped(path, localoffice_fonts::MAX_FONT_FILE_BYTES as u64, "font file").map_err(CmdError::Failed)
@@ -66,15 +65,7 @@ fn add(s: &mut Session, v: &Value) -> CmdResult {
         let bytes = base64_decode(d).ok_or_else(|| CmdError::Params("bad base64 data".into()))?;
         (p::str(v, "name").unwrap_or("font").to_string(), bytes)
     } else if let Some(path) = p::str(v, "path") {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            (path.to_string(), read_font_file(path)?)
-        }
-        #[cfg(target_arch = "wasm32")]
-        {
-            let _ = path;
-            return Err(CmdError::Failed("reading files by path isn't available on the web".into()));
-        }
+        (path.to_string(), read_font_file(path)?)
     } else {
         // From the ribbon: the UI shows a file picker and runs this again with the file.
         s.push_ui_request(json!({"open": "addFont"}));

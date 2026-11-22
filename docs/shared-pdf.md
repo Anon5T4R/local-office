@@ -15,7 +15,7 @@ selectable text.
 
 LocalOffice supplies its existing metadata policy: option overrides, subject/description fallback,
 split keywords, and nonempty ASCII language tags. Creation dates come from the document when valid,
-otherwise from the native system clock or the browser clock on WebAssembly. The shared writer
+otherwise from the system clock. The shared writer
 never chooses a clock or changes this policy.
 
 ## Backend sources and features

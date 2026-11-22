@@ -77,7 +77,6 @@ pub struct DocState {
     pub(super) merge: crate::cmd::mailings::MergeState,
     pub(super) math: Option<MathEdit>,
     pub(super) password: Option<crate::io::Password>,
-    #[cfg(not(target_arch = "wasm32"))]
     pub(super) recovery_slot: crate::recovery::Slot,
     pub(super) also_selected: Vec<Pos>,
     pub(super) column: Option<ColumnBlock>,
@@ -131,7 +130,6 @@ impl DocState {
             merge: Default::default(),
             math: None,
             password: None,
-            #[cfg(not(target_arch = "wasm32"))]
             recovery_slot: Default::default(),
             also_selected: Vec::new(),
             column: None,
@@ -231,8 +229,7 @@ impl Session {
             merge: _,
             math: _,
             password: _,
-            #[cfg(not(target_arch = "wasm32"))]
-                recovery_slot: _,
+            recovery_slot: _,
             also_selected: _,
             column: _,
             column_mode: _,
@@ -278,8 +275,7 @@ impl Session {
             others: _,
             order: _,
             untitled_count: _,
-            #[cfg(not(target_arch = "wasm32"))]
-                recovery: _,
+            recovery: _,
         } = self;
         let DocState {
             doc,
@@ -320,7 +316,6 @@ impl Session {
             merge,
             math,
             password,
-            #[cfg(not(target_arch = "wasm32"))]
             recovery_slot,
             also_selected,
             column,
@@ -367,7 +362,6 @@ impl Session {
         swap(&mut self.merge, merge);
         swap(&mut self.math, math);
         swap(&mut self.password, password);
-        #[cfg(not(target_arch = "wasm32"))]
         swap(&mut self.recovery_slot, recovery_slot);
         swap(&mut self.also_selected, also_selected);
         swap(&mut self.column, column);
@@ -470,17 +464,13 @@ impl Session {
 
     /// A closed document's recovery copy goes with it, as its unsaved changes do.
     fn forget_recovery_copy(&mut self, d: &DocState) {
-        #[cfg(not(target_arch = "wasm32"))]
         if let (Some(r), Some(id)) = (&mut self.recovery, &d.recovery_slot.id) {
             r.close(id.clone());
         }
-        #[cfg(target_arch = "wasm32")]
-        let _ = d;
     }
 
     /// What recovery reads from every open document, the active one first, with each
     /// document's slot to update. Nothing is cloned or laid out.
-    #[cfg(not(target_arch = "wasm32"))]
     pub(crate) fn recovery_docs(&mut self) -> impl Iterator<Item = crate::recovery::DocRecovery<'_>> {
         let active = crate::recovery::DocRecovery {
             id: self.document_id,
@@ -502,7 +492,6 @@ impl Session {
 
     /// Every open document's recovery slot, with whether it should have a current copy and
     /// its revision.
-    #[cfg(not(target_arch = "wasm32"))]
     pub(crate) fn recovery_slots(&self) -> impl Iterator<Item = (bool, u64, &crate::recovery::Slot)> {
         std::iter::once((self.dirty && self.password.is_none(), self.rev, &self.recovery_slot))
             .chain(self.others.iter().map(|d| (d.dirty && d.password.is_none(), d.rev, &d.recovery_slot)))

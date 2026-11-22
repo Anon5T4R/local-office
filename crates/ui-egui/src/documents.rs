@@ -1,5 +1,6 @@
-//! Several open documents. On the desktop each has a window of its own ([`crate::windows`]); the
-//! web app shows them in one window, which shows the session's active document. What the app
+//! Several open documents. On the desktop each has a window of its own ([`crate::windows`]); a
+//! backend that embeds the viewports shows them in one window, which shows the session's active
+//! document. What the app
 //! keeps about a document (AutoSave's file, comment drafts) follows the active one. In one
 //! window, the window's own state about the page (drags, menus, the composition…) starts afresh
 //! when the document changes ([`WordApp::sync_document`]; per-window state is listed in
@@ -318,7 +319,7 @@ mod tests {
         assert!(a.close_requested());
     }
 
-    /// In one window (the web app), a request an agent's command makes for a document that isn't
+    /// In one window (embedded viewports), a request an agent's command makes for a document that isn't
     /// shown never acts on the shown one: Print doesn't open Backstage over it.
     #[test]
     fn requests_for_a_document_not_shown_leave_the_window_alone() {

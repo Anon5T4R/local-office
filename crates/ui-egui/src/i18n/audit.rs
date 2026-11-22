@@ -577,7 +577,7 @@ fn disabled_reasons() -> std::collections::BTreeSet<String> {
     }
     let mut reasons = std::collections::BTreeSet::new();
     for body in bodies {
-        // `cfg!(target_arch = "wasm32")` names a target, not a reason.
+        // A `cfg!(…)` names a condition, not a reason.
         let mut code = body.to_string();
         while let Some(i) = code.find("cfg!(") {
             let len = balanced(&code[i + "cfg!".len()..], '(', ')').len();

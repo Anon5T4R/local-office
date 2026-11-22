@@ -27,10 +27,6 @@ base64 = { workspace = true }
 getrandom = { workspace = true }
 zeroize = { workspace = true }
 
-# The browser's `crypto.getRandomValues` for the salts and keys of encrypted saves.
-[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
-getrandom = { workspace = true, features = ["wasm_js"] }
-
 [dev-dependencies]
 localoffice-doc = { workspace = true, features = ["test-support"] }
 proptest = { workspace = true }

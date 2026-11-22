@@ -62,8 +62,6 @@ The first folder holding a matching pair wins:
 | macOS | `~/Library/Spelling`, `/Library/Spelling`, `/opt/homebrew/share/hunspell`, `/usr/local/share/hunspell`, `/Applications/LibreOffice.app/Contents/Resources/extensions/dict-*` |
 | Linux and BSD | `~/.local/share/hunspell`, `/usr/share/hunspell`, `/usr/share/myspell`, `/usr/share/myspell/dicts`, `/usr/local/share/hunspell`, `/usr/local/share/myspell`, LibreOffice's `share/extensions/dict-*` under `/usr/lib/libreoffice` or `/opt/libreoffice` |
 
-The web version can't read these folders, so these languages aren't spell-checked there.
-
 ## Example: Brazilian Portuguese (`pt_BR`)
 
 VERO, the Brazilian Portuguese dictionary LibreOffice ships, is available from the

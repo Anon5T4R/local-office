@@ -13,15 +13,8 @@ pub fn followable_url(url: &str) -> Option<String> {
     opened_form(url)
 }
 
-/// Web build: the browser's `window.open` reads the link itself and never opens a local file.
-#[cfg(target_arch = "wasm32")]
-fn opened_form(url: &str) -> Option<String> {
-    Some(url.to_string())
-}
-
-/// Desktop: the parsed, normalised URL, with a host for http/https. The opener (`webbrowser`)
+/// The parsed, normalised URL, with a host for http/https. The opener (`webbrowser`)
 /// reads any string `url` can't parse, such as `https://host:99999/`, as a local file path (#3732).
-#[cfg(not(target_arch = "wasm32"))]
 fn opened_form(url: &str) -> Option<String> {
     let parsed = url::Url::parse(url).ok()?;
     let ok = parsed.scheme() == "mailto" || parsed.host_str().is_some_and(|h| !h.is_empty());

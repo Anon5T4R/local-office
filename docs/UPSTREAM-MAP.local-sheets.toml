@@ -126,9 +126,3 @@ upstream = "apps/gridcraft-cli/**"
 local = "apps/localsheets-cli/**"
 strategy = "skip"
 note = "CLI renomeada; aplicar apenas se houver mudança de comportamento relevante"
-
-[[map]]
-upstream = "apps/gridcraft-web/**"
-local = "apps/localsheets-web/**"
-strategy = "skip"
-note = "build wasm renomeado; aplicar apenas se houver mudança de comportamento relevante"

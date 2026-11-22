@@ -24,7 +24,7 @@ pub const NOTCH_PX: f32 = 56.0;
 
 /// Whether to synthesise kinetic scrolling. macOS and Windows send their own momentum events
 /// (or report touchpads as line deltas), and browsers do their own; only Linux/BSD need it.
-const SYNTH_MOMENTUM: bool = !cfg!(any(target_os = "macos", target_os = "ios", target_os = "windows", target_arch = "wasm32"));
+const SYNTH_MOMENTUM: bool = !cfg!(any(target_os = "macos", target_os = "ios", target_os = "windows"));
 
 /// Longest frame time trusted for velocity and decay (a stall shouldn't fling the page).
 const MAX_DT: f32 = 0.1;
@@ -169,8 +169,8 @@ impl CanvasScroll {
     pub fn frame(&mut self, input: &egui::InputState, opts: &InputOptions, hovered: bool, notch: f32, page: f32, animate: bool) -> Vec2 {
         let notch = if notch.is_finite() { notch.clamp(1.0, 1000.0) } else { NOTCH_PX };
         let page = if page.is_finite() { page.clamp(0.0, 100_000.0) } else { 0.0 };
-        // Browsers report lines (Firefox: three per notch) where native platforms report notches.
-        let line = if cfg!(target_arch = "wasm32") { notch / 3.0 } else { notch };
+        // Native platforms report whole notches.
+        let line = notch;
         let dt = input.unstable_dt;
         let mut now = Vec2::ZERO;
         let mut touchpad = Vec2::ZERO;
@@ -190,10 +190,8 @@ impl CanvasScroll {
                     }
                     let d = axis_lock(if delta.is_finite() { *delta } else { Vec2::ZERO }, *modifiers, opts);
                     match unit {
-                        // Touchpads (and precise mice): 1:1. Browsers also report wheel notches in
-                        // points, so big jumps there still ease in, like egui does.
-                        MouseWheelUnit::Point if !cfg!(target_arch = "wasm32") || d.length() < 8.0 => touchpad += d,
-                        MouseWheelUnit::Point => self.pending += d,
+                        // Touchpads (and precise mice): 1:1.
+                        MouseWheelUnit::Point => touchpad += d,
                         // Whole notches ease in; fractional ones (X11/Windows touchpads, free-spinning
                         // wheels) are already smooth.
                         MouseWheelUnit::Line if d.x.fract() == 0.0 && d.y.fract() == 0.0 => {

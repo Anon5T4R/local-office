@@ -47,7 +47,6 @@ pub(crate) struct WindowUi {
     pub(crate) read_aloud_at: Option<localoffice_engine::doc::Pos>,
     pub(crate) awaiting_save: Option<AwaitingSave>,
     pub(crate) file_dialog: Option<file_dialogs::PendingDialog>,
-    #[cfg(not(target_arch = "wasm32"))]
     pub(crate) file_browser: crate::file_browser::State,
     pub(crate) info_editing: Option<(&'static str, u64)>,
     pub(crate) shown_document: u64,
@@ -116,7 +115,6 @@ impl WindowUi {
             read_aloud_at: None,
             awaiting_save: None,
             file_dialog: None,
-            #[cfg(not(target_arch = "wasm32"))]
             file_browser: Default::default(),
             info_editing: None,
             shown_document: document,
@@ -237,7 +235,6 @@ impl WordApp {
             read_aloud_at,
             awaiting_save,
             file_dialog,
-            #[cfg(not(target_arch = "wasm32"))]
             file_browser,
             info_editing,
             shown_document,
@@ -332,7 +329,6 @@ impl WordApp {
             read_aloud_at,
             awaiting_save,
             file_dialog,
-            #[cfg(not(target_arch = "wasm32"))]
             file_browser,
             info_editing,
             shown_document,

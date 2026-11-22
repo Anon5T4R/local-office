@@ -147,7 +147,6 @@ pub fn specs() -> Vec<CommandSpec> {
         CommandSpec::new("view.fullScreen", "Full Screen", "View › Window", |s, v| toggle(s, v, |x| &mut x.full_screen))
             .params(r#"{"value"?: bool}"#)
             .key(super::mac_or("Mod+Ctrl+F / F11", "F11"))
-            .when(full_screen_available)
             .pure(),
         CommandSpec::new("view.state", "View State", "View", |s, _| serde_json::to_value(&s.view).map_err(|e| CmdError::Failed(e.to_string())))
             .pure(),
@@ -168,11 +167,6 @@ pub fn specs() -> Vec<CommandSpec> {
         .params(r#"{"value"?: "arabic|hindi|context|system"}"#)
         .pure(),
     ]
-}
-
-/// The browser keeps full screen to itself (its own F11); the web app can't ask for it.
-fn full_screen_available(_: &Session) -> Option<&'static str> {
-    cfg!(target_arch = "wasm32").then_some("Use the browser's full screen (F11)")
 }
 
 fn mode(s: &mut Session, m: ViewMode, read: bool) -> CmdResult {

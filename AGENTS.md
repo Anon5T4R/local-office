@@ -17,7 +17,7 @@ Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de t
 
 ## Estrutura
 - `crates/` — engine e módulos (`localoffice-*`)
-- `apps/localoffice` — app desktop; `apps/localoffice-cli` — CLI/MCP; `apps/localoffice-web` — wasm
+- `apps/localoffice` — app desktop; `apps/localoffice-cli` — CLI/MCP
 - `libs/` — forks vendored: `craft-libs` (b926b5c), `egui` (6d518fc), `winit` (a517b38),
   `winprint.rs` (f084d35) e `winprint-gdi` (417ac3c - o craft-libs pina dois revs do
   winprint.rs; o gdi só existe no rev antigo), `local-ai` (BYOK — chave de API/config;
@@ -26,7 +26,7 @@ Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de t
   do craft-i18n @ 9205108), embutidos pelo `crates/ui-egui/build.rs`
 - `assets/craft-fonts/` — fontes CJK/árabe/etc. (craft-fonts @ b076417, build input
   `CRAFT_FONTS_DIR`)
-- `packaging/` — Windows (WiX/MSI), Linux (AppImage/deb/rpm/tar FHS com `install.sh`), Arch (PKGBUILD), macOS, web
+- `packaging/` — Windows (WiX/MSI), Linux (AppImage/deb/rpm/tar FHS com `install.sh`), Arch (PKGBUILD), macOS
 - `xtask/` — tarefas de build/CI (`cargo xtask ci`, `fmt`)
 - `scripts/check-mirror.sh` — confere as crates e os assets (`craft-fonts`) espelhados do `local-libs` contra a fonte (CI e `xtask ci`)
 
@@ -44,7 +44,7 @@ aceita o job (`{file, template, commands, save}`), uma lista de passos ou JSON L
 ```
 cargo build --locked          # debug
 cargo test --locked           # as fontes vendored entram sempre (.cargo/config.toml), igual ao CI
-cargo xtask ci                # o gate local: fmt, clippy, testes, i18n, assets, camadas, wasm,
+cargo xtask ci                # o gate local: fmt, clippy, testes, i18n, assets, camadas,
                               # cargo-deny e espelhos do local-libs
 packaging/windows/package.ps1 # MSI + portable (Windows)
 packaging/linux/package.sh    # AppImage/deb/rpm/tar (Linux)

@@ -127,7 +127,7 @@ Se um commit do upstream adiciona, remove ou atualiza uma dependência de crate 
 3. **Se aprovada**: adicione ao `Cargo.toml` do local-office (com `cfg` se for desktop-only, como o `url`), atualize o `Cargo.lock`, registre em `local-deps/DEPENDENCIES.md` e `local-deps/CHANGELOG-deps.md` (mesmo PR), e only então rode `cargo check --workspace --locked`.
 4. **Se rejeitada**: adapte o código local para não depender dela (ex: reimplementar a função) ou pule o commit daquele arquivo. Registre a recusa em `docs/UPSTREAM-SYNC.md` com o motivo.
 
-Exemplo já ocorrido: o #4652 upstream adiciona `url = "2.5"`. No local-office aplicamos a correção de segurança (links seguros), adicionamos `url` como dep direta só para desktop (`cfg(not(wasm32))`) e registramos no `local-deps` — porque a alternativa era continuar vulnerável à abertura de caminhos locais via links malformados.
+Exemplo já ocorrido: o #4652 upstream adiciona `url = "2.5"`. No local-office aplicamos a correção de segurança (links seguros), adicionamos `url` como dep direta e registramos no `local-deps` — porque a alternativa era continuar vulnerável à abertura de caminhos locais via links malformados.
 
 ## Automação (o que um script pode fazer sozinho)
 
