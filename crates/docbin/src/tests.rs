@@ -1781,7 +1781,7 @@ fn row_height_of_i16_min_does_not_overflow() {
 #[test]
 fn list_and_lfo_offsets_near_u32_max_are_safe() {
     // PlfLst / PlfLfo at fc = u32::MAX: offset sums like `at + 2 + cLst * 28` must saturate
-    // (they overflow on 32-bit targets such as wasm32).
+    // (they overflow on 32-bit targets).
     let fc = (2 * TEXT_FC) | 0x4000_0000;
     let far = u32::MAX - 1;
     let f = raw_piece_doc_with(&[0, 2], &[fc], b"a\r", 2, &[(73, far, 2), (74, far, 4)]);

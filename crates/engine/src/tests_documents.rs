@@ -81,7 +81,6 @@ fn undo_and_find_stay_with_their_document_across_switches() {
     assert_eq!(s.with_document(a, |s| text(s)).unwrap(), "Alpha");
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn open_replaces_an_untouched_blank_document_and_otherwise_opens_beside() {
     let dir = temp_dir("open");

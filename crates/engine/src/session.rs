@@ -587,8 +587,8 @@ pub struct Session {
     /// Preferences the front end saves between runs.
     pub prefs: Prefs,
     /// The system region (#838): the paper a new blank document starts on, the default
-    /// measurement unit and the decimal separator. The front end sets it from the platform (the
-    /// browser's locale on the web); headless sessions keep `en-US`. A region the user chose
+    /// measurement unit and the decimal separator. The front end sets it from the platform;
+    /// headless sessions keep `en-US`. A region the user chose
     /// ([`Prefs::region`]) wins: read it with [`Session::region`].
     pub system_region: localoffice_geom::Region,
     /// Custom keyboard shortcuts (`tools.customizeKeyboard`); the front end saves them too.
@@ -610,10 +610,8 @@ pub struct Session {
     /// file that was opened, cleared when the document is replaced.
     pub password: Option<crate::io::Password>,
     /// The recovery worker every open document's copy is kept through (desktop hosts only).
-    #[cfg(not(target_arch = "wasm32"))]
     pub(crate) recovery: Option<crate::recovery::Recovery>,
     /// The active document's recovery copy.
-    #[cfg(not(target_arch = "wasm32"))]
     pub(crate) recovery_slot: crate::recovery::Slot,
     /// More pictures and shapes selected along with the one the selection holds (Shift+click),
     /// for Group. Cleared by any edit or selection change other than adding to it.
@@ -882,7 +880,6 @@ impl Session {
             merge,
             math,
             password,
-            #[cfg(not(target_arch = "wasm32"))]
             recovery_slot,
             also_selected,
             column,
@@ -963,9 +960,7 @@ impl Session {
             editing_lang: None,
             read_aloud: Default::default(),
             password,
-            #[cfg(not(target_arch = "wasm32"))]
             recovery: None,
-            #[cfg(not(target_arch = "wasm32"))]
             recovery_slot,
             column,
             column_mode,
@@ -1640,10 +1635,7 @@ impl Session {
         self.go_back_step = 0;
         self.view.outline.collapsed.clear();
         // A copy the replaced document kept stays in the recovery list.
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            self.recovery_slot = Default::default();
-        }
+        self.recovery_slot = Default::default();
         self.reset_history();
         self.clear_versions();
         self.touch();
@@ -1756,10 +1748,8 @@ impl Session {
             math_normal_text: _,
             // The save password, like the file path: not an edit to the document.
             password: _,
-            #[cfg(not(target_arch = "wasm32"))]
-                recovery: _,
-            #[cfg(not(target_arch = "wasm32"))]
-                recovery_slot: _,
+            recovery: _,
+            recovery_slot: _,
             also_selected: _,
             // Column selection and a widened selection's ends, like `sel`'s shape: valid only while
             // `sel` matches them.

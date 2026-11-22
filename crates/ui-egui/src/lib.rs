@@ -47,7 +47,6 @@ pub mod dialogs_templates;
 pub mod documents;
 pub mod equation_tab;
 /// The built-in file browser, for desktops without a system file dialog (#576).
-#[cfg(not(target_arch = "wasm32"))]
 pub mod file_browser;
 pub mod file_dialogs;
 pub mod format_shape;
@@ -707,7 +706,6 @@ pub struct WordApp {
     /// The file dialog the host is showing, and what its answer is for ([`file_dialogs`]).
     file_dialog: Option<file_dialogs::PendingDialog>,
     /// The built-in file browser, when it is open, and the folder it showed last (#576).
-    #[cfg(not(target_arch = "wasm32"))]
     pub(crate) file_browser: file_browser::State,
     /// File › Info: the property field being typed in and the document revision after its last
     /// keystroke, so one visit's keystrokes make a single undo step (and anything else in
@@ -795,7 +793,6 @@ impl WordApp {
             file_dialog,
             info_editing,
             shown_document,
-            #[cfg(not(target_arch = "wasm32"))]
             file_browser,
             tab,
             backstage,
@@ -902,7 +899,6 @@ impl WordApp {
             file_dialog,
             info_editing,
             shown_document,
-            #[cfg(not(target_arch = "wasm32"))]
             file_browser,
         }
     }
@@ -2024,7 +2020,6 @@ impl WordApp {
             // The built-in file browser (#576), for when the system's file dialog doesn't show up
             // (desktop only): `purpose` is document (default), picture, recipients or save. A system
             // dialog still waiting for an answer is given up as cancelled.
-            #[cfg(not(target_arch = "wasm32"))]
             "ui.fileBrowser" => {
                 self.browse_builtin(s("purpose").unwrap_or("document"));
                 json!({"open": self.file_browser.open.is_some()})
@@ -2604,7 +2599,6 @@ impl WordApp {
     /// Files dropped on the native window. Raw input is taken only in the first UI pass: a
     /// hidden `run_logic` tick leaves the previous shown frame's events stale, and replaying a
     /// drop would open or insert it again.
-    #[cfg(not(target_arch = "wasm32"))]
     fn open_dropped_files(&mut self, files: Vec<egui::DroppedFileHandle>) {
         let before = self.session.document_id();
         let mut placed_picture = false;
@@ -2860,7 +2854,6 @@ impl WordApp {
     fn handle_ui_input_events(&mut self, ctx: &egui::Context) {
         // eframe does not preserve dropped files for a later frame, so a drop in the first two
         // passes would otherwise disappear.
-        #[cfg(not(target_arch = "wasm32"))]
         if ctx.current_pass_index() == 0 {
             let dropped = ctx.input_mut(|i| std::mem::take(&mut i.raw.dropped_files));
             if !dropped.is_empty() {
@@ -2938,7 +2931,6 @@ impl WordApp {
             return;
         }
         updates_ui::show(self, ctx);
-        #[cfg(not(target_arch = "wasm32"))]
         file_browser::show(self, ctx);
         colors::show(self, ctx);
         zotero::show_alert(self, ctx);
@@ -3035,7 +3027,6 @@ impl WordApp {
         if self.ui.backstage || self.dialog.is_some() || self.colors.is_some() {
             return;
         }
-        #[cfg(not(target_arch = "wasm32"))]
         if self.file_browser.open.is_some() {
             return;
         }
@@ -3664,7 +3655,6 @@ mod tests {
     /// File › Recover draws the recovered documents' names with the interface faces: a Chinese
     /// name there was a row of boxes because nothing asked for the CJK UI font. (The Recent list
     /// has its own, `ensure_recent_fonts`.)
-    #[cfg(not(target_arch = "wasm32"))]
     #[test]
     fn non_latin_names_in_the_recover_list_get_a_face() {
         let with_copy = |name: &str| {
@@ -9948,11 +9938,9 @@ mod tests {
         }
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     #[derive(Debug)]
     struct DroppedText(std::path::PathBuf);
 
-    #[cfg(not(target_arch = "wasm32"))]
     impl egui::DroppedFile for DroppedText {
         /// Exposes the dropped file's path.
         fn path(&self) -> &std::path::Path {
@@ -9966,7 +9954,6 @@ mod tests {
 
     /// A file dropped in the first two font-warm-up passes is taken before the early return;
     /// eframe does not preserve dropped files for a later frame.
-    #[cfg(not(target_arch = "wasm32"))]
     #[test]
     fn a_drop_before_font_warm_up_is_not_lost() {
         let (mut app, ctx) = (app(), egui::Context::default());

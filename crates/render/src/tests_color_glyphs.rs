@@ -18,7 +18,6 @@ fn colourful(p: [u8; 4]) -> bool {
 
 /// System-dependent: skips (passes) when no colour emoji font is installed. Each emoji glyph's box
 /// on the rendered page holds coloured pixels.
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn emoji_are_drawn_in_colour() {
     let Some((img, boxes)) = emoji_page(&RenderOptions::default()) else { return };
@@ -30,7 +29,6 @@ fn emoji_are_drawn_in_colour() {
 
 /// #2534: text effects (drawn from outlines) leave colour emoji, which have none, drawn in colour.
 /// Skips like [`emoji_are_drawn_in_colour`].
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn emoji_with_text_effects_stay_drawn() {
     let cp = localoffice_doc::CharProps { outline: Some(true), shadow: Some(true), ..Default::default() };
@@ -44,7 +42,6 @@ fn emoji_with_text_effects_stay_drawn() {
 /// A dark page (View › Switch Modes) doesn't invert the emoji: they keep the font's colours, the
 /// same as pictures. The pixels well inside each emoji (coloured with coloured neighbours, so the
 /// paper doesn't show through) match the light page's. Skips like [`emoji_are_drawn_in_colour`].
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn emoji_keep_their_colours_on_a_dark_page() {
     let Some((light, boxes)) = emoji_page(&RenderOptions::default()) else { return };
@@ -66,13 +63,11 @@ fn emoji_keep_their_colours_on_a_dark_page() {
 
 /// "Emoji test: 🧠 brain, ✅ check." rendered at 2x with `opts`, and each emoji glyph's box in
 /// pixels; None (the test skips) when no colour emoji font is installed.
-#[cfg(not(target_arch = "wasm32"))]
 fn emoji_page(opts: &RenderOptions) -> Option<(Rendered, Vec<(u32, u32, u32, u32)>)> {
     emoji_page_with(opts, localoffice_doc::CharProps::default())
 }
 
 /// [`emoji_page`] with the text formatted `cp`.
-#[cfg(not(target_arch = "wasm32"))]
 fn emoji_page_with(opts: &RenderOptions, cp: localoffice_doc::CharProps) -> Option<(Rendered, Vec<(u32, u32, u32, u32)>)> {
     let has_colour_font = FontDb::global().fallback_for('🧠', u32::MAX).is_some_and(|f| COLOR_EMOJI.contains(&f.family.as_str()));
     if !has_colour_font {

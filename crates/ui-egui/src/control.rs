@@ -1066,16 +1066,11 @@ pub fn save_screenshot(image: &egui::ColorImage, path: Option<&str>, token: u64)
         }
         return json!({"ok": true, "request": token, "result": {"png": encoded, "width": w, "height": h}});
     };
-    #[cfg(target_arch = "wasm32")]
-    let _ = (&png, path);
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        if !path.to_ascii_lowercase().ends_with(".png") {
-            return error_reply(token, format!("{path}: a screenshot path must end in .png"));
-        }
-        if let Err(e) = localoffice_engine::io::write_file(path, &png) {
-            return error_reply(token, e);
-        }
+    if !path.to_ascii_lowercase().ends_with(".png") {
+        return error_reply(token, format!("{path}: a screenshot path must end in .png"));
+    }
+    if let Err(e) = localoffice_engine::io::write_file(path, &png) {
+        return error_reply(token, e);
     }
     json!({"ok": true, "request": token, "result": {"path": path, "width": w, "height": h}})
 }

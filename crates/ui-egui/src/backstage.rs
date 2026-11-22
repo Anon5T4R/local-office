@@ -589,7 +589,7 @@ fn open_page(app: &mut WordApp, ui: &mut Ui) {
     }
     // Linux and the BSDs (#576): the system dialog needs a file chooser portal or zenity; when it
     // doesn't show up, LocalOffice's own browser is always one click away.
-    #[cfg(all(unix, not(target_os = "macos"), not(target_arch = "wasm32")))]
+    #[cfg(all(unix, not(target_os = "macos")))]
     if ui
         .button(egui::RichText::new(tl!("Browse in Local Word…")).font(medium(14.0)))
         .on_hover_text(tl!("Open a file with Local Word's own browser when the system file dialog doesn't appear."))
@@ -790,7 +790,6 @@ mod tests {
     /// #2938: opening a deleted file from Recent keeps File open and reports the error instead of
     /// closing it on a greyed-out window.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn opening_a_missing_recent_file_keeps_file_open_with_the_error() {
         let mut app = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), Services::default());
         app.ui.backstage = true;
@@ -811,7 +810,6 @@ mod tests {
         assert!(full.x < windowed.x);
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn recovery_fixture() -> (WordApp, std::path::PathBuf) {
         let root = std::env::temp_dir().join(format!(
             "localoffice-recovery-ui-{}-{}",
@@ -835,7 +833,6 @@ mod tests {
         (app, root)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn recovery_app() -> (WordApp, std::path::PathBuf) {
         let (mut app, root) = recovery_fixture();
         app.session.enable_recovery(root.clone(), std::sync::Arc::new(|| {})).unwrap();
@@ -844,7 +841,6 @@ mod tests {
 
     /// Hold discovery polling until the accessible control has dispatched its command.
     /// Warming up first keeps font installation independent of worker timing.
-    #[cfg(not(target_arch = "wasm32"))]
     fn pending_recovery_harness(
         app: WordApp,
         root: &std::path::Path,
@@ -867,7 +863,6 @@ mod tests {
         (h, poll)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn recovery_harness(app: WordApp) -> egui_kittest::Harness<'static, WordApp> {
         egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -879,7 +874,6 @@ mod tests {
         )
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn settle_recovery(h: &mut egui_kittest::Harness<'_, WordApp>) {
         let end = std::time::Instant::now() + std::time::Duration::from_secs(5);
         loop {
@@ -898,7 +892,6 @@ mod tests {
     /// #3243: the Recover page uses the app theme like every other Backstage page: no black
     /// fill, and its labels are not forced white (unreadable on the light theme).
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn recovery_page_follows_the_theme() {
         for theme in [egui::Theme::Light, egui::Theme::Dark] {
             let (mut app, root) = recovery_app();
@@ -946,7 +939,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn recovery_does_not_replace_an_explicit_new_document() {
         for template in ["Blank document", "Report"] {
             let (mut app, root) = recovery_fixture();
@@ -979,7 +971,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn recovery_does_not_replace_an_explicitly_opened_file() {
         let (mut app, root) = recovery_fixture();
         let path = root.join("Requested.txt");
@@ -1012,7 +1003,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn recovery_page_keeps_dismissed_copies_and_confirms_discard() {
         let (app, root) = recovery_app();
         let mut h = recovery_harness(app);
@@ -1041,7 +1031,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn recovery_restore_opens_beside_unsaved_work_without_autosave_permission() {
         let (app, root) = recovery_app();
         let mut h = recovery_harness(app);

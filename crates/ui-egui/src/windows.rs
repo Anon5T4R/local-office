@@ -64,7 +64,8 @@ pub(crate) struct Window {
 
 /// The app's windows. See the module documentation.
 pub struct Windows {
-    /// Separate native windows (desktop). Off, one window shows every document in turn (web).
+    /// Separate native windows (desktop). Off, one window shows every document in turn (backends
+    /// that embed the viewports, such as tests).
     native: bool,
     /// Every window, with its key, for the viewport driver: opening and focus order, positions.
     /// Lent to the driver while the windows draw.
@@ -100,7 +101,7 @@ impl Windows {
         let mut viewports = Viewports::new(Frame::Desktop);
         viewports.set_root(Some(id));
         Windows {
-            native: cfg!(not(target_arch = "wasm32")),
+            native: true,
             list,
             viewports: Some(viewports),
             open: vec![Window { key: 1, id: Some(id), doc, ui: None, requests: Vec::new(), title: String::new(), view: None }],
@@ -121,7 +122,7 @@ impl Windows {
         self.native
     }
 
-    /// One window for every document, as in the web app.
+    /// One window for every document, as when the viewports are embedded.
     #[cfg(test)]
     pub(crate) fn single(&mut self) {
         self.native = false;

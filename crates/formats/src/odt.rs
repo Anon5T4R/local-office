@@ -818,19 +818,10 @@ fn now_iso() -> String {
     format!("{y:04}-{m:02}-{d:02}T{:02}:{:02}:{:02}Z", secs / 3600, secs / 60 % 60, secs % 60)
 }
 
-/// Seconds since the Unix epoch: the system clock, or the browser's on the web.
+/// Seconds since the Unix epoch.
 fn now_unix() -> i64 {
-    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-    {
-        use std::time::{SystemTime, UNIX_EPOCH};
-        SystemTime::now().duration_since(UNIX_EPOCH).ok().and_then(|d| i64::try_from(d.as_secs()).ok()).unwrap_or(0)
-    }
-    // `SystemTime::now()` panics on wasm32-unknown-unknown, so ask the browser's clock.
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-    {
-        let ms = js_sys::Date::now();
-        if ms.is_finite() && ms > 0.0 { (ms / 1000.0) as i64 } else { 0 }
-    }
+    use std::time::{SystemTime, UNIX_EPOCH};
+    SystemTime::now().duration_since(UNIX_EPOCH).ok().and_then(|d| i64::try_from(d.as_secs()).ok()).unwrap_or(0)
 }
 
 /// `style:columns` (ODF 1.3 §17.12) of equal columns with their gap and, when on, the line between.

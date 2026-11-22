@@ -37,19 +37,13 @@ log = { workspace = true }
 web-time = { workspace = true }
 # Pictures pasted from the system clipboard arrive as pixels and are inserted as PNG (#45).
 image = { workspace = true }
-# The system's preferred interface languages (#8) and region (#838). Native: OS APIs; wasm:
-# the browser's languages (`js`).
-sys-locale = { version = "0.3", features = ["js"] }
+# The system's preferred interface languages (#8) and region (#838).
+sys-locale = { version = "0.3" }
 
-# Comment times in the user's own time zone (`local_time.rs`); the web app asks the browser.
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# Comment times in the user's own time zone (`local_time.rs`).
 chrono = { version = "0.4.45", default-features = false, features = ["clock"] }
 craft-ai-ui = { workspace = true }
 craft-update = { workspace = true }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-# The browser clock (`SystemTime::now()`/`Instant::now()` panic on wasm32).
-js-sys = "0.3"
 
 [dev-dependencies]
 cfb = { workspace = true }

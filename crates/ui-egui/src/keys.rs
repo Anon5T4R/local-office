@@ -875,7 +875,6 @@ fn type_text(app: &mut WordApp, text: &str, ime: bool) {
     // insert has no provenance at all: it must not fabricate an AutoFormat change or receipt.
     let quote = text == "\"" || text == "'";
     outcome.transformed |= quote && !inserted_literal_at(app, text, &start);
-    note_automatic_change(app, outcome);
     if let Some(before) = before {
         let after = ime_stamp(app);
         publish_ime_receipt(app, before, after, outcome);
@@ -1101,16 +1100,6 @@ fn publish_ime_receipt(app: &mut WordApp, before: egui::ImeMutationStamp, after:
         ImeProof::NoMutation => {}
         ImeProof::UnprovenMutation => note_ime_application_change(app),
         ImeProof::Certified => note_ime_receipt(app, before, after),
-    }
-}
-
-/// AutoCorrect or AutoFormat just changed the text around the caret. The web's text agent still
-/// holds the text as typed and counts its `DeleteSurrounding` from that, so it is asked to start
-/// afresh (`canvas::ime_reset`). The caller passes the engine's per-command outcome; an undo label
-/// from an earlier step cannot make an unrelated literal commit look transformed.
-fn note_automatic_change(app: &mut WordApp, outcome: ImeEditOutcome) {
-    if outcome.transformed {
-        app.canvas.ime_reset = true;
     }
 }
 
@@ -2251,20 +2240,6 @@ mod tests {
         assert_eq!(body(&a), "a");
     }
 
-    /// An automatic change while typing (AutoCorrect `(c)` -> `©`) changes the text behind the
-    /// web's text agent, so its later counts would be wrong: the page asks it to start afresh.
-    #[test]
-    fn automatic_change_asks_the_input_method_to_start_afresh() {
-        let (ctx, mut a) = alt_frame_app();
-        alt_frame(&ctx, &mut a, vec![egui::Event::Text("Word".into())]);
-        alt_frame(&ctx, &mut a, vec![egui::Event::Text(" ".into())]);
-        assert!(!a.canvas.ime_reset, "plain typing keeps the agent's text");
-        alt_frame(&ctx, &mut a, vec![egui::Event::Text("(c)".into())]);
-        alt_frame(&ctx, &mut a, vec![egui::Event::Text(" ".into())]);
-        assert_eq!(body(&a), "Word \u{a9} ");
-        assert!(a.canvas.ime_reset, "AutoCorrect changed the text");
-    }
-
     /// Both sides of one `DeleteSurrounding` are one request: when the second `text.backspace`
     /// is refused (here by a content control locked against editing), the first half is rolled
     /// back and no rewrite or receipt is promised.
@@ -2320,7 +2295,6 @@ mod tests {
             .expect("the locked control");
         a.session.sel = localoffice_engine::Selection::caret(locked.content_start());
         a.session.pending = None;
-        a.canvas.ime_reset = false;
         let _ = a.session.take_pending_ime_application_change();
         let depth = a.session.undo_depth();
         alt_frame(&ctx, &mut a, vec![surround(1, 0), egui::Event::Ime(egui::ImeEvent::Commit("\"".into()))]);
@@ -2338,7 +2312,6 @@ mod tests {
         assert_eq!(a.session.pending, None, "the refused replacement leaves no pending formatting from the erased text");
         assert!(a.canvas.ime_join_text.is_none(), "the refused replacement promises no rewrite");
         assert!(a.canvas.ime_interrupt_now, "the platform's stale surrounding snapshot is interrupted");
-        assert!(!a.canvas.ime_reset, "a refused commit is not an AutoFormat change");
         assert!(!a.session.take_pending_ime_application_change(), "no application-origin receipt is fabricated");
     }
 

@@ -11,7 +11,7 @@
 use egui::{CursorIcon, Event, Key, PointerButton, Pos2, Stroke, Vec2, vec2};
 
 /// Where the gesture exists at all (see the module docs).
-const SUPPORTED: bool = !cfg!(any(target_os = "macos", target_os = "ios", target_arch = "wasm32"));
+const SUPPORTED: bool = !cfg!(any(target_os = "macos", target_os = "ios"));
 
 /// Pointer distance (screen points) around the anchor that doesn't scroll.
 const DEAD_ZONE: f32 = 15.0;

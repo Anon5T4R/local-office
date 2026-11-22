@@ -11,17 +11,13 @@ pub struct RecoveryInfo {
     pub saved_at: String,
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 mod desktop;
-#[cfg(not(target_arch = "wasm32"))]
 use desktop::{Applied, Request};
-#[cfg(not(target_arch = "wasm32"))]
 pub(crate) use desktop::{DocRecovery, Recovery, Slot};
 
 impl Session {
     /// The desktop host supplies the profile folder and a thread-safe wakeup.
-    /// Headless sessions and the browser never write recovery files implicitly.
-    #[cfg(not(target_arch = "wasm32"))]
+    /// Headless sessions never write recovery files implicitly.
     pub fn enable_recovery(&mut self, root: std::path::PathBuf, wake: std::sync::Arc<dyn Fn() + Send + Sync>) -> Result<(), String> {
         self.recovery = Some(Recovery::start(root, wake)?);
         Ok(())
@@ -29,7 +25,6 @@ impl Session {
     /// Copies left by an earlier run (or another window's documents that have closed), newest
     /// first. The copies this session's open documents keep are not listed: they are not lost.
     pub fn recovery_documents(&self) -> Vec<RecoveryInfo> {
-        #[cfg(not(target_arch = "wasm32"))]
         if let Some(r) = &self.recovery {
             let held = |id: &str| self.recovery_slots().any(|(_, _, s)| s.id.as_deref() == Some(id)) || r.closing().any(|c| c == id);
             return r.documents.iter().filter(|d| !held(&d.id)).cloned().collect();
@@ -37,21 +32,18 @@ impl Session {
         Vec::new()
     }
     pub fn recovery_ready(&self) -> bool {
-        #[cfg(not(target_arch = "wasm32"))]
         if let Some(r) = &self.recovery {
             return r.ready;
         }
         false
     }
     pub fn recovery_busy(&self) -> bool {
-        #[cfg(not(target_arch = "wasm32"))]
         if let Some(r) = &self.recovery {
             return r.busy;
         }
         false
     }
     pub fn recovery_error(&self) -> Option<&str> {
-        #[cfg(not(target_arch = "wasm32"))]
         if let Some(r) = &self.recovery {
             return r.error.as_deref();
         }
@@ -62,7 +54,6 @@ impl Session {
     /// active: a frame compares each document's revision and timer, and clones a document only
     /// when its copy is due.
     pub fn recovery_tick(&mut self) {
-        #[cfg(not(target_arch = "wasm32"))]
         {
             let Some(mut r) = self.recovery.take() else { return };
             if let Some(e) = r.receive(false) {
@@ -78,7 +69,6 @@ impl Session {
             self.recovery = Some(r);
         }
     }
-    #[cfg(not(target_arch = "wasm32"))]
     fn apply_recovery(&mut self, r: &mut Recovery, e: desktop::Event) {
         match r.apply(e) {
             // Opened by the next tick, never in the middle of a command.
@@ -98,7 +88,6 @@ impl Session {
     /// A restored copy opens as another document, or replaces the untouched blank document that
     /// asked for it once that document is active, so no work is ever replaced. The restored
     /// document keeps its copy in the record it came from.
-    #[cfg(not(target_arch = "wasm32"))]
     fn open_held_restore(&mut self, r: &mut Recovery) {
         let Some((_, request)) = &r.held else { return };
         let request = *request;
@@ -120,7 +109,6 @@ impl Session {
         self.recovery_slot.adopt(id, self.rev());
     }
     pub fn recovery_wait(&self) -> Option<std::time::Duration> {
-        #[cfg(not(target_arch = "wasm32"))]
         if let Some(r) = &self.recovery {
             return r.wait(self.recovery_slots());
         }
@@ -134,7 +122,6 @@ impl Session {
     /// removed, so the next launch wrongly offers to recover a document that was in fact saved
     /// cleanly.
     pub fn finish_recovery(&mut self) {
-        #[cfg(not(target_arch = "wasm32"))]
         if let Some(mut r) = self.recovery.take() {
             if let Some(e) = r.receive(true) {
                 self.apply_recovery(&mut r, e);
@@ -156,7 +143,6 @@ impl Session {
     /// The user discarded the active document's unsaved changes without closing it (Don't Save
     /// when quitting): its recovery copy goes too, and another is made only after a further edit.
     pub fn discard_recovery_copy(&mut self) {
-        #[cfg(not(target_arch = "wasm32"))]
         if let Some(r) = &mut self.recovery
             && let Some(id) = self.recovery_slot.id.take()
         {
@@ -167,7 +153,6 @@ impl Session {
     /// Only an explicit protect/save action waits for the worker and removes plaintext copies.
     /// A failure prevents applying the password; typing never waits.
     pub(crate) fn clear_recovery_before_password(&mut self) -> Result<(), CmdError> {
-        #[cfg(not(target_arch = "wasm32"))]
         if let Some(mut r) = self.recovery.take() {
             let result = self.purge_recovery(&mut r);
             self.recovery = Some(r);
@@ -177,7 +162,6 @@ impl Session {
     }
     /// Waits out the job under way (it may be this document's copy being written), then deletes
     /// the active document's copy.
-    #[cfg(not(target_arch = "wasm32"))]
     fn purge_recovery(&mut self, r: &mut Recovery) -> Result<(), String> {
         if let Some(e) = r.receive(true) {
             self.apply_recovery(r, e);
@@ -198,29 +182,24 @@ impl Session {
             return Err(CmdError::Params("choose restore or discard".into()));
         }
         if restore.is_some() || discard.is_some() || v.get("refresh").is_some() {
-            #[cfg(not(target_arch = "wasm32"))]
-            {
-                let request =
-                    Request { document: self.document_id(), revision: self.rev(), replace: self.is_untouched_blank() && self.password.is_none() };
-                // Only listed copies: never one an open document keeps.
-                let listed = self.recovery_documents();
-                let known = |id: Option<&str>, what: &str| -> Result<String, CmdError> {
-                    let id = id.ok_or_else(|| CmdError::Params(format!("{what} must be a recovery id")))?;
-                    if listed.iter().any(|d| d.id == id) { Ok(id.to_string()) } else { Err(CmdError::Failed("no such recovery copy".into())) }
-                };
-                let r = self.recovery.as_mut().ok_or_else(|| CmdError::Disabled("local recovery requires the desktop host".into()))?;
-                if let Some(id) = restore {
-                    r.restore(&known(id.as_str(), "restore")?, request).map_err(CmdError::Failed)?;
-                } else if let Some(id) = discard {
-                    r.discard(&known(id.as_str(), "discard")?).map_err(CmdError::Failed)?;
-                } else if v.get("refresh").and_then(Value::as_bool) == Some(true) {
-                    r.refresh().map_err(CmdError::Failed)?;
-                } else {
-                    return Err(CmdError::Params("refresh must be true".into()));
-                }
+            let request =
+                Request { document: self.document_id(), revision: self.rev(), replace: self.is_untouched_blank() && self.password.is_none() };
+            // Only listed copies: never one an open document keeps.
+            let listed = self.recovery_documents();
+            let known = |id: Option<&str>, what: &str| -> Result<String, CmdError> {
+                let id = id.ok_or_else(|| CmdError::Params(format!("{what} must be a recovery id")))?;
+                if listed.iter().any(|d| d.id == id) { Ok(id.to_string()) } else { Err(CmdError::Failed("no such recovery copy".into())) }
+            };
+            let r = self.recovery.as_mut().ok_or_else(|| CmdError::Disabled("local recovery requires the desktop host".into()))?;
+            if let Some(id) = restore {
+                r.restore(&known(id.as_str(), "restore")?, request).map_err(CmdError::Failed)?;
+            } else if let Some(id) = discard {
+                r.discard(&known(id.as_str(), "discard")?).map_err(CmdError::Failed)?;
+            } else if v.get("refresh").and_then(Value::as_bool) == Some(true) {
+                r.refresh().map_err(CmdError::Failed)?;
+            } else {
+                return Err(CmdError::Params("refresh must be true".into()));
             }
-            #[cfg(target_arch = "wasm32")]
-            return Err(CmdError::Disabled("local recovery is available on desktop only".into()));
         }
         Ok(
             json!({"enabled": self.recovery_ready(), "busy": self.recovery_busy(), "documents": self.recovery_documents(), "error": self.recovery_error()}),

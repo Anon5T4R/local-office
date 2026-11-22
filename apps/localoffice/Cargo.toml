@@ -24,6 +24,18 @@ egui = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }
 chrono = { workspace = true }
+craft-print = { path = "../../libs/craft-libs/crates/print/" }
+rfd = { workspace = true }
+# Waits for an `rfd::AsyncFileDialog` on a background thread (the dialogs don't block the UI, #94);
+# rfd itself already depends on it.
+pollster = "1"
+# Pictures and copied files on the system clipboard (#45); egui's paste only carries text. Already
+# in the build through egui-winit, with the same features.
+arboard = { workspace = true, features = ["image-data"] }
+# The control server's random key.
+getrandom = "0.3"
+# Linux: the desktop's light/dark choice for the System theme (inert elsewhere).
+craft-desktop-theme = { workspace = true }
 
 [build-dependencies]
 # Icon + VERSIONINFO for localoffice.exe; build.rs only uses it when the target is Windows.
@@ -71,20 +83,6 @@ windows = { version = "0.62", features = ["UI_ViewManagement", "System_UserProfi
 # The clipboard's "Rich Text Format" and the names of its formats (#687, #833), which arboard
 # doesn't read. Already in the build through arboard, at this version.
 clipboard-win = { version = "5.4", features = ["std"] }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-craft-print = { path = "../../libs/craft-libs/crates/print/" }
-rfd = { workspace = true }
-# Waits for an `rfd::AsyncFileDialog` on a background thread (the dialogs don't block the UI, #94);
-# rfd itself already depends on it.
-pollster = "1"
-# Pictures and copied files on the system clipboard (#45); egui's paste only carries text. Already
-# in the build through egui-winit, with the same features.
-arboard = { workspace = true, features = ["image-data"] }
-# The control server's random key.
-getrandom = "0.3"
-# Linux: the desktop's light/dark choice for the System theme (inert elsewhere).
-craft-desktop-theme = { workspace = true }
 
 [target.'cfg(windows)'.dependencies]
 craft-update = { workspace = true }

@@ -592,12 +592,9 @@ fn advanced(app: &mut WordApp, ui: &mut Ui) {
     {
         let _ = app.run("ui.caretAnimation", json!({"value": caret}));
     }
-    // The web app has no folders to name.
-    if !cfg!(target_arch = "wasm32") {
-        ui.add_space(8.0);
-        section(ui, "File locations");
-        templates_folder(app, ui);
-    }
+    ui.add_space(8.0);
+    section(ui, "File locations");
+    templates_folder(app, ui);
     ui.add_space(8.0);
     section(ui, "Customize");
     ui.horizontal(|ui| {

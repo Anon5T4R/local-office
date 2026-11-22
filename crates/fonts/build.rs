@@ -1,11 +1,9 @@
 //! Optional craft-fonts build input (https://github.com/storytold/craft-fonts, recipe from its
 //! `docs/integration.md`). With `CRAFT_FONTS_DIR=<checkout>` the fonts in its
-//! `fonts/manifest.txt` are embedded as `CRAFT_FONTS`; unset, `CRAFT_FONTS` is empty. Web
-//! (wasm32) builds embed only the Georgian interface face (about 230 KB), to stay within the web
-//! size budget; the Japanese one is 4.7 MB. With `CRAFT_FONTS_REQUIRED` (releases), a native
-//! build also fails when the checkout has no font for a CJK interface language (Japanese,
-//! Simplified Chinese), as an outdated pin once did (#241). It only reads the local checkout: no
-//! network.
+//! `fonts/manifest.txt` are embedded as `CRAFT_FONTS`; unset, `CRAFT_FONTS` is empty.
+//! With `CRAFT_FONTS_REQUIRED` (releases), the build also fails when the checkout has no font
+//! for a CJK interface language (Japanese, Simplified Chinese), as an outdated pin once did
+//! (#241). It only reads the local checkout: no network.
 use std::fmt::Write as _;
 use std::path::PathBuf;
 
@@ -19,8 +17,7 @@ fn main() {
                 src.push_str(&entries);
                 // Each CJK interface language needs its own face: without the Chinese one, Chinese
                 // menus fall back to the Japanese face and show boxes for simplified hanzi (#241).
-                let wasm = std::env::var("CARGO_CFG_TARGET_ARCH").is_ok_and(|a| a == "wasm32");
-                if std::env::var_os("CRAFT_FONTS_REQUIRED").is_some() && !wasm {
+                if std::env::var_os("CRAFT_FONTS_REQUIRED").is_some() {
                     for s in REQUIRED_SCRIPTS.iter().filter(|s| !covered.iter().any(|c| c == *s)) {
                         println!("cargo::error=CRAFT_FONTS_DIR={}: no {s} font in fonts/manifest.txt (craft-fonts too old?)", dir.display());
                     }
@@ -48,7 +45,6 @@ fn craft_fonts(dir: &std::path::Path) -> Result<(String, Vec<String>), String> {
     let manifest = dir.join("fonts/manifest.txt");
     println!("cargo::rerun-if-changed={}", manifest.display());
     let text = std::fs::read_to_string(&manifest).map_err(|e| format!("{}: {e}", manifest.display()))?;
-    let wasm = std::env::var("CARGO_CFG_TARGET_ARCH").is_ok_and(|a| a == "wasm32");
     let mut out = String::new();
     let mut covered = Vec::new();
     for line in text.lines().map(str::trim).filter(|l| !l.is_empty() && !l.starts_with('#')) {
@@ -56,9 +52,6 @@ fn craft_fonts(dir: &std::path::Path) -> Result<(String, Vec<String>), String> {
         let [family, style, file, scripts, ..] = f.as_slice() else {
             return Err(format!("malformed manifest line: {line}"));
         };
-        if wasm && !scripts.split(',').any(|s| s.trim() == "Geor") {
-            continue;
-        }
         let path = dir.join(file).canonicalize().map_err(|e| format!("{file}: {e}"))?;
         println!("cargo::rerun-if-changed={}", path.display());
         covered.extend(scripts.split(',').map(|s| s.trim().to_string()));

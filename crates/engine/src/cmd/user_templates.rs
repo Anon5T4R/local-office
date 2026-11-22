@@ -23,15 +23,12 @@ pub const MAX_TEMPLATES: usize = 500;
 /// Most category folders looked into.
 pub const MAX_CATEGORIES: usize = 64;
 /// Most directory entries looked at in one folder.
-#[cfg(not(target_arch = "wasm32"))]
 const MAX_ENTRIES: usize = 10_000;
 /// Longest folder path taken, in bytes.
 const MAX_DIR: usize = 32 * 1024;
 /// Largest template whose title is read (bigger ones are listed by file name).
-#[cfg(not(target_arch = "wasm32"))]
 const MAX_TITLE_FILE: u64 = 64 << 20;
 /// Most bytes of the core properties part read for the title.
-#[cfg(not(target_arch = "wasm32"))]
 const MAX_CORE_XML: u64 = 64 << 10;
 
 pub fn specs() -> Vec<CommandSpec> {
@@ -100,7 +97,6 @@ pub fn check_dir(dir: &str) -> Result<(), CmdError> {
 }
 
 /// The personal templates in `dir` (see the module docs).
-#[cfg(not(target_arch = "wasm32"))]
 pub fn list_templates(dir: &str) -> Result<Listing, CmdError> {
     use std::path::Path;
     check_dir(dir)?;
@@ -159,15 +155,8 @@ pub fn list_templates(dir: &str) -> Result<Listing, CmdError> {
     Ok(out)
 }
 
-#[cfg(target_arch = "wasm32")]
-pub fn list_templates(dir: &str) -> Result<Listing, CmdError> {
-    check_dir(dir)?;
-    Err(CmdError::Failed("templates folders can't be listed on the web".into()))
-}
-
 /// The template files and the folders directly in `dir` (hidden ones left out), and whether the
 /// entry cap cut the listing short. An unreadable folder has none.
-#[cfg(not(target_arch = "wasm32"))]
 fn entries(dir: &std::path::Path) -> (Vec<crate::io::DirEntry>, Vec<std::path::PathBuf>, bool) {
     let Ok((list, cut)) = crate::io::list_dir(dir, MAX_ENTRIES) else { return (Vec::new(), Vec::new(), false) };
     let (mut files, mut folders) = (Vec::new(), Vec::new());
@@ -187,7 +176,6 @@ fn entries(dir: &std::path::Path) -> (Vec<crate::io::DirEntry>, Vec<std::path::P
 /// The name a template shows: its file name without the template extension, every one of them
 /// (`Contract.dotm.dotx`, as older Save as Template made, is `Contract`); the whole name if
 /// nothing would be left.
-#[cfg(not(target_arch = "wasm32"))]
 fn label_of(name: &str) -> String {
     let mut label = name;
     while is_template_name(label) {
@@ -206,7 +194,6 @@ pub fn is_template_name(name: &str) -> bool {
 
 /// The template's title from its core properties, read from the package's directory and at most
 /// [`MAX_CORE_XML`] bytes of the part; `None` for anything else.
-#[cfg(not(target_arch = "wasm32"))]
 fn title_of(path: &std::path::Path) -> Option<String> {
     let title = crate::io::package_title(path, MAX_TITLE_FILE, MAX_CORE_XML)?;
     // One line of a sensible length for a gallery caption.
@@ -357,7 +344,6 @@ mod tests {
     /// .dotx and .dotm templates show their names the same way, without the extension; two that
     /// would look alike in one category show their file names.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn labels_drop_the_extension_alike_and_tell_twins_apart() {
         let d = scratch("labels");
         template(&d.join("Service contract.dotm"), "a", "");

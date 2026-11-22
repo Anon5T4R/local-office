@@ -180,12 +180,8 @@ pub struct CanvasState {
     /// sends next replaces it, keeps the formatting and joins the same undo step
     /// (`keys::delete_surrounding`, #1480).
     pub(crate) ime_join_text: Option<localoffice_doc::props::CharProps>,
-    /// An automatic change (AutoCorrect, AutoFormat) altered the text around the caret: the
-    /// input method is asked to start afresh (#1480).
-    pub(crate) ime_reset: bool,
     /// A replacement or an unsupported IME mutation means the next observation must interrupt
-    /// the live composition, whatever the surrounding text looks like. Unlike [`Self::ime_reset`]
-    /// this is not limited to the web text agent.
+    /// the live composition, whatever the surrounding text looks like.
     pub(crate) ime_interrupt_now: bool,
     /// A nonempty preedit lost its body/equation target. The next canvas event batch must
     /// reject that old composition's queued replacement before dispatching any mutation.
@@ -237,7 +233,6 @@ impl CanvasState {
     /// going to the caret.
     pub(crate) fn show_other_document(&mut self, seen: bool) {
         let old = std::mem::take(self);
-        let ime_reset = !old.ime_preedit.is_empty() || old.ime_preedit_range.is_some();
         *self = CanvasState {
             last_highlight: old.last_highlight,
             last_font_color: old.last_font_color,
@@ -249,7 +244,6 @@ impl CanvasState {
             read_viewport: old.read_viewport,
             web_viewport: old.web_viewport,
             scroll_to_caret: !seen,
-            ime_reset,
             ..CanvasState::default()
         };
     }
@@ -340,7 +334,6 @@ impl Default for CanvasState {
             paste_mods: None,
             swallow_text: false,
             ime_join_text: None,
-            ime_reset: false,
             ime_interrupt_now: false,
             ime_interrupted_preedit: false,
             ime_window_cache: None,
@@ -720,8 +713,7 @@ fn read_wheel_turns(events: &[egui::Event], hovered: bool, accum: &mut f32) -> i
             let d = delta.x + delta.y;
             match unit {
                 egui::MouseWheelUnit::Line => {
-                    // Browsers typically emit three lines for one physical notch.
-                    let n = if cfg!(target_arch = "wasm32") { (d / 3.0).round() } else { d.round() };
+                    let n = d.round();
                     turns = turns.saturating_sub(n.clamp(-5.0, 5.0) as i32);
                     *accum = 0.0;
                 }
@@ -1644,13 +1636,9 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
         }
         // Caret.
         let focused = resp.has_focus() || app.canvas.focused;
-        // After an automatic change the web's text agent starts afresh
-        // (`keys::note_automatic_change`) — only there, because on X11 an interrupt recreates the
-        // input context and fcitx drops later keys (#1169). A body replacement interrupts on every
-        // platform: the composition belonged to the text that was swapped out.
-        let ime_reset = std::mem::take(&mut app.canvas.ime_reset) && cfg!(target_arch = "wasm32") && app.canvas.ime_preedit.is_empty();
-        let replaced = std::mem::take(&mut app.canvas.ime_interrupt_now);
-        ime_interrupt = ime_reset || replaced;
+        // A body replacement interrupts the composition on every platform: it belonged to the
+        // text that was swapped out.
+        ime_interrupt = std::mem::take(&mut app.canvas.ime_interrupt_now);
         // Editing an equation: frame it as Word does (a box as tall as its line, a grip at its
         // top left, an options strip at its right) and draw the caret inside it.
         let mut math_caret = false;

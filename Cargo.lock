@@ -2292,11 +2292,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd"
 dependencies = [
  "cfg-if",
- "js-sys",
  "libc",
  "r-efi 5.3.0",
  "wasip2",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -3529,7 +3527,6 @@ dependencies = [
  "encoding_rs",
  "getrandom 0.3.4",
  "image",
- "js-sys",
  "libc",
  "localoffice-doc",
  "localoffice-docbin",
@@ -3574,7 +3571,6 @@ dependencies = [
  "chrono",
  "encoding_rs",
  "image",
- "js-sys",
  "localoffice-doc",
  "localoffice-geom",
  "log",
@@ -3596,7 +3592,6 @@ name = "localoffice-layout"
 version = "0.11.41"
 dependencies = [
  "image",
- "js-sys",
  "kurbo 0.13.1",
  "localoffice-doc",
  "localoffice-fonts",
@@ -3641,7 +3636,6 @@ dependencies = [
  "hayro-interpret",
  "hayro-syntax",
  "image",
- "js-sys",
  "kurbo 0.13.1",
  "localoffice-doc",
  "localoffice-fonts",
@@ -3693,7 +3687,6 @@ dependencies = [
  "egui_extras",
  "egui_kittest",
  "image",
- "js-sys",
  "localoffice-ai",
  "localoffice-doc",
  "localoffice-engine",

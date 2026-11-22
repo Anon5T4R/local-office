@@ -529,7 +529,6 @@ fn auto_tag(doc: &Document, src: &Source) -> String {
 }
 
 /// The author of a source for matching untagged entries: the editor when there is no author.
-#[cfg(not(target_arch = "wasm32"))]
 fn by_author(x: &Source) -> &str {
     if x.author.is_empty() { x.editor.as_str() } else { x.author.as_str() }
 }
@@ -577,7 +576,6 @@ fn sources(s: &mut Session, v: &Value) -> CmdResult {
 }
 
 /// The largest bibliography sources file imported from disk.
-#[cfg(not(target_arch = "wasm32"))]
 const MAX_SOURCES_FILE: u64 = 32 << 20;
 
 /// Import the sources of a Word bibliography file (`b:Sources`: Word's own `Sources.xml`) into
@@ -585,57 +583,48 @@ const MAX_SOURCES_FILE: u64 = 32 << 20;
 /// edited source; a source with no tag is matched to an existing one by title and author, and
 /// otherwise gets a tag the way a new source does.
 fn import_sources(s: &mut Session, path: &str) -> Result<(), CmdError> {
-    #[cfg(target_arch = "wasm32")]
-    {
-        let _ = (s, path);
-        return Err(CmdError::Failed("reading files by path isn't available on the web".into()));
-    }
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        // Through `io`, which keeps automation inside its read root (#769).
-        let bytes = crate::io::read_file_capped(path, MAX_SOURCES_FILE, "sources file").map_err(CmdError::Failed)?;
-        let file = localoffice_docx::read_sources(&bytes).map_err(|e| CmdError::Failed(e.to_string()))?;
-        let mut added = false;
-        // The tags and (title, author-or-editor) keys already here, once: an import of thousands
-        // of untagged sources must not rescan the list per source. Tags follow `auto_tag`: the
-        // stem, then 1, 2… while taken.
-        let mut tags: std::collections::HashSet<String> = s.doc.sources.iter().map(|x| x.tag.clone()).collect();
-        let mut keys: std::collections::HashSet<(String, String)> =
-            s.doc.sources.iter().map(|x| (x.title.clone(), by_author(x).to_string())).collect();
-        let mut next: std::collections::HashMap<String, u32> = std::collections::HashMap::new();
-        for mut src in file.sources {
-            if s.doc.sources.len() >= localoffice_docx::MAX_SOURCES {
-                break;
-            }
-            if src.tag.is_empty() {
-                // A source with no tag is matched to one already here by its title and author (or
-                // editor), as repeated parts of a document are; otherwise it gets a tag the way a
-                // new source does.
-                if keys.contains(&(src.title.clone(), by_author(&src).to_string())) {
-                    continue;
-                }
-                let base = auto_tag_base(&src);
-                let n = next.entry(base.clone()).or_insert(0);
-                let mut tag = if *n == 0 { base.clone() } else { format!("{base}{}", *n) };
-                while tags.contains(&tag) {
-                    *n += 1;
-                    tag = format!("{base}{}", *n);
-                }
-                *n = n.saturating_add(1);
-                src.tag = tag;
-            }
-            if !tags.insert(src.tag.clone()) {
+    // Through `io`, which keeps automation inside its read root (#769).
+    let bytes = crate::io::read_file_capped(path, MAX_SOURCES_FILE, "sources file").map_err(CmdError::Failed)?;
+    let file = localoffice_docx::read_sources(&bytes).map_err(|e| CmdError::Failed(e.to_string()))?;
+    let mut added = false;
+    // The tags and (title, author-or-editor) keys already here, once: an import of thousands
+    // of untagged sources must not rescan the list per source. Tags follow `auto_tag`: the
+    // stem, then 1, 2… while taken.
+    let mut tags: std::collections::HashSet<String> = s.doc.sources.iter().map(|x| x.tag.clone()).collect();
+    let mut keys: std::collections::HashSet<(String, String)> = s.doc.sources.iter().map(|x| (x.title.clone(), by_author(x).to_string())).collect();
+    let mut next: std::collections::HashMap<String, u32> = std::collections::HashMap::new();
+    for mut src in file.sources {
+        if s.doc.sources.len() >= localoffice_docx::MAX_SOURCES {
+            break;
+        }
+        if src.tag.is_empty() {
+            // A source with no tag is matched to one already here by its title and author (or
+            // editor), as repeated parts of a document are; otherwise it gets a tag the way a
+            // new source does.
+            if keys.contains(&(src.title.clone(), by_author(&src).to_string())) {
                 continue;
             }
-            keys.insert((src.title.clone(), by_author(&src).to_string()));
-            s.doc.sources.push(src);
-            added = true;
+            let base = auto_tag_base(&src);
+            let n = next.entry(base.clone()).or_insert(0);
+            let mut tag = if *n == 0 { base.clone() } else { format!("{base}{}", *n) };
+            while tags.contains(&tag) {
+                *n += 1;
+                tag = format!("{base}{}", *n);
+            }
+            *n = n.saturating_add(1);
+            src.tag = tag;
         }
-        if added {
-            s.touch();
+        if !tags.insert(src.tag.clone()) {
+            continue;
         }
-        Ok(())
+        keys.insert((src.title.clone(), by_author(&src).to_string()));
+        s.doc.sources.push(src);
+        added = true;
     }
+    if added {
+        s.touch();
+    }
+    Ok(())
 }
 
 fn citation(s: &mut Session, v: &Value) -> CmdResult {

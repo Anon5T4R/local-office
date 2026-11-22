@@ -128,9 +128,6 @@ pub fn search_dirs(lo_exts: Option<&[String]>) -> Vec<PathBuf> {
     if let Some(d) = EXTRA_DIR.read().unwrap_or_else(std::sync::PoisonError::into_inner).clone() {
         dirs.push(d);
     }
-    if cfg!(target_arch = "wasm32") {
-        return dirs;
-    }
     if let Some(d) = std::env::var_os("LOCALOFFICE_DICTIONARIES").filter(|v| !v.is_empty()) {
         dirs.push(PathBuf::from(d));
     }

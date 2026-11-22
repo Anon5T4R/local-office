@@ -1233,7 +1233,6 @@ mod tests {
 
     /// #1902: Clipboard Delete returns focus to the document like paste does.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn clipboard_delete_returns_focus_to_the_document() {
         use egui_kittest::kittest::Queryable;
 
@@ -1265,7 +1264,6 @@ mod tests {
 
     /// F6 past the last pane gives the document the keyboard, and typing reaches it (#1756).
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn f6_past_the_last_pane_types_into_the_document() {
         let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
         app.run("view.navigationPane", serde_json::json!({"value": true})).unwrap();
@@ -1315,7 +1313,6 @@ mod tests {
     /// F6 and Shift+F6 with a dialog open leave the keyboard in the dialog: no pane title bar and
     /// no document behind it takes it.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn f6_in_an_open_dialog_keeps_focus_there() {
         for panes in [true, false] {
             let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
@@ -1334,7 +1331,6 @@ mod tests {
     /// Ctrl and F-key shortcuts run while F6 has put the keyboard on a pane's title bar; a pane's
     /// text field keeps Ctrl+H for itself.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn shortcuts_run_while_a_pane_title_bar_has_focus() {
         let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
         app.run("view.navigationPane", serde_json::json!({"value": true})).unwrap();
@@ -1355,7 +1351,6 @@ mod tests {
 
     /// A dialog button with the keyboard keeps Ctrl+Z away from the document behind the dialog.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn shortcuts_stay_out_of_the_document_while_a_dialog_button_has_focus() {
         use egui_kittest::kittest::Queryable;
 
@@ -1377,7 +1372,6 @@ mod tests {
 
     /// Escape during a pane's title-bar drag cancels the drag and leaves full screen on.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn escape_during_a_pane_drag_keeps_full_screen() {
         use egui_kittest::kittest::Queryable;
 
@@ -1407,7 +1401,6 @@ mod tests {
     /// it, where the preview showed, and the order survives a restart; over Navigation's inner
     /// third it goes back inside.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn comments_dropped_over_navigations_outer_third_docks_left_of_it() {
         use egui_kittest::kittest::Queryable;
 
@@ -1462,7 +1455,6 @@ mod tests {
     /// An F6 the user bound runs its command; plain F6 still moves to the panes when only
     /// Shift+F6 is bound.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn a_user_bound_f6_runs_its_command() {
         for key in ["F6", "Shift+F6"] {
             let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
@@ -1488,7 +1480,6 @@ mod tests {
     /// button rows wrap and fields narrow. Restrict Editing shows its style list and password
     /// fields.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn pane_bodies_fit_the_narrowest_pane() {
         // 200 pt less the 10 pt body margins and the frame's 1 pt strokes.
         const BODY: f32 = 178.0;
@@ -1551,7 +1542,6 @@ mod tests {
     /// A pane other than Styles floated from its menu comes back floating, at the same rect, after
     /// a restart; junk in `panePlaces` reads as the defaults (#1756).
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn a_floated_pane_floats_again_after_a_restart() {
         use craft_ui::panes::Place;
         use egui_kittest::kittest::Queryable;
@@ -1620,7 +1610,6 @@ mod tests {
     /// #3032: Delete is greyed out for built-in styles in the Styles pane (the engine refuses
     /// them — `crates/engine/src/cmd/para.rs`), while custom styles keep it enabled.
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn built_in_styles_grey_out_delete_in_the_styles_pane() {
         use egui_kittest::kittest::{NodeT, Queryable};
 
