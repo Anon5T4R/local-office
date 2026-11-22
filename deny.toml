@@ -65,7 +65,7 @@ ignore = [
     # servidor com chave pública; não decifra, não assina, não opera chave privada.
     { id = "RUSTSEC-2023-0071", reason = "rsa sem patch (Marvin); o cliente só verifica com chave pública" },
     { id = "RUSTSEC-2026-0387", reason = "crypto-bigint/elliptic-curve via rustls-rustcrypto; sem operação com chave privada" },
-    { id = "RUSTSEC-2026-0543", reason = "chrono unmaintained (craft-update); troca por jiff/std no backlog" },
+    { id = "RUSTSEC-2026-0543", reason = "chrono unmaintained; sem vulnerabilidade, vem do código do app, não do craft-update (jiff)" },
     { id = "RUSTSEC-2024-0436", reason = "paste unmaintained; proc macro só em tempo de compilação" },
     { id = "RUSTSEC-2026-0370", reason = "zvariant unmaintained; pilha D-Bus do Linux (portal/acessibilidade)" },
     { id = "RUSTSEC-2026-0371", reason = "zbus_names unmaintained; pilha D-Bus do Linux (portal/acessibilidade)" },
