@@ -20,6 +20,14 @@
 - Nada é lido de `C:\Dev\storytold` em build, teste ou release; a pasta é só referência local para a
   skill `sync-upstream`.
 
+## Registro de sync
+
+A base continua `6a2b520f`: só pontos escolhidos entram (skill `sync-upstream`), não um bump.
+
+| Data | Alvo (wordcraft) | Pegos | Descartados relevantes |
+|---|---|---|---|
+| 2026-11-21 | `origin/main` do dia | `cdebeace` → `b082b1bb` (DOCX: run `w:cs` só fica negrito/itálico por `w:bCs`/`w:iCs`, inclusive nos botões, no Merge Formatting e nos style sets); `93bf1488` → `eaa5afaa` (cada processo grava só o que mudou no `ui.json`, com `prefs_merge.rs` e lock) | `0b99c871` (cura o cache de "parágrafo medido sozinho", caminho que não existe no nosso layout), `8d257954` (depende do modelo compartilhado `craft_wordmodel`), `4216089a` (teste do comportamento #6536, que não temos) |
+
 ## Objetivo
 Manter o `local-office` próximo do `storytold/wordcraft` (upstream) sem perder a independência do rebranding: nenhum merge cego, nenhuma dependência de servidor da org deles, nenhum `git+` no lock. Tudo que entrar no main deste repo passa por revisão de arquitetura primeiro.
 
