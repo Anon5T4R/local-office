@@ -100,8 +100,12 @@ pub fn customize_ribbon(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm) -> b
     });
     ui.separator();
     // Sized so the whole dialog fits the suite's narrowest window (760): the two lists and the tree
-    // together stay well inside it, and the command line below wraps instead of widening the card.
-    let (left, right, h) = (120.0, 170.0, 300.0);
+    // take the room the window leaves under the tabs, the search box, the command line and the
+    // buttons (`padrao-craft.md`, "Guardas"), and stay well inside it. The command line below wraps
+    // instead of widening the card.
+    const RIBBON_OUTSIDE: f32 = 216.0;
+    let (left, right) = (120.0, 170.0);
+    let h = crate::dialogs::dialog_room(ui, RIBBON_OUTSIDE).min(300.0);
     ui.add(egui::TextEdit::singleline(&mut f.filter).hint_text(tl!("Search")).desired_width(left + right + 8.0));
     let mut cats: Vec<(String, String)> = categories(app).into_iter().map(|c| (c.clone(), tl!(&c).to_string())).collect();
     cats.push((String::new(), tl!("All Commands").to_string()));
