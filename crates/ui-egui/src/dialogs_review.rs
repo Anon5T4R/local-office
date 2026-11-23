@@ -391,7 +391,10 @@ fn autocorrect_ui(app: &mut WordApp, ui: &mut Ui, f: &mut AutoCorrectForm) -> bo
         }
     });
     ui.separator();
-    match f.tab {
+    // The tab is taller than the narrowest window: it scrolls under the tabs, and the buttons below
+    // stay in view (`padrao-craft.md`, "Guardas").
+    let outside = crate::dialogs::DIALOG_OUTSIDE + 30.0;
+    crate::dialogs::scrolling_body(ui, "autocorrect", outside, |ui| match f.tab {
         0 => autocorrect_tab(app, ui, f),
         1 => {
             let o = &mut f.options;
@@ -412,7 +415,7 @@ fn autocorrect_ui(app: &mut WordApp, ui: &mut Ui, f: &mut AutoCorrectForm) -> bo
             ui.checkbox(&mut o.tab_indent, tl!("Set left- and first-indent with tabs and backspaces"));
         }
         _ => math_tab(ui, f),
-    }
+    });
     error(ui, &f.message);
     let (ok, cancel) = buttons(ui, true);
     if ok {

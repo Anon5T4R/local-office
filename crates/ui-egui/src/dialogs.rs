@@ -1855,6 +1855,27 @@ pub(crate) fn buttons(ui: &mut Ui, ok: &str) -> (bool, bool) {
     r
 }
 
+/// What a dialog draws outside the body that may scroll: the title bar (heading row plus the
+/// window's margins) and the row of buttons with the gap above it, in points.
+pub(crate) const DIALOG_OUTSIDE: f32 = 90.0;
+
+/// The height the window leaves a dialog body in points (`docs/planos/padrao-craft.md`, "Guardas"):
+/// the window's height minus `outside`. It comes from the window, never from the dialog's own
+/// position: a window is centred on the height it had the frame before, so a budget measured from
+/// the cursor would offer the body more room every frame and the dialog would grow past the window.
+pub(crate) fn dialog_room(ui: &Ui, outside: f32) -> f32 {
+    (ui.ctx().content_rect().height() - outside).max(120.0)
+}
+
+/// Draw the part of a dialog's body that may outgrow the window so that it scrolls, with the title
+/// bar and the buttons below it always in view. `outside` is what the dialog draws outside the
+/// scrolling part in points (the title bar, the footer and any rows above the body), and the body
+/// takes the room the window leaves, no taller than its content.
+pub(crate) fn scrolling_body<R>(ui: &mut Ui, id: &str, outside: f32, body: impl FnOnce(&mut Ui) -> R) -> R {
+    let room = dialog_room(ui, outside);
+    egui::ScrollArea::vertical().id_salt(id).max_height(room).auto_shrink([false, true]).show(ui, body).inner
+}
+
 /// The Font dialog preview's size: the Size box's points between 6 and 72, else 12. `"NaN"` and
 /// `"inf"` parse as floats too, and a NaN font size trips epaint's glyph assertion (#3663).
 fn preview_size(size: &str) -> f32 {
@@ -2417,60 +2438,71 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             odd_even,
             first_page,
         } => {
-            ui.label(egui::RichText::new(tl!("Margins")).font(semibold(12.5)));
-            egui::Grid::new("ps").num_columns(4).show(ui, |ui| {
-                let top_label = ui.label(tl!("Top:"));
-                ui.add(egui::DragValue::new(top).speed(3.6 / crate::options::unit().pt_per_unit()).measure(crate::options::unit()).max_decimals(2))
+            scrolling_body(ui, "page_setup", DIALOG_OUTSIDE, |ui| {
+                ui.label(egui::RichText::new(tl!("Margins")).font(semibold(12.5)));
+                egui::Grid::new("ps").num_columns(4).show(ui, |ui| {
+                    let top_label = ui.label(tl!("Top:"));
+                    ui.add(
+                        egui::DragValue::new(top).speed(3.6 / crate::options::unit().pt_per_unit()).measure(crate::options::unit()).max_decimals(2),
+                    )
                     .labelled_by(top_label.id);
-                let bottom_label = ui.label(tl!("Bottom:"));
-                ui.add(
-                    egui::DragValue::new(bottom).speed(3.6 / crate::options::unit().pt_per_unit()).measure(crate::options::unit()).max_decimals(2),
-                )
-                .labelled_by(bottom_label.id);
-                ui.end_row();
-                let left_label = ui.label(if *mirror { tl!("Inside:") } else { tl!("Left:") });
-                ui.add(egui::DragValue::new(left).speed(3.6 / crate::options::unit().pt_per_unit()).measure(crate::options::unit()).max_decimals(2))
+                    let bottom_label = ui.label(tl!("Bottom:"));
+                    ui.add(
+                        egui::DragValue::new(bottom)
+                            .speed(3.6 / crate::options::unit().pt_per_unit())
+                            .measure(crate::options::unit())
+                            .max_decimals(2),
+                    )
+                    .labelled_by(bottom_label.id);
+                    ui.end_row();
+                    let left_label = ui.label(if *mirror { tl!("Inside:") } else { tl!("Left:") });
+                    ui.add(
+                        egui::DragValue::new(left).speed(3.6 / crate::options::unit().pt_per_unit()).measure(crate::options::unit()).max_decimals(2),
+                    )
                     .labelled_by(left_label.id);
-                let right_label = ui.label(if *mirror { tl!("Outside:") } else { tl!("Right:") });
-                ui.add(egui::DragValue::new(right).speed(3.6 / crate::options::unit().pt_per_unit()).measure(crate::options::unit()).max_decimals(2))
+                    let right_label = ui.label(if *mirror { tl!("Outside:") } else { tl!("Right:") });
+                    ui.add(
+                        egui::DragValue::new(right).speed(3.6 / crate::options::unit().pt_per_unit()).measure(crate::options::unit()).max_decimals(2),
+                    )
                     .labelled_by(right_label.id);
-                ui.end_row();
+                    ui.end_row();
+                });
+                ui.label(egui::RichText::new(tl!("Orientation")).font(semibold(12.5)));
+                ui.horizontal(|ui| {
+                    ui.radio_value(landscape, false, tl!("Portrait"));
+                    ui.radio_value(landscape, true, tl!("Landscape"));
+                });
+                ui.label(egui::RichText::new(tl!("Pages")).font(semibold(12.5)));
+                ui.checkbox(mirror, tl!("Mirror margins"));
+                page_paper_group(ui, paper, landscape, paper_custom);
+                ui.label(egui::RichText::new(tl!("Document Grid")).font(semibold(12.5)));
+                ui.horizontal_wrapped(|ui| {
+                    ui.radio_value(&mut grid.0, 0, tl!("No grid"));
+                    ui.radio_value(&mut grid.0, 1, tl!("Lines only"));
+                    ui.radio_value(&mut grid.0, 2, tl!("Lines and characters"));
+                    ui.radio_value(&mut grid.0, 3, tl!("Text snaps to characters"));
+                });
+                egui::Grid::new("ps_grid").num_columns(4).show(ui, |ui| {
+                    let chars_label = ui.add_enabled(grid.0 >= 2, egui::Label::new(tl!("Characters per line:")));
+                    ui.add_enabled(grid.0 >= 2, egui::DragValue::new(&mut grid.2).range(1..=1000)).labelled_by(chars_label.id);
+                    let lines_label = ui.add_enabled(grid.0 >= 1, egui::Label::new(tl!("Lines per page:")));
+                    ui.add_enabled(grid.0 >= 1, egui::DragValue::new(&mut grid.1).range(1..=1000)).labelled_by(lines_label.id);
+                    ui.end_row();
+                });
+                ui.horizontal(|ui| {
+                    ui.label(tl!("Section direction:"));
+                    ui.radio_value(rtl, false, tl!("Left-to-right"));
+                    ui.radio_value(rtl, true, tl!("Right-to-left"));
+                });
+                if !message.is_empty() {
+                    ui.label(egui::RichText::new(message.as_str()).small().color(ui.visuals().error_fg_color));
+                }
+                page_valign_combo(ui, valign);
+                // Word's Page Setup › Layout: a title page without the page number (#1230).
+                ui.label(egui::RichText::new(tl!("Headers and footers")).font(semibold(12.5)));
+                ui.checkbox(odd_even, tl!("Different Odd & Even Pages"));
+                ui.checkbox(first_page, tl!("Different First Page"));
             });
-            ui.label(egui::RichText::new(tl!("Orientation")).font(semibold(12.5)));
-            ui.horizontal(|ui| {
-                ui.radio_value(landscape, false, tl!("Portrait"));
-                ui.radio_value(landscape, true, tl!("Landscape"));
-            });
-            ui.label(egui::RichText::new(tl!("Pages")).font(semibold(12.5)));
-            ui.checkbox(mirror, tl!("Mirror margins"));
-            page_paper_group(ui, paper, landscape, paper_custom);
-            ui.label(egui::RichText::new(tl!("Document Grid")).font(semibold(12.5)));
-            ui.horizontal_wrapped(|ui| {
-                ui.radio_value(&mut grid.0, 0, tl!("No grid"));
-                ui.radio_value(&mut grid.0, 1, tl!("Lines only"));
-                ui.radio_value(&mut grid.0, 2, tl!("Lines and characters"));
-                ui.radio_value(&mut grid.0, 3, tl!("Text snaps to characters"));
-            });
-            egui::Grid::new("ps_grid").num_columns(4).show(ui, |ui| {
-                let chars_label = ui.add_enabled(grid.0 >= 2, egui::Label::new(tl!("Characters per line:")));
-                ui.add_enabled(grid.0 >= 2, egui::DragValue::new(&mut grid.2).range(1..=1000)).labelled_by(chars_label.id);
-                let lines_label = ui.add_enabled(grid.0 >= 1, egui::Label::new(tl!("Lines per page:")));
-                ui.add_enabled(grid.0 >= 1, egui::DragValue::new(&mut grid.1).range(1..=1000)).labelled_by(lines_label.id);
-                ui.end_row();
-            });
-            ui.horizontal(|ui| {
-                ui.label(tl!("Section direction:"));
-                ui.radio_value(rtl, false, tl!("Left-to-right"));
-                ui.radio_value(rtl, true, tl!("Right-to-left"));
-            });
-            if !message.is_empty() {
-                ui.label(egui::RichText::new(message.as_str()).small().color(ui.visuals().error_fg_color));
-            }
-            page_valign_combo(ui, valign);
-            // Word's Page Setup › Layout: a title page without the page number (#1230).
-            ui.label(egui::RichText::new(tl!("Headers and footers")).font(semibold(12.5)));
-            ui.checkbox(odd_even, tl!("Different Odd & Even Pages"));
-            ui.checkbox(first_page, tl!("Different First Page"));
             let (mut ok, cancel) = buttons(ui, tl!("OK"));
             if ok {
                 // Everything OK changes is one undo step; a refused command applies nothing.
@@ -4248,6 +4280,9 @@ fn goto_page(text: &str) -> Option<Value> {
 /// path data; Insert (or a double click) runs `insert.icon`. Returns true to close.
 fn icons_body(app: &mut WordApp, ui: &mut Ui, query: &mut String, category: &mut String, selected: &mut String) -> bool {
     use localoffice_render::icon_lib::{self, Category};
+    /// What the dialog draws outside the icon grid: the title bar, the search box, the category
+    /// chips and the selected icon's name over the buttons.
+    const ICONS_OUTSIDE: f32 = 194.0;
     let t = Tokens::get(ui.ctx());
     ui.set_width(560.0);
     // Typing goes to the search box (never to the document behind the dialog).
@@ -4270,7 +4305,10 @@ fn icons_body(app: &mut WordApp, ui: &mut Ui, query: &mut String, category: &mut
     ui.add_space(4.0);
     let hits = icon_lib::search(query, Category::parse(category));
     let mut insert = false;
-    egui::ScrollArea::vertical().max_height(300.0).min_scrolled_height(300.0).auto_shrink([true, false]).show(ui, |ui| {
+    // The grid takes the room the window leaves under the search box, the categories and the name
+    // below it, so the dialog fits the narrowest window (`padrao-craft.md`, "Guardas").
+    let grid = crate::dialogs::dialog_room(ui, ICONS_OUTSIDE).min(300.0);
+    egui::ScrollArea::vertical().max_height(grid).min_scrolled_height(grid).auto_shrink([true, false]).show(ui, |ui| {
         if hits.is_empty() {
             ui.label(egui::RichText::new(tl!("No icons match your search.")).color(t.text_dim));
         }
