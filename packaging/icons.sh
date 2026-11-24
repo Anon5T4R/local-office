@@ -15,11 +15,13 @@ trap 'rm -rf "$TMP"' EXIT
 
 command -v resvg >/dev/null || { echo "error: resvg not found (brew install resvg)" >&2; exit 1; }
 
-# The artwork is a full-bleed 1024 tile (rx=224). Windows and Linux use it as is. macOS icons sit on
-# Apple's grid: an 824/1024 body with a transparent margin, so widen the viewBox by 1024*1024/824.
+# The artwork is a full-bleed tile on a 100-unit grid (viewBox 0 0 100 100, rx=22; the width/height
+# of 1024 only set its default size). Windows and Linux use it as is. macOS icons sit on Apple's
+# grid: an 824/1024 body with a transparent margin, so widen the viewBox by 1024/824: a 12.136 margin
+# on each side, 124.272 wide.
 MAC="$TMP/mac.svg"
-sed 's/viewBox="0 0 1024 1024"/viewBox="-124.272 -124.272 1272.544 1272.544"/' "$SVG" >"$MAC"
-grep -q 'viewBox="-124.272' "$MAC" || { echo "error: expected viewBox=\"0 0 1024 1024\" in $SVG" >&2; exit 1; }
+sed 's/viewBox="0 0 100 100"/viewBox="-12.1359 -12.1359 124.2718 124.2718"/' "$SVG" >"$MAC"
+grep -q 'viewBox="-12.1359' "$MAC" || { echo "error: expected viewBox=\"0 0 100 100\" in $SVG" >&2; exit 1; }
 
 render() {
   local src="$1" size="$2" dst="$3"
@@ -46,6 +48,19 @@ for s in 16 20 24 32 40 48 64 128 256; do
   ICO_PNGS+=("$TMP/ico-$s.png")
 done
 (cd "$ROOT" && cargo run -q -p xtask -- ico "$DIR/localwriter.ico" "${ICO_PNGS[@]}")
+
+# Windows .ico per document format (assets/file-icons): 16/20/24 from the -16 drawing, 32/40 from
+# the -32 one, 48 and up from the master. packaging/windows embeds them in localwriter.exe.
+FI="$ROOT/assets/file-icons"
+for master in "$FI"/*.svg; do
+  ext="$(basename "$master" .svg)"
+  case "$ext" in *-16 | *-32) continue ;; esac
+  FI_PNGS=()
+  for s in 16 20 24; do render "$FI/$ext-16.svg" "$s" "$TMP/$ext-$s.png"; FI_PNGS+=("$TMP/$ext-$s.png"); done
+  for s in 32 40; do render "$FI/$ext-32.svg" "$s" "$TMP/$ext-$s.png"; FI_PNGS+=("$TMP/$ext-$s.png"); done
+  for s in 48 64 128 256; do render "$master" "$s" "$TMP/$ext-$s.png"; FI_PNGS+=("$TMP/$ext-$s.png"); done
+  (cd "$ROOT" && cargo run -q -p xtask -- ico "$FI/$ext.ico" "${FI_PNGS[@]}")
+done
 
 # macOS .icns.
 if command -v iconutil >/dev/null; then
