@@ -182,6 +182,20 @@ mod tests {
     }
 
     #[test]
+    fn the_arch_package_is_named_by_the_catalogs_bundle_id() {
+        let pkgbuild = include_str!("../../../packaging/arch/PKGBUILD");
+        let id = craft_update::suite::LOCALWRITER.bundle_id();
+        assert_eq!(id, "ai.storyteller.localwriter");
+        assert!(pkgbuild.lines().any(|line| line == format!("pkgname={id}")), "PKGBUILD pkgname must be {id}");
+    }
+
+    #[test]
+    fn the_catalog_knows_the_old_names() {
+        let app = &craft_update::suite::LOCALWRITER;
+        assert!(app.former_ids.contains(&"localoffice") && app.former_names.contains(&"Local Word"));
+    }
+
+    #[test]
     fn the_old_name_of_each_folder_convention() {
         for (new, old) in NAMES {
             assert_eq!(old_dir_of(Path::new("/a").join(new).as_path()), Some(PathBuf::from("/a").join(old)));
