@@ -1,8 +1,16 @@
 # Local Writer file-type icons
 
-The icons Windows (and later Linux) shows for the documents Local Writer opens: one per ProgId in
-`packaging/windows/localwriter.wxs`. This is the artwork only. Nothing registers these icons yet;
-the ProgIds still point at the app icon.
+The icons Windows and Linux show for the documents Local Writer opens: one per ProgId in
+`packaging/windows/localwriter.wxs`.
+
+- **Windows**: `<ext>.ico` (below) is embedded in `localwriter.exe` as an icon resource by
+  `apps/localwriter/build.rs`, and each ProgId's `DefaultIcon` is `localwriter.exe,-<resource id>`.
+  The id table lives in `build.rs` and in a comment in the `.wxs`; ids are never reused or reordered.
+- **Linux**: the Word, OpenDocument Text and RTF formats (`docx`, `docm`, `dotx`, `dotm`, `doc`, `dot`,
+  `odt`, `rtf`) are installed as hicolor mimetype icons by `packaging/linux/package.sh`, so every
+  package (deb, rpm, tar, AppImage, PKGBUILD) carries them. Markdown, HTML, LaTeX and plain text are
+  left out on purpose: hicolor applies to every `.txt` and `.html` on the machine, not only the ones
+  Local Writer is the default for.
 
 ![All icons at 256, 48, 32 and 16 px, on a light and a dark background](preview.png)
 
@@ -59,9 +67,13 @@ The two small ones are drawn on their pixel grid (`viewBox` 32 and 16), with fla
 gradients. At 16 px the format reads by colour alone, so the four Word-blue icons differ only in
 filled against outlined.
 
+Each `<ext>.ico` packs 16, 20 and 24 px from the `-16` drawing, 32 and 40 px from the `-32` one, and
+48, 64, 128 and 256 px from the master.
+
 ## Regenerate
 
-`python packaging/file-icons.py` rewrites every SVG and `preview.png`. All the geometry, hues and
+`python packaging/file-icons.py` rewrites every SVG and `preview.png`; then `packaging/icons.sh`
+renders the `.ico` files (with the app icons; it needs `resvg`, and `cargo xtask ico` packs them). All the geometry, hues and
 rules above live in that script; edit it, not the SVGs. It needs Python with fontTools and Pillow,
 and `resvg` on PATH for the proof sheet.
 

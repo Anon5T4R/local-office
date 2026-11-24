@@ -65,9 +65,11 @@ packaging/linux/package.sh    # AppImage/deb/rpm/tar (Linux)
 - `libs/` mantém o estilo de origem: fmt do CI exclui `libs/`; o gate de assets
   (`xtask assets`) também.
 - Ícones: `packaging/icons.sh` regenera tudo a partir de `assets/app-icon/localwriter.svg`
-  (viewBox 0 0 1024 1024; resvg + xtask ico + iconutil). Os outputs são commitados.
+  (viewBox 0 0 100 100, com width/height 1024; resvg + xtask ico + iconutil). Os outputs são commitados.
 - Ícones por tipo de arquivo: `packaging/file-icons.py` gera `assets/file-icons/` (um SVG por formato, variantes de
-  32 e 16 px e a folha de prova); a regra da família está no README de lá. Ainda não estão no instalador.
+  32 e 16 px e a folha de prova) e `icons.sh` empacota o `.ico` de cada um; a regra da família está no README de lá.
+  No Windows os `.ico` vão embutidos no `localwriter.exe` (ids 2 a 13, tabela no `build.rs`; o `DefaultIcon` de cada
+  ProgId no `.wxs` aponta `localwriter.exe,-<id>`); no Linux o `package.sh` instala o grupo Word/ODT/RTF no hicolor.
 
 
 ## Upstream e a pasta `C:\Dev\storytold`
