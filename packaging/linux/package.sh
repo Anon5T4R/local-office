@@ -65,6 +65,30 @@ sed -e "s/@VERSION@/$VERSION/g" -e "s/@DATE@/$LOCALWRITER_BUILD_DATE/g" \
   "$HERE/$APP_ID.metainfo.xml.in" >"$STAGE/usr/share/metainfo/$APP_ID.metainfo.xml"
 mkdir -p "$STAGE/usr/share/icons"
 cp -R "$ROOT/assets/app-icon/hicolor" "$STAGE/usr/share/icons/"
+
+# Document icons (assets/file-icons) as hicolor mimetype icons, named after the shared-mime-info type
+# with "/" turned into "-". Only the Word/ODT/RTF family: hicolor is the theme of last resort, but
+# these names are looked up first, so an icon for text/plain or text/html would replace the one every
+# other app's .txt and .html files show. The 16 drawing serves 16 and 24 px, the 32 one serves 32 px.
+install_mime_icon() {
+  local ext="$1" mime="$2" name d
+  name="${mime//\//-}"
+  local src="$ROOT/assets/file-icons"
+  for d in 16x16:16 24x24:16 32x32:32 48x48:master scalable:master; do
+    local dir="${d%%:*}" var="${d##*:}"
+    local file="$src/$ext.svg"
+    [[ "$var" = master ]] || file="$src/$ext-$var.svg"
+    install -Dm644 "$file" "$STAGE/usr/share/icons/hicolor/$dir/mimetypes/$name.svg"
+  done
+}
+install_mime_icon docx application/vnd.openxmlformats-officedocument.wordprocessingml.document
+install_mime_icon docm application/vnd.ms-word.document.macroEnabled.12
+install_mime_icon dotx application/vnd.openxmlformats-officedocument.wordprocessingml.template
+install_mime_icon dotm application/vnd.ms-word.template.macroEnabled.12
+install_mime_icon doc application/msword
+install_mime_icon dot application/msword-template
+install_mime_icon odt application/vnd.oasis.opendocument.text
+install_mime_icon rtf application/rtf
 mkdir -p "$STAGE/usr/share/doc/localwriter"
 copy_docs "$STAGE/usr/share/doc/localwriter"
 
