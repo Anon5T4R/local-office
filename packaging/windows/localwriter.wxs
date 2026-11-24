@@ -115,7 +115,13 @@ Manufacturer="Local Writer contributors"
         <RegistryValue Root="HKLM" Key="Software\Anon5T4R\LocalWriter" Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
       </Component>
 
-      <!-- File associations (#295). Each document type gets a LocalWriter ProgId (name, icon, open
+      <!-- Document icons: each ProgId's DefaultIcon is a resource of localwriter.exe, picked by its ID
+           (a negative index means the ID, not the position): 2 docx, 3 docm, 4 dotx, 5 dotm, 6 doc,
+           7 dot, 8 odt, 9 rtf, 10 md, 11 html, 12 tex, 13 txt. The icons come from
+           assets/file-icons and are embedded by apps/localwriter/build.rs, which holds the same table;
+           the app icon is resource 1.
+
+           File associations (#295). Each document type gets a LocalWriter ProgId (name, icon, open
            command) and is listed under the extension's OpenWithProgids, so LocalWriter shows in
            Explorer's "Open with". The Word, RTF and ODT types are also LocalWriter's Capabilities
            (RegisteredApplications), so it appears in Settings › Default apps, where the user
@@ -130,69 +136,80 @@ Manufacturer="Local Writer contributors"
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe" Name="FriendlyAppName" Value="Local Writer" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
 
-        <ProgId Id="LocalWriter.Document" Description="Word Document" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.Document" Description="Word Document" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Document\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-2" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Document\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.docx\OpenWithProgids" Name="LocalWriter.Document" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".docx" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".docx" Value="LocalWriter.Document" Type="string" />
 
-        <ProgId Id="LocalWriter.DocumentMacroEnabled" Description="Word Macro-Enabled Document" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.DocumentMacroEnabled" Description="Word Macro-Enabled Document" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.DocumentMacroEnabled\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-3" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.DocumentMacroEnabled\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.docm\OpenWithProgids" Name="LocalWriter.DocumentMacroEnabled" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".docm" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".docm" Value="LocalWriter.DocumentMacroEnabled" Type="string" />
 
-        <ProgId Id="LocalWriter.Template" Description="Word Template" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.Template" Description="Word Template" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Template\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-4" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Template\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.dotx\OpenWithProgids" Name="LocalWriter.Template" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".dotx" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".dotx" Value="LocalWriter.Template" Type="string" />
 
-        <ProgId Id="LocalWriter.TemplateMacroEnabled" Description="Word Macro-Enabled Template" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.TemplateMacroEnabled" Description="Word Macro-Enabled Template" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.TemplateMacroEnabled\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-5" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.TemplateMacroEnabled\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.dotm\OpenWithProgids" Name="LocalWriter.TemplateMacroEnabled" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".dotm" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".dotm" Value="LocalWriter.TemplateMacroEnabled" Type="string" />
 
-        <ProgId Id="LocalWriter.LegacyDocument" Description="Legacy Word Document" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.LegacyDocument" Description="Legacy Word Document" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.LegacyDocument\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-6" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.LegacyDocument\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.doc\OpenWithProgids" Name="LocalWriter.LegacyDocument" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".doc" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".doc" Value="LocalWriter.LegacyDocument" Type="string" />
 
-        <ProgId Id="LocalWriter.LegacyTemplate" Description="Legacy Word Template" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.LegacyTemplate" Description="Legacy Word Template" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.LegacyTemplate\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-7" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.LegacyTemplate\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.dot\OpenWithProgids" Name="LocalWriter.LegacyTemplate" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".dot" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".dot" Value="LocalWriter.LegacyTemplate" Type="string" />
 
-        <ProgId Id="LocalWriter.RichText" Description="Rich Text Document" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.RichText" Description="Rich Text Document" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.RichText\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-9" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.RichText\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.rtf\OpenWithProgids" Name="LocalWriter.RichText" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".rtf" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".rtf" Value="LocalWriter.RichText" Type="string" />
 
-        <ProgId Id="LocalWriter.OpenDocumentText" Description="OpenDocument Text" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.OpenDocumentText" Description="OpenDocument Text" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.OpenDocumentText\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-8" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.OpenDocumentText\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.odt\OpenWithProgids" Name="LocalWriter.OpenDocumentText" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".odt" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".odt" Value="LocalWriter.OpenDocumentText" Type="string" />
 
-        <ProgId Id="LocalWriter.Markdown" Description="Markdown Document" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.Markdown" Description="Markdown Document" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Markdown\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-10" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Markdown\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.md\OpenWithProgids" Name="LocalWriter.Markdown" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".md" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.markdown\OpenWithProgids" Name="LocalWriter.Markdown" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".markdown" Value="" Type="string" />
 
-        <ProgId Id="LocalWriter.Html" Description="Web Page" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.Html" Description="Web Page" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Html\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-11" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Html\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.html\OpenWithProgids" Name="LocalWriter.Html" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".html" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.htm\OpenWithProgids" Name="LocalWriter.Html" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".htm" Value="" Type="string" />
 
-        <ProgId Id="LocalWriter.Tex" Description="LaTeX Document" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.Tex" Description="LaTeX Document" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Tex\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-12" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Tex\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.tex\OpenWithProgids" Name="LocalWriter.Tex" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".tex" Value="" Type="string" />
@@ -201,7 +218,8 @@ Manufacturer="Local Writer contributors"
         <RegistryValue Root="HKMU" Key="Software\Classes\.latex\OpenWithProgids" Name="LocalWriter.Tex" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".latex" Value="" Type="string" />
 
-        <ProgId Id="LocalWriter.PlainText" Description="Text Document" Icon="LocalWriterExe" IconIndex="0" />
+        <ProgId Id="LocalWriter.PlainText" Description="Text Document" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.PlainText\DefaultIcon" Value="&quot;[#LocalWriterExe]&quot;,-13" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.PlainText\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\.txt\OpenWithProgids" Name="LocalWriter.PlainText" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".txt" Value="" Type="string" />
