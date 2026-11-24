@@ -101,11 +101,6 @@ Manufacturer="Local Writer contributors"
           <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Local Writer"
               Description="Local Writer word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
               Icon="LocalWriterIcon.ico" IconIndex="0" />
-          <!-- Alias de busca: a busca do Windows casa o nome do atalho, e todo app da
-               suíte começa com Local — "writer" puro não acharia nada. -->
-          <Shortcut Id="AliasShortcut" Directory="ProgramMenuFolder" Name="Writer"
-              Description="Local Writer word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
-              Icon="LocalWriterIcon.ico" IconIndex="0" />
           <!-- Atalho no desktop (paridade com o resto da suíte; per-machine = desktop
                comum, visível pra todos os usuários). -->
           <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="Local Writer"
