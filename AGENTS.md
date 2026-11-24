@@ -66,6 +66,8 @@ packaging/linux/package.sh    # AppImage/deb/rpm/tar (Linux)
   (`xtask assets`) também.
 - Ícones: `packaging/icons.sh` regenera tudo a partir de `assets/app-icon/localwriter.svg`
   (viewBox 0 0 1024 1024; resvg + xtask ico + iconutil). Os outputs são commitados.
+- Ícones por tipo de arquivo: `packaging/file-icons.py` gera `assets/file-icons/` (um SVG por formato, variantes de
+  32 e 16 px e a folha de prova); a regra da família está no README de lá. Ainda não estão no instalador.
 
 
 ## Upstream e a pasta `C:\Dev\storytold`
