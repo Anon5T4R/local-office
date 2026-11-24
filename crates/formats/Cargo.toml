@@ -1,17 +1,17 @@
 [package]
-name = "localoffice-formats"
+name = "localwriter-formats"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word import/export: plain text, Markdown, HTML, RTF, OpenDocument Text and LaTeX"
+description = "Local Writer import/export: plain text, Markdown, HTML, RTF, OpenDocument Text and LaTeX"
 
 [lints]
 workspace = true
 
 [dependencies]
-localoffice-doc = { workspace = true }
-localoffice-geom = { workspace = true, features = ["image"] }
+localwriter-doc = { workspace = true }
+localwriter-geom = { workspace = true, features = ["image"] }
 image = { workspace = true }
 quick-xml = { workspace = true }
 zip = { workspace = true }
@@ -22,5 +22,5 @@ log = { workspace = true }
 chrono = { workspace = true }
 
 [dev-dependencies]
-localoffice-doc = { workspace = true, features = ["test-support"] }
+localwriter-doc = { workspace = true, features = ["test-support"] }
 proptest = { workspace = true }

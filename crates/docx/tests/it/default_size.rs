@@ -1,8 +1,8 @@
 //! The document default font size (`w:docDefaults/w:rPrDefault/w:rPr/w:sz`) across a save and
 //! reopen. An unset default is resolved as `DEFAULT_FONT_SIZE`; the writer must say so, because
 //! the reader reads an omitted size as 10 pt.
-use localoffice_doc::Document;
-use localoffice_doc::props::{CharProps, DEFAULT_FONT_SIZE};
+use localwriter_doc::Document;
+use localwriter_doc::props::{CharProps, DEFAULT_FONT_SIZE};
 use std::io::{Read, Write};
 fn resolved(d: &Document) -> f32 {
     d.styles.resolve_char(None, &CharProps::default()).size
@@ -21,12 +21,12 @@ fn an_unset_default_size_keeps_its_effective_size_across_save_and_reopen() {
     let mut d = Document::new();
     d.styles.default_chr.size = None;
     assert_eq!(resolved(&d), DEFAULT_FONT_SIZE);
-    let bytes = localoffice_docx::write(&d).unwrap();
+    let bytes = localwriter_docx::write(&d).unwrap();
     assert!(defaults(&styles_xml(&bytes)).contains(r#"<w:sz w:val="22"/>"#));
-    let reopened = localoffice_docx::read(&bytes).unwrap();
+    let reopened = localwriter_docx::read(&bytes).unwrap();
     assert_eq!(resolved(&reopened), DEFAULT_FONT_SIZE);
     // Saving again changes nothing further.
-    let again = localoffice_docx::read(&localoffice_docx::write(&reopened).unwrap()).unwrap();
+    let again = localwriter_docx::read(&localwriter_docx::write(&reopened).unwrap()).unwrap();
     assert_eq!(resolved(&again), DEFAULT_FONT_SIZE);
 }
 #[test]
@@ -34,13 +34,13 @@ fn an_explicit_default_size_is_written_as_it_is() {
     for size in [8.0, 10.0, 11.0, 12.5, 18.0] {
         let mut d = Document::new();
         d.styles.default_chr.size = Some(size);
-        let bytes = localoffice_docx::write(&d).unwrap();
-        assert_eq!(resolved(&localoffice_docx::read(&bytes).unwrap()), size);
+        let bytes = localwriter_docx::write(&d).unwrap();
+        assert_eq!(resolved(&localwriter_docx::read(&bytes).unwrap()), size);
     }
 }
 #[test]
 fn a_file_that_omits_the_default_size_is_still_read_as_ten_points() {
-    // The reader is unchanged: only what LocalOffice writes differs. A package without a size
+    // The reader is unchanged: only what LocalWriter writes differs. A package without a size
     // anywhere keeps its established reading.
     let root = r#"<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>"#;
     let doc = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>x</w:t></w:r></w:p></w:body></w:document>"#;
@@ -51,7 +51,7 @@ fn a_file_that_omits_the_default_size_is_still_read_as_ten_points() {
         zw.start_file(name, zip::write::SimpleFileOptions::default()).unwrap();
         zw.write_all(body.as_bytes()).unwrap();
     }
-    let d = localoffice_docx::read(&zw.finish().unwrap().into_inner()).unwrap();
+    let d = localwriter_docx::read(&zw.finish().unwrap().into_inner()).unwrap();
     assert_eq!(d.styles.default_chr.size, Some(10.0));
 }
 #[test]
@@ -63,7 +63,7 @@ fn an_unset_default_size_does_not_take_a_styles_size() {
     if let Some(normal) = d.styles.get_mut("Normal") {
         normal.chr.size = Some(14.0);
     }
-    let reopened = localoffice_docx::read(&localoffice_docx::write(&d).unwrap()).unwrap();
+    let reopened = localwriter_docx::read(&localwriter_docx::write(&d).unwrap()).unwrap();
     assert_eq!(reopened.styles.default_chr.size, Some(DEFAULT_FONT_SIZE));
     assert_eq!(resolved(&reopened), resolved(&d));
 }

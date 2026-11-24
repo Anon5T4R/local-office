@@ -3,7 +3,7 @@
 //! `design.pageBorders`) as one undo step, so agents get the same result without the dialog.
 
 use egui::{Rect, Sense, Stroke, Ui, pos2, vec2};
-use localoffice_doc::props::{Border, BorderStyle, Borders, Rgb, TabAlign, TabLeader, TabStop};
+use localwriter_doc::props::{Border, BorderStyle, Borders, Rgb, TabAlign, TabLeader, TabStop};
 use serde::Serialize;
 use serde_json::{Value, json};
 
@@ -22,10 +22,10 @@ const LEADERS: [(TabLeader, &str, &str); 5] = [
     (TabLeader::MiddleDot, "4 ······", "······"),
 ];
 
-/// [`localoffice_doc::props::TAB_POS_EPS`]: the engine replaces stops within this tolerance.
-const SAME_POS: f32 = localoffice_doc::props::TAB_POS_EPS;
+/// [`localwriter_doc::props::TAB_POS_EPS`]: the engine replaces stops within this tolerance.
+const SAME_POS: f32 = localwriter_doc::props::TAB_POS_EPS;
 
-fn unit() -> localoffice_geom::Unit {
+fn unit() -> localwriter_geom::Unit {
     crate::options::unit()
 }
 
@@ -496,7 +496,7 @@ impl BordersForm {
     pub fn read(app: &WordApp, tab: u8) -> Option<BordersForm> {
         let s = &app.session;
         let rp = s.doc.para_at(&s.sel.focus).map(|p| s.doc.styles.resolve_para(&p.props))?;
-        let sect = localoffice_engine::cmd::page::sect(s);
+        let sect = localwriter_engine::cmd::page::sect(s);
         let mut f = BordersForm {
             tab: tab.min(2),
             para: LineForm::read(rp.borders.as_ref()),
@@ -774,10 +774,10 @@ fn draw_line(p: &egui::Painter, [a, b]: [egui::Pos2; 2], style: BorderStyle, wid
 mod tests {
     use super::*;
     use crate::dialogs::Dialog;
-    use localoffice_engine::Session;
+    use localwriter_engine::Session;
 
     fn app_with(text: &str) -> WordApp {
-        let mut app = WordApp::new(Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut app = WordApp::new(Session::new(localwriter_doc::Document::new()), crate::Services::default());
         let _ = app.run("document.setText", json!({"text": text}));
         app
     }
@@ -882,8 +882,8 @@ mod tests {
         f.set_leader(9, TabLeader::Dot);
 
         // What the position field parses: the interface unit by default, any unit spelled out.
-        assert_eq!(localoffice_geom::parse_measure("1.5", localoffice_geom::Unit::Inches), Some(108.0));
-        assert_eq!(localoffice_geom::parse_measure("2,54 cm", localoffice_geom::Unit::Inches), Some(72.0));
+        assert_eq!(localwriter_geom::parse_measure("1.5", localwriter_geom::Unit::Inches), Some(108.0));
+        assert_eq!(localwriter_geom::parse_measure("2,54 cm", localwriter_geom::Unit::Inches), Some(72.0));
     }
 
     /// New adds a row at the next free multiple of the default interval — skipping taken and

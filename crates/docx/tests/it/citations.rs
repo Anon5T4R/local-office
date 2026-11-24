@@ -4,9 +4,9 @@
 
 use std::io::Write;
 
-use localoffice_doc::para::OBJ;
-use localoffice_doc::{CharProps, Document, InlineObject, Path, StoryRef};
-use localoffice_docx::{read, write};
+use localwriter_doc::para::OBJ;
+use localwriter_doc::{CharProps, Document, InlineObject, Path, StoryRef};
+use localwriter_docx::{read, write};
 
 const W_NS: &str = r#"xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main""#;
 const ROOT_RELS: &str = r#"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties" Target="docProps/custom.xml"/></Relationships>"#;

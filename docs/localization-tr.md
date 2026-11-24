@@ -2,11 +2,11 @@
 
 Choose **File › Settings › Interface language › Türkçe**, or follow a Turkish system display language
 (`tr-TR`, `tr-CY`, `tr_TR.UTF-8`). The catalog code is `tr`; `ui.language` with `{"value":"tr"}`
-selects it explicitly, and `LOCALOFFICE_LANGUAGE=tr-TR` does the same for a headless screenshot or a
+selects it explicitly, and `LOCALWRITER_LANGUAGE=tr-TR` does the same for a headless screenshot or a
 launch while the preference is `auto`. The choice is saved with the other interface settings.
 Document text, command ids, CLI/MCP/control responses and file paths do not change.
 
-craft-i18n's `locales/tr/localoffice.tsv` (storytold/craft-i18n; it was `crates/ui-egui/src/i18n/tr.tsv`) has all 2,325 entries of the Russian catalog (the same
+craft-i18n's `locales/tr/localwriter.tsv` (storytold/craft-i18n; it was `crates/ui-egui/src/i18n/tr.tsv`) has all 2,325 entries of the Russian catalog (the same
 keys). It covers all ribbon commands, dialogs, built-in style names, equation and math gallery
 structures, watermark presets, paper sizes, and rendered preview tiles. It is written from the
 meaning of the English labels; no proprietary translation resources were consulted. The catalog
@@ -43,7 +43,7 @@ still work. Other interface languages and document search are unchanged.
 
 ## Verification and remaining scope
 
-`cargo test -p localoffice-ui-egui --lib i18n::tests` covers Turkish locale tags and preference order,
+`cargo test -p localwriter-ui-egui --lib i18n::tests` covers Turkish locale tags and preference order,
 saving and restoring `tr`, unknown preferences, unchanged document content and the glyphs
 `ÇçĞğİıÖöŞşÜü` in the bundled Inter (Regular, Medium, SemiBold) and JetBrains Mono. A command-search
 test checks dotted and dotless I under Turkish casing with fixture labels, and that English labels

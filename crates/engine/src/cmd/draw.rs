@@ -13,12 +13,12 @@
 
 use std::sync::Arc;
 
-use localoffice_doc::freeform::{FreePath, Freeform, InkTool, MAX_INK_PER_PAGE, MAX_POINTS};
-use localoffice_doc::para::{Anchor, Float, InlineObject, OBJ, ShapeKind, Wrap};
-use localoffice_doc::props::Rgb;
-use localoffice_doc::{CharProps, Pos, StoryRef};
-use localoffice_geom::Rect;
-use localoffice_layout::{DocLayout, Placed};
+use localwriter_doc::freeform::{FreePath, Freeform, InkTool, MAX_INK_PER_PAGE, MAX_POINTS};
+use localwriter_doc::para::{Anchor, Float, InlineObject, OBJ, ShapeKind, Wrap};
+use localwriter_doc::props::Rgb;
+use localwriter_doc::{CharProps, Pos, StoryRef};
+use localwriter_geom::Rect;
+use localwriter_layout::{DocLayout, Placed};
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::{Value, json};
 
@@ -302,7 +302,7 @@ pub struct PlacedInk {
     /// Its unturned frame on the page.
     pub rect: Rect,
     /// Its turn about the frame's centre.
-    pub spin: localoffice_geom::Spin,
+    pub spin: localwriter_geom::Spin,
     pub freeform: Arc<Freeform>,
     pub color: Option<Rgb>,
     pub width: f32,
@@ -503,7 +503,7 @@ fn place(s: &mut Session, layout: &DocLayout, obj: InlineObject, page: usize, (x
         }
     }
     let (rel, origin) = if on_page {
-        (Anchor::Page, localoffice_geom::Point::new(0.0, 0.0))
+        (Anchor::Page, localwriter_geom::Point::new(0.0, 0.0))
     } else {
         s.touch(); // lay out the new object to find where its paragraph puts it
         let origin = s.layout().object(&at, page).ok_or_else(|| CmdError::Failed("the stroke isn't laid out".into()))?.origin;
@@ -923,15 +923,15 @@ fn replay(s: &mut Session, v: &Value) -> CmdResult {
 
 #[cfg(test)]
 mod tests {
-    use localoffice_doc::StoryRef;
-    use localoffice_doc::freeform::InkTool;
-    use localoffice_doc::para::{InlineObject, ShapeKind, Wrap};
+    use localwriter_doc::StoryRef;
+    use localwriter_doc::freeform::InkTool;
+    use localwriter_doc::para::{InlineObject, ShapeKind, Wrap};
     use serde_json::json;
 
     use crate::Session;
 
     fn session() -> Session {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("document.setText", &json!({"text": "First paragraph of text.\nSecond paragraph of text."})).unwrap();
         s
     }
@@ -951,11 +951,11 @@ mod tests {
         assert_eq!((x, y), (99.0, 89.0), "the points' bounds, grown by half the width");
         let objs = ink(&s);
         let [InlineObject::Shape { stroke, stroke_width, float, freeform: Some(f), .. }] = objs.as_slice() else { panic!("one stroke: {objs:?}") };
-        assert_eq!((*stroke, *stroke_width, float.wrap), (Some(localoffice_doc::Rgb(0xC0, 0, 0)), 2.0, Wrap::InFrontOfText));
+        assert_eq!((*stroke, *stroke_width, float.wrap), (Some(localwriter_doc::Rgb(0xC0, 0, 0)), 2.0, Wrap::InFrontOfText));
         assert_eq!(f.ink, Some(InkTool::Pen));
         assert_eq!(f.paths[0].pts, vec![[1.0, 1.0], [51.0, 31.0], [101.0, 6.0]], "NaN dropped, shape-local");
         // Laid out where it was drawn.
-        let at = localoffice_doc::Pos { story: StoryRef::Body, path: localoffice_doc::Path::top(0), off: 0 };
+        let at = localwriter_doc::Pos { story: StoryRef::Body, path: localwriter_doc::Path::top(0), off: 0 };
         let hit = s.layout().object(&at, 0).unwrap();
         assert!((hit.rect.x - 99.0).abs() < 0.01 && (hit.rect.y - 89.0).abs() < 0.01, "{:?}", hit.rect);
         s.run("edit.undo", &json!({})).unwrap();
@@ -966,7 +966,7 @@ mod tests {
         s.run("draw.stroke", &json!({"page": 0, "points": [[80, 80]]})).unwrap();
         let objs = ink(&s);
         let [InlineObject::Shape { float, freeform: Some(f), stroke, .. }] = objs.as_slice() else { panic!() };
-        assert_eq!((float.wrap, f.ink, *stroke), (Wrap::BehindText, Some(InkTool::Highlighter), Some(localoffice_doc::Rgb(0, 0xFF, 0))));
+        assert_eq!((float.wrap, f.ink, *stroke), (Wrap::BehindText, Some(InkTool::Highlighter), Some(localwriter_doc::Rgb(0, 0xFF, 0))));
         assert!(f.alpha < 1.0);
         // Hostile input is refused, not drawn.
         assert!(s.run("draw.stroke", &json!({"page": 99, "points": [[1, 1]]})).is_err());
@@ -1119,10 +1119,10 @@ mod tests {
         let r = s.run("draw.stroke", &json!({"page": 0, "points": rect_stroke(100.0, 100.0, 120.0, 60.0), "color": "C00000", "width": 2})).unwrap();
         assert_eq!(r["shape"], "rectangle");
         assert_eq!(s.undo_depth(), steps + 1, "drawn and converted in one undo step");
-        let at: localoffice_doc::Pos = serde_json::from_value(r["pos"].clone()).unwrap();
+        let at: localwriter_doc::Pos = serde_json::from_value(r["pos"].clone()).unwrap();
         let obj = s.doc.para_at(&at).and_then(|p| p.object_at(at.off)).cloned().unwrap();
         let InlineObject::Shape { kind, w, h, stroke, stroke_width, freeform, .. } = obj else { panic!("{obj:?}") };
-        assert_eq!((kind, stroke, stroke_width, freeform.is_none()), (ShapeKind::Rectangle, Some(localoffice_doc::Rgb(0xC0, 0, 0)), 2.0, true));
+        assert_eq!((kind, stroke, stroke_width, freeform.is_none()), (ShapeKind::Rectangle, Some(localwriter_doc::Rgb(0xC0, 0, 0)), 2.0, true));
         assert!((w - 120.0).abs() < 2.0 && (h - 60.0).abs() < 2.0, "{w} x {h}");
         let rect = s.layout().object(&at, 0).unwrap().rect;
         assert!((rect.x - 100.0).abs() < 2.0 && (rect.y - 100.0).abs() < 2.0, "where it was drawn: {rect:?}");
@@ -1157,20 +1157,20 @@ mod tests {
         pts.extend([tip, barb(1.0), tip, barb(-1.0)]);
         let r = s.run("draw.stroke", &json!({"page": 0, "points": pts, "color": "C00000", "width": 2})).unwrap();
         assert_eq!(r["shape"], "arrow");
-        let at: localoffice_doc::Pos = serde_json::from_value(r["pos"].clone()).unwrap();
+        let at: localwriter_doc::Pos = serde_json::from_value(r["pos"].clone()).unwrap();
         let obj = s.doc.para_at(&at).and_then(|p| p.object_at(at.off)).cloned().unwrap();
         let InlineObject::Shape { kind, w, h, stroke, stroke_width, freeform, extra, float, .. } = obj else { panic!("{obj:?}") };
         assert_eq!(
             (kind, stroke, stroke_width, freeform.is_none()),
-            (ShapeKind::StraightConnector, Some(localoffice_doc::Rgb(0xC0, 0, 0)), 2.0, true)
+            (ShapeKind::StraightConnector, Some(localwriter_doc::Rgb(0xC0, 0, 0)), 2.0, true)
         );
         assert!(extra.arrow_end && !extra.arrow_start);
         // Tail at the top right, tip at the bottom left: the frame is flipped across.
         assert!(float.flip_h && !float.flip_v, "{float:?}");
         assert!((w - 200.0).abs() < 1.0 && (h - 100.0).abs() < 1.0, "{w} x {h}");
         // It survives a DOCX save and open.
-        let bytes = localoffice_docx::write(&s.doc).unwrap();
-        let back = localoffice_docx::read(&bytes).unwrap();
+        let bytes = localwriter_docx::write(&s.doc).unwrap();
+        let back = localwriter_docx::read(&bytes).unwrap();
         let again: Vec<_> = back.body.iter().filter_map(|b| b.as_para()).flat_map(|p| p.objects.iter()).collect();
         let Some(InlineObject::Shape { extra, float, .. }) =
             again.iter().find(|o| matches!(o, InlineObject::Shape { kind: ShapeKind::StraightConnector, .. }))
@@ -1212,10 +1212,10 @@ mod tests {
         assert!(ink(&s).is_empty(), "the head stroke is gone");
         let all = drawings(&s);
         let [InlineObject::Shape { kind, w, stroke, stroke_width, extra, float, .. }] = all.as_slice() else { panic!("one arrow: {all:?}") };
-        assert_eq!((*kind, *stroke, *stroke_width), (ShapeKind::StraightConnector, Some(localoffice_doc::Rgb(0xC0, 0, 0)), 2.0));
+        assert_eq!((*kind, *stroke, *stroke_width), (ShapeKind::StraightConnector, Some(localwriter_doc::Rgb(0xC0, 0, 0)), 2.0));
         assert!(extra.arrow_end && !extra.arrow_start && !float.flip_h && !float.flip_v, "{extra:?} {float:?}");
         assert!((w - 200.0).abs() < 1.0, "{w}");
-        let at: localoffice_doc::Pos = serde_json::from_value(r["pos"].clone()).unwrap();
+        let at: localwriter_doc::Pos = serde_json::from_value(r["pos"].clone()).unwrap();
         assert!(matches!(s.doc.para_at(&at).and_then(|p| p.object_at(at.off)), Some(InlineObject::Shape { kind: ShapeKind::StraightConnector, .. })));
         let rect = s.layout().object(&at, 0).unwrap().rect;
         assert!((rect.x - 100.0).abs() < 1.0 && (rect.y - 300.0).abs() < 1.0, "where the line was: {rect:?}");
@@ -1225,7 +1225,7 @@ mod tests {
             "the arrow's rect, not the deleted head's: {got:?} vs {rect:?}"
         );
         // It survives a DOCX save and open.
-        let back = localoffice_docx::read(&localoffice_docx::write(&s.doc).unwrap()).unwrap();
+        let back = localwriter_docx::read(&localwriter_docx::write(&s.doc).unwrap()).unwrap();
         let again: Vec<_> = back.body.iter().filter_map(|b| b.as_para()).flat_map(|p| p.objects.iter()).collect();
         assert!(
             again
@@ -1291,7 +1291,7 @@ mod tests {
         assert_eq!(all.len(), 2, "{all:?}");
         let arrow = all.iter().find(|o| matches!(o, InlineObject::Shape { kind: ShapeKind::StraightConnector, .. }));
         let Some(InlineObject::Shape { extra, stroke, .. }) = arrow else { panic!("{all:?}") };
-        assert!(extra.arrow_end && *stroke == Some(localoffice_doc::Rgb(0, 0x70, 0xC0)));
+        assert!(extra.arrow_end && *stroke == Some(localwriter_doc::Rgb(0, 0x70, 0xC0)));
         // The selection still holds what's left: deleting it removes both shapes.
         s.run("draw.lassoDelete", &json!({})).unwrap();
         assert!(drawings(&s).is_empty());

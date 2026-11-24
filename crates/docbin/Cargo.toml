@@ -1,17 +1,17 @@
 [package]
-name = "localoffice-docbin"
+name = "localwriter-docbin"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word reader for the Word 97-2003 binary file format (.doc, [MS-DOC])"
+description = "Local Writer reader for the Word 97-2003 binary file format (.doc, [MS-DOC])"
 
 [lints]
 workspace = true
 
 [dependencies]
-localoffice-doc = { workspace = true }
-localoffice-geom = { workspace = true }
+localwriter-doc = { workspace = true }
+localwriter-geom = { workspace = true }
 cfb = { workspace = true }
 image = { workspace = true }
 miniz_oxide = { workspace = true }
@@ -21,6 +21,6 @@ log = { workspace = true }
 chrono = { workspace = true }
 
 [dev-dependencies]
-localoffice-doc = { workspace = true, features = ["test-support"] }
+localwriter-doc = { workspace = true, features = ["test-support"] }
 proptest = { workspace = true }
 serde_json = { workspace = true }

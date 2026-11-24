@@ -6,11 +6,11 @@
 //! made the drawn columns differ from the stored grid. The app sends each finished drag here,
 //! so every drag is one undo step.
 
-use localoffice_doc::props::{Align, HeightRule, VMerge};
-use localoffice_doc::table::MAX_COLS;
-use localoffice_doc::{Cell, Document, Path, StoryRef, Table};
-use localoffice_geom::Rect;
-use localoffice_layout::{DocLayout, Placed};
+use localwriter_doc::props::{Align, HeightRule, VMerge};
+use localwriter_doc::table::MAX_COLS;
+use localwriter_doc::{Cell, Document, Path, StoryRef, Table};
+use localwriter_geom::Rect;
+use localwriter_layout::{DocLayout, Placed};
 use serde_json::Value;
 
 use super::sel_result;
@@ -343,14 +343,14 @@ pub(crate) fn cell_boxes(l: &DocLayout, page: usize) -> Vec<CellBox> {
 /// The drawn geometry of one table on a page, from its cells' boxes.
 fn geometry(t: &Table, boxes: &[&CellBox]) -> Option<(Vec<f32>, Vec<DrawnRow>)> {
     let n = t.cols();
-    if n == 0 || n > localoffice_doc::table::MAX_COLS || boxes.is_empty() {
+    if n == 0 || n > localwriter_doc::table::MAX_COLS || boxes.is_empty() {
         return None;
     }
     let mut lines: Vec<Option<f32>> = vec![None; n + 1];
     let mut rows: Vec<DrawnRow> = Vec::new();
     for b in boxes {
         let g = t.grid_col(b.row, b.cell);
-        let span = t.rows.get(b.row).and_then(|r| r.cells.get(b.cell)).map_or(1, localoffice_doc::Cell::span);
+        let span = t.rows.get(b.row).and_then(|r| r.cells.get(b.cell)).map_or(1, localwriter_doc::Cell::span);
         let end = g.saturating_add(span).min(n);
         if let Some(x) = lines.get_mut(g) {
             x.get_or_insert(b.rect.x);
@@ -705,7 +705,7 @@ mod tests {
     }
 
     fn table_session(rows: usize, cols: usize) -> Session {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("insert.table", &json!({"rows": rows, "cols": cols})).unwrap();
         s
     }
@@ -779,7 +779,7 @@ mod tests {
     fn an_exact_row_border_drag_leaves_out_the_bottom_margin() {
         let mut s = table_session(2, 2);
         let t = s.doc.body.iter_mut().find_map(|b| match std::sync::Arc::make_mut(b) {
-            localoffice_doc::Block::Table(t) => Some(t),
+            localwriter_doc::Block::Table(t) => Some(t),
             _ => None,
         });
         let t = t.unwrap();
@@ -839,7 +839,7 @@ mod tests {
         let mut s = table_session(3, 2);
         let (m, a, b) = (cell_rect(&mut s, 0, 0), cell_rect(&mut s, 0, 1), cell_rect(&mut s, 1, 1));
         s.run("table.eraser", &json!({"page": 0, "x": m.x + m.w / 2.0, "y": m.bottom() + 0.5})).unwrap();
-        assert_eq!(first_table(&s).rows[1].cells[0].props.vmerge, localoffice_doc::props::VMerge::Continue);
+        assert_eq!(first_table(&s).rows[1].cells[0].props.vmerge, localwriter_doc::props::VMerge::Continue);
         let l = s.layout();
         let x = b.x + b.w / 2.0;
         let t = resize_target(&l, &s.doc, 0, x, a.bottom() + 1.0, REACH).unwrap();

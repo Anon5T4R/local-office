@@ -7,10 +7,10 @@
 //! "params"}`) that fixes it, run with the caret at `pos` (or the object selected). The rules and
 //! their wording are our own; the contrast rule uses the WCAG 2 contrast ratio.
 
-use localoffice_doc::para::{InlineObject, OBJ};
-use localoffice_doc::props::{Rgb, TextColor, VMerge};
-use localoffice_doc::table::Table;
-use localoffice_doc::{Block, Document, Paragraph, Path, Pos, StoryRef};
+use localwriter_doc::para::{InlineObject, OBJ};
+use localwriter_doc::props::{Rgb, TextColor, VMerge};
+use localwriter_doc::table::Table;
+use localwriter_doc::{Block, Document, Paragraph, Path, Pos, StoryRef};
 use serde_json::{Value, json};
 
 /// Most issues reported (a hostile document can't make the report huge).
@@ -198,7 +198,7 @@ impl Checker<'_> {
                 "action": {"label": "Repeat Header Rows", "command": "table.repeatHeader", "params": {"value": true}},
             }));
         }
-        let empty = |c: &localoffice_doc::table::Cell| {
+        let empty = |c: &localwriter_doc::table::Cell| {
             c.blocks.iter().all(|b| match &**b {
                 Block::Para(p) => p.text.trim().is_empty(),
                 _ => false,
@@ -257,8 +257,8 @@ pub fn contrast_ratio(a: Rgb, b: Rgb) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use localoffice_doc::Document;
-    use localoffice_doc::props::Rgb;
+    use localwriter_doc::Document;
+    use localwriter_doc::props::Rgb;
     use serde_json::json;
 
     use crate::Session;

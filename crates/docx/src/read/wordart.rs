@@ -2,9 +2,9 @@
 //! `w14:shadow`, `w14:glow`, `w14:reflection`). Lengths are EMUs, angles 60000ths of a degree,
 //! percentages 1000ths of a percent.
 
-use localoffice_doc::effects::{Glow, Shadow};
-use localoffice_doc::props::Rgb;
-use localoffice_doc::wordart::{GradStop, MAX_STOPS, Reflection, TextEffects, TextFill, TextOutline};
+use localwriter_doc::effects::{Glow, Shadow};
+use localwriter_doc::props::Rgb;
+use localwriter_doc::wordart::{GradStop, MAX_STOPS, Reflection, TextEffects, TextFill, TextOutline};
 
 use crate::units::{int, measure};
 use crate::xml::El;

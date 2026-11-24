@@ -2,16 +2,16 @@
 //! Text Pane, Add Shape, Promote, Demote), change its layout and colours, reset it.
 //!
 //! A SmartArt graphic is an inline [`InlineObject::Graphic`] whose graphic keeps its model
-//! ([`SmartArtSpec`]); LocalOffice lays it out and draws it (see `localoffice_docx::smart_art_items`)
+//! ([`SmartArtSpec`]); LocalWriter lays it out and draws it (see `localwriter_docx::smart_art_items`)
 //! and saves it as diagram parts. SmartArt made by other programs is shown as it is; these
 //! commands only edit graphics with a model. Each command is one undo step.
 
 use std::sync::Arc;
 
-use localoffice_doc::graphic::{Graphic, GraphicKind};
-use localoffice_doc::para::{Float, InlineObject};
-use localoffice_doc::props::Rgb;
-use localoffice_doc::smart_art::{MAX_ITEMS, MAX_LEVEL, SmartArtColors, SmartArtItem, SmartArtLayout, SmartArtSpec, clean_text};
+use localwriter_doc::graphic::{Graphic, GraphicKind};
+use localwriter_doc::para::{Float, InlineObject};
+use localwriter_doc::props::Rgb;
+use localwriter_doc::smart_art::{MAX_ITEMS, MAX_LEVEL, SmartArtColors, SmartArtItem, SmartArtLayout, SmartArtSpec, clean_text};
 use serde_json::{Value, json};
 
 use super::delete_selection;
@@ -152,7 +152,7 @@ fn has_smart_art(s: &Session) -> Option<&'static str> {
     match selected(s) {
         Some((_, InlineObject::Graphic { graphic, .. })) if graphic.smart_art.is_some() => None,
         Some((_, InlineObject::Graphic { graphic, .. })) if graphic.kind == GraphicKind::Diagram => {
-            Some("this SmartArt was made in another program: Local Word shows it but can't edit it")
+            Some("this SmartArt was made in another program: Local Writer shows it but can't edit it")
         }
         _ => Some("select a SmartArt graphic first"),
     }
@@ -161,7 +161,7 @@ fn has_smart_art(s: &Session) -> Option<&'static str> {
 /// The graphic for `spec` laid out `w` × `h` points in the theme's colours.
 pub fn smart_art_graphic(spec: SmartArtSpec, theme: &[Rgb], w: f32, h: f32) -> Graphic {
     let spec = spec.sanitized();
-    let items = localoffice_docx::smart_art_items(&spec, theme, w, h);
+    let items = localwriter_docx::smart_art_items(&spec, theme, w, h);
     Graphic { kind: GraphicKind::Diagram, items, w, h, source: None, chart: None, smart_art: Some(Arc::new(spec)) }
 }
 

@@ -1,7 +1,7 @@
 //! Style Inspector (Home › Styles): the paragraph style and the character style at the caret,
 //! the direct formatting layered on each, and a way to clear each level.
 
-use localoffice_doc::props::{CharProps, ParaProps};
+use localwriter_doc::props::{CharProps, ParaProps};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value, json};

@@ -1,9 +1,9 @@
 //! STYLEREF fields in headers and footers (#775): each page shows its own result.
 
 use super::*;
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::props::{CharProps, NumRef};
-use localoffice_doc::{ListKind, PartKind, Pos, para_block};
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::props::{CharProps, NumRef};
+use localwriter_doc::{ListKind, PartKind, Pos, para_block};
 
 fn field(instr: &str) -> InlineObject {
     InlineObject::Field { instr: instr.into(), result: "stale".into(), locked: false, dirty: false, code: false, form: String::new() }
@@ -127,7 +127,7 @@ fn style_index_is_reused_until_the_body_or_styles_change() {
     // Rename the first chapter: rebuilt, and the header shows the new title.
     let p = d.para_mut(StoryRef::Body, &Path::top(0)).unwrap();
     p.text = "Openings".into();
-    p.runs = vec![localoffice_doc::para::Run { len: p.text.len(), props: Default::default() }];
+    p.runs = vec![localwriter_doc::para::Run { len: p.text.len(), props: Default::default() }];
     let after = pages(&d, &mut c);
     assert!(!Arc::ptr_eq(&first, &index(&c)), "an edited heading rebuilds it");
     assert!(after[0].iter().any(|t| t.contains("Openings")), "{after:?}");
@@ -240,7 +240,7 @@ fn field_drawn(d: &Document, opts: &LayoutOptions) -> Vec<String> {
             let gids = |ch: char| -> Vec<Option<u32>> {
                 para.styles
                     .iter()
-                    .map(|st| localoffice_fonts::shape_run(&st.face, &ch.to_string(), &[], |c| c, false).first().map(|g| g.gid))
+                    .map(|st| localwriter_fonts::shape_run(&st.face, &ch.to_string(), &[], |c| c, false).first().map(|g| g.gid))
                     .collect()
             };
             let glyphs = &para.glyphs[cl.g0 as usize..cl.g1 as usize];

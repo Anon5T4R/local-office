@@ -1,4 +1,4 @@
-# AGENTS.md — Local Word
+# AGENTS.md — Local Writer
 
 Fork independente do wordcraft (ArtCraft), rebrandado para a suíte Local do João.
 Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de terceiros.
@@ -16,13 +16,18 @@ Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de t
   está frio ou feito, mantém durante iteração ativa); fora dele, `cargo clean` ao terminar. Builds pesados são do CI.
 
 ## Estrutura
-- `crates/` — engine e módulos (`localoffice-*`)
-- `apps/localoffice` — app desktop; `apps/localoffice-cli` — CLI/MCP
+- `crates/` — engine e módulos (`localwriter-*`)
+- `apps/localwriter` — app desktop; `apps/localwriter-cli` — CLI/MCP
+- `apps/localwriter/src/legacy.rs` — o que o renome Local Word → Local Writer deixou (o app se chamou Local Word,
+  id `localoffice`): na partida move as pastas de nome antigo (preferências, dados e cache do atualizador, conexões de
+  IA, portátil), uma vez e sem sobrescrever, copia as chaves do chaveiro e lê `LOCALOFFICE_*` onde `LOCALWRITER_*`
+  não está. Nada disso se apaga: o antigo fica para trás. O MSI mantém UpgradeCode e GUIDs; os ProgIds antigos saem
+  com o produto antigo (MajorUpgrade) e os `LocalWriter.*` entram
 - `libs/` — forks vendored: `craft-libs` (b926b5c), `egui` (6d518fc), `winit` (a517b38),
   `winprint.rs` (f084d35) e `winprint-gdi` (417ac3c - o craft-libs pina dois revs do
   winprint.rs; o gdi só existe no rev antigo), `local-ai` (BYOK — chave de API/config;
   fonte em `C:\Dev\underworld\local-ai`, NÃO é o app LocalAI da suíte antiga)
-- `i18n/locales/` — catálogos de tradução (common.tsv + localoffice.tsv por locale,
+- `i18n/locales/` — catálogos de tradução (common.tsv + localwriter.tsv por locale,
   do craft-i18n @ 9205108), embutidos pelo `crates/ui-egui/build.rs`
 - `assets/craft-fonts/` — fontes CJK/árabe/etc. (craft-fonts @ b076417, build input
   `CRAFT_FONTS_DIR`)
@@ -33,7 +38,7 @@ Rust puro + egui. Sem conta, sem telemetria, sem dependência de servidores de t
 ## Agent-native (MCP)
 O app já é agent-native de origem (herdado do wordcraft): `crates/mcp` (servidor stdio + backends
 headless/remote), `crates/control-key` (chave do control channel, em arquivo ou
-`LOCALOFFICE_CONTROL_KEY`), `localoffice-cli mcp` e `mcp --connect ADDR|PORT`. Com `--connect` o
+`LOCALWRITER_CONTROL_KEY`), `localwriter-cli mcp` e `mcp --connect ADDR|PORT`. Com `--connect` o
 bridge fala com o app aberto (porta loopback; a chave só vai para 127.0.0.1) e re-tenta a cada
 chamada até ele abrir. O molde da suíte vive em **`craft-mcp`** (fonte `local-libs`, espelho em
 `libs/craft-libs/crates/mcp`) e é usado aqui para o `--connect` (porta nua/loopback). `run --script`
@@ -59,7 +64,7 @@ packaging/linux/package.sh    # AppImage/deb/rpm/tar (Linux)
   é path dep de outro workspace — só o patch da raiz vale).
 - `libs/` mantém o estilo de origem: fmt do CI exclui `libs/`; o gate de assets
   (`xtask assets`) também.
-- Ícones: `packaging/icons.sh` regenera tudo a partir de `assets/app-icon/localoffice.svg`
+- Ícones: `packaging/icons.sh` regenera tudo a partir de `assets/app-icon/localwriter.svg`
   (viewBox 0 0 1024 1024; resvg + xtask ico + iconutil). Os outputs são commitados.
 
 

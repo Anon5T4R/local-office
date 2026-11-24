@@ -3,9 +3,9 @@
 //! drop-down, combo box or date picker. Everything ends in a `developer.*` command.
 
 use egui::{Align2, Rect, Stroke, Ui, pos2, vec2};
-use localoffice_doc::Pos;
-use localoffice_doc::control::{ControlKind, ControlRange};
-use localoffice_layout::DocLayout;
+use localwriter_doc::Pos;
+use localwriter_doc::control::{ControlKind, ControlRange};
+use localwriter_layout::DocLayout;
 use serde_json::json;
 
 use crate::WordApp;
@@ -41,7 +41,7 @@ struct Popup {
     month: (i64, u32),
 }
 
-fn screen(pr: Rect, scale: f32, r: localoffice_geom::Rect) -> Rect {
+fn screen(pr: Rect, scale: f32, r: localwriter_geom::Rect) -> Rect {
     Rect::from_min_size(pos2(pr.min.x + r.x * scale, pr.min.y + r.y * scale), vec2(r.w * scale, r.h * scale))
 }
 
@@ -149,13 +149,13 @@ pub fn clicks(app: &mut WordApp, resp: &egui::Response) {
 fn date_of(app: &WordApp, at: &Pos) -> Option<(i64, u32, u32)> {
     let r = app.session.doc.control_at(at)?;
     match &r.control.kind {
-        ControlKind::Date { full_date, .. } => localoffice_engine::cmd::controls::parse_date(full_date),
+        ControlKind::Date { full_date, .. } => localwriter_engine::cmd::controls::parse_date(full_date),
         _ => None,
     }
 }
 
 fn today() -> (i64, u32, u32) {
-    let (y, m, d) = localoffice_engine::cmd::civil_from_days((localoffice_engine::cmd::now_unix() / 86_400) as i64);
+    let (y, m, d) = localwriter_engine::cmd::civil_from_days((localwriter_engine::cmd::now_unix() / 86_400) as i64);
     (y, m, d)
 }
 
@@ -226,10 +226,10 @@ fn calendar(ui: &mut Ui, t: &Tokens, month: &mut (i64, u32)) -> Option<u32> {
         }
     });
     let (y, m) = (y.clamp(1, 9999), m.clamp(1, 12));
-    let first = localoffice_engine::cmd::controls::days_from_civil(y, m, 1);
+    let first = localwriter_engine::cmd::controls::days_from_civil(y, m, 1);
     // 1970-01-01 was a Thursday: Monday-first column of the 1st.
     let lead = (first + 3).rem_euclid(7) as u32;
-    let days = localoffice_engine::cmd::controls::days_in_month(y, m);
+    let days = localwriter_engine::cmd::controls::days_in_month(y, m);
     egui::Grid::new("cc_calendar").spacing(vec2(2.0, 2.0)).show(ui, |ui| {
         for cell in 0..(lead + days) {
             if cell < lead {

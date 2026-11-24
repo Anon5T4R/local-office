@@ -15,11 +15,11 @@ mod wordart;
 
 use std::collections::{BTreeMap, HashMap};
 
-use localoffice_doc::ParaProps;
-use localoffice_doc::numbering::{Level, LevelSuffix};
-use localoffice_doc::props::VAlign;
-use localoffice_doc::styles::{Style, StyleKind, TablePart};
-use localoffice_doc::{Blocks, Document, PartKind};
+use localwriter_doc::ParaProps;
+use localwriter_doc::numbering::{Level, LevelSuffix};
+use localwriter_doc::props::VAlign;
+use localwriter_doc::styles::{Style, StyleKind, TablePart};
+use localwriter_doc::{Blocks, Document, PartKind};
 
 use crate::package::{MAX_VBA_RELATED, VBA_PROJECT_PART, VBA_RELATED, rt, zip_entries};
 use crate::xml::{self, W};
@@ -91,7 +91,7 @@ pub(crate) struct Writer<'d> {
     hf: Vec<(u32, String, bool)>,
     /// The headers each slot has so far in body order, with sections' empty slots linked to the
     /// ones before (as layout shows them): where a watermark needs a header of its own.
-    linked_headers: localoffice_doc::section::HeaderSet,
+    linked_headers: localwriter_doc::section::HeaderSet,
     /// The part id standing for a header written only to hold the watermark (no such part).
     wm_header: u32,
     /// The watermark shape to put at the start of the next top-level paragraph (a header's first).
@@ -105,7 +105,7 @@ pub(crate) struct Writer<'d> {
     /// Writing a TOC heading: its TOC field is held back so the entries become the field's result.
     toc_hold_end: bool,
     /// The held TOC field (instruction, locked, props), opened in the first entry as Word does.
-    toc_field: Option<(String, bool, bool, localoffice_doc::props::CharProps)>,
+    toc_field: Option<(String, bool, bool, localwriter_doc::props::CharProps)>,
     /// Open the held TOC field at the start of the paragraph being written.
     toc_begin_here: bool,
     /// Close the open TOC field at the end of the paragraph being written.
@@ -115,7 +115,7 @@ pub(crate) struct Writer<'d> {
     /// Media keys actually referenced by a written drawing.
     used_media: std::collections::BTreeSet<String>,
     /// Bounds writing text boxes inside text boxes (as layout shows them).
-    boxes: localoffice_doc::BoxBudget,
+    boxes: localwriter_doc::BoxBudget,
     /// Text box stories already written: a story shown by many shapes is written once, the other
     /// shapes get an empty box, so the file doesn't grow as shapes × story size.
     written_boxes: std::collections::HashSet<u32>,
@@ -177,7 +177,7 @@ pub(crate) fn write_parts(doc: &Document, flavor: Flavor) -> Result<Vec<(String,
         toc_end_here: false,
         inline_controls: Vec::new(),
         used_media: Default::default(),
-        boxes: localoffice_doc::BoxBudget::default(),
+        boxes: localwriter_doc::BoxBudget::default(),
         written_boxes: std::collections::HashSet::new(),
         embeds: embed::EmbedWriter::new(doc),
         txbx_links: doc
@@ -678,16 +678,16 @@ impl Writer<'_> {
         Some(rels.add(if footer { rt::FOOTER } else { rt::HEADER }, &file, false))
     }
 
-    fn take_para_id(&self, p: &localoffice_doc::Paragraph) -> Option<String> {
+    fn take_para_id(&self, p: &localwriter_doc::Paragraph) -> Option<String> {
         self.para_ids.get(&(p as *const _ as usize)).cloned()
     }
 
     /// Whether `p` holds a reference to the note being written.
-    fn holds_own_ref(&self, p: &localoffice_doc::Paragraph) -> bool {
+    fn holds_own_ref(&self, p: &localwriter_doc::Paragraph) -> bool {
         let Some((foot, id)) = self.current_note else { return false };
         p.objects.iter().any(|o| match o {
-            localoffice_doc::InlineObject::NoteRef { kind, id: nid, .. } => {
-                *nid == id && (*kind == localoffice_doc::para::NoteKind::Footnote) == foot
+            localwriter_doc::InlineObject::NoteRef { kind, id: nid, .. } => {
+                *nid == id && (*kind == localwriter_doc::para::NoteKind::Footnote) == foot
             }
             _ => false,
         })
@@ -732,14 +732,14 @@ fn styles_xml(doc: &Document) -> Vec<u8> {
         // The reader reads an omitted `w:sz` as 10 pt, but the resolver falls back to
         // DEFAULT_FONT_SIZE, so writing nothing would change the size on reopening.
         let mut chr = s.default_chr.clone();
-        chr.size = Some(localoffice_doc::props::DEFAULT_FONT_SIZE);
+        chr.size = Some(localwriter_doc::props::DEFAULT_FONT_SIZE);
         props::rpr_inner(&mut w, &chr);
     } else {
         props::rpr_inner(&mut w, &s.default_chr);
     }
     w.close("w:rPr");
     w.close("w:rPrDefault");
-    if s.default_para_present || s.default_para != localoffice_doc::props::ParaProps::default() {
+    if s.default_para_present || s.default_para != localwriter_doc::props::ParaProps::default() {
         w.open("w:pPrDefault", &[]);
         w.open("w:pPr", &[]);
         props::ppr_inner(&mut w, &s.default_para, false, None);
@@ -995,14 +995,14 @@ fn settings_xml(doc: &Document, footnotes: bool, endnotes: bool, template_rel: O
     let ns = xml::body_ns();
     let ns_refs: Vec<(&str, &str)> = ns.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
     w.open("w:settings", &ns_refs);
-    let zoom = s.zoom.unwrap_or(localoffice_doc::Zoom { percent: 100, fit: None });
+    let zoom = s.zoom.unwrap_or(localwriter_doc::Zoom { percent: 100, fit: None });
     let percent = zoom.percent.clamp(10, 500).to_string();
     match zoom.fit {
         Some(fit) => {
             let val = match fit {
-                localoffice_doc::ZoomFit::OnePage => "fullPage",
-                localoffice_doc::ZoomFit::PageWidth => "bestFit",
-                localoffice_doc::ZoomFit::TextWidth => "textFit",
+                localwriter_doc::ZoomFit::OnePage => "fullPage",
+                localwriter_doc::ZoomFit::PageWidth => "bestFit",
+                localwriter_doc::ZoomFit::TextWidth => "textFit",
             };
             w.empty("w:zoom", &[("w:val", val), ("w:percent", &percent)]);
         }
@@ -1058,7 +1058,7 @@ fn settings_xml(doc: &Document, footnotes: bool, endnotes: bool, template_rel: O
     if s.consecutive_hyphen_limit > 0 {
         w.val("w:consecutiveHyphenLimit", &s.consecutive_hyphen_limit.min(32_767).to_string());
     }
-    if s.hyphenation_zone.is_finite() && (s.hyphenation_zone - localoffice_doc::DEFAULT_HYPHENATION_ZONE).abs() > 0.01 {
+    if s.hyphenation_zone.is_finite() && (s.hyphenation_zone - localwriter_doc::DEFAULT_HYPHENATION_ZONE).abs() > 0.01 {
         w.val("w:hyphenationZone", &crate::units::twips(s.hyphenation_zone.clamp(0.0, 1584.0)));
     }
     if !s.hyphenate_caps {
@@ -1068,7 +1068,7 @@ fn settings_xml(doc: &Document, footnotes: bool, endnotes: bool, template_rel: O
         w.empty("w:evenAndOddHeaders", &[]);
     }
     for (tag, v) in [("w:drawingGridHorizontalSpacing", s.grid_h), ("w:drawingGridVerticalSpacing", s.grid_v)] {
-        if v.is_finite() && (v - localoffice_doc::DEFAULT_GRID).abs() > 0.01 {
+        if v.is_finite() && (v - localwriter_doc::DEFAULT_GRID).abs() > 0.01 {
             w.val(tag, &crate::units::twips(v.clamp(0.5, 1584.0)));
         }
     }
@@ -1078,7 +1078,7 @@ fn settings_xml(doc: &Document, footnotes: bool, endnotes: bool, template_rel: O
         ("w:endnotePr", s.endnote_format, &s.endnote_pr, endnotes, "w:endnote"),
     ] {
         w.open(tag, &[]);
-        story::note_pr_inner(&mut w, &localoffice_doc::section::NoteProps { num_fmt: Some(fmt), ..*pr });
+        story::note_pr_inner(&mut w, &localwriter_doc::section::NoteProps { num_fmt: Some(fmt), ..*pr });
         if used {
             w.empty(el, &[("w:id", "-1")]);
             w.empty(el, &[("w:id", "0")]);
@@ -1189,7 +1189,7 @@ fn theme_xml(doc: &Document) -> Vec<u8> {
     w.open("a:themeElements", &[]);
     w.open("a:clrScheme", &[("name", name)]);
     for (i, n) in names.iter().enumerate() {
-        let c = s.theme_colors.get(i).or_else(|| localoffice_doc::THEME_COLORS.get(i)).copied().unwrap_or_default();
+        let c = s.theme_colors.get(i).or_else(|| localwriter_doc::THEME_COLORS.get(i)).copied().unwrap_or_default();
         w.open(&format!("a:{n}"), &[]);
         w.empty("a:srgbClr", &[("val", &c.hex())]);
         w.close(&format!("a:{n}"));
@@ -1303,7 +1303,7 @@ fn app_xml(doc: &Document) -> Vec<u8> {
             ("xmlns:vt", "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"),
         ],
     );
-    w.leaf("Application", &[], "Local Word");
+    w.leaf("Application", &[], "Local Writer");
     w.leaf("Words", &[], &doc.word_count().to_string());
     w.leaf("Paragraphs", &[], &doc.paragraph_count().to_string());
     w.leaf("DocSecurity", &[], "0");

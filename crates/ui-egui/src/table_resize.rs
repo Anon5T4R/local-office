@@ -7,8 +7,8 @@
 //! are the engine's (`cmd::table_resize`).
 
 use egui::{Pos2, Rect, Stroke, Ui, pos2};
-use localoffice_engine::cmd::table_resize::{self, Edge, Plan, ResizeTarget, Share};
-use localoffice_layout::DocLayout;
+use localwriter_engine::cmd::table_resize::{self, Edge, Plan, ResizeTarget, Share};
+use localwriter_layout::DocLayout;
 use serde_json::json;
 
 use crate::WordApp;
@@ -293,7 +293,7 @@ pub(crate) fn caret_handles(
     painter: &egui::Painter,
     layout: &DocLayout,
     rects: &[Rect],
-) -> Vec<(usize, Option<localoffice_geom::Rect>, Option<localoffice_geom::Rect>)> {
+) -> Vec<(usize, Option<localwriter_geom::Rect>, Option<localwriter_geom::Rect>)> {
     let focus = &app.session.sel.focus;
     let Some((tp, _, _)) = focus.path.cell() else { return Vec::new() };
     let clip = painter.clip_rect();
@@ -302,7 +302,7 @@ pub(crate) fn caret_handles(
         .enumerate()
         .filter(|(_, r)| r.intersects(clip))
         .map(|(page, _)| {
-            let (m, z) = localoffice_engine::cmd::table_mouse::caret_handles(layout, &app.session.doc, focus.story, &tp, page);
+            let (m, z) = localwriter_engine::cmd::table_mouse::caret_handles(layout, &app.session.doc, focus.story, &tp, page);
             (page, m, z)
         })
         .filter(|(_, m, z)| m.is_some() || z.is_some())
@@ -334,7 +334,7 @@ pub(crate) mod tests {
 
     /// The same, each step `dt` seconds apart (short enough for a double-click: 1/60).
     pub(crate) fn table_window_stepping(dt: f32) -> H {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), Default::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), Default::default());
         a.run("insert.table", json!({"rows": 2, "cols": 3})).unwrap();
         a.run("text.insert", json!({"text": "Product"})).unwrap();
         a.run("select.text", json!({"text": "Product"})).unwrap();
@@ -353,12 +353,12 @@ pub(crate) mod tests {
     }
 
     /// Cell (`row`, `cell`)'s rect in page points.
-    pub(crate) fn cell(h: &mut H, row: usize, cell: usize) -> localoffice_geom::Rect {
+    pub(crate) fn cell(h: &mut H, row: usize, cell: usize) -> localwriter_geom::Rect {
         h.state_mut().session.layout().pages[0]
             .items
             .iter()
             .find_map(|it| match it {
-                localoffice_layout::Placed::Cell { rect, row: r, cell: c, .. } if *r == row && *c == cell => Some(*rect),
+                localwriter_layout::Placed::Cell { rect, row: r, cell: c, .. } if *r == row && *c == cell => Some(*rect),
                 _ => None,
             })
             .unwrap()

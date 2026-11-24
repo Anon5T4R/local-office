@@ -1,10 +1,10 @@
 [package]
-name = "localoffice-doc"
+name = "localwriter-doc"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word document model: stories, paragraphs, runs, tables, sections, styles, numbering, fields, notes, comments, revisions; edit primitives"
+description = "Local Writer document model: stories, paragraphs, runs, tables, sections, styles, numbering, fields, notes, comments, revisions; edit primitives"
 
 [lints]
 workspace = true
@@ -15,7 +15,7 @@ workspace = true
 test-support = []
 
 [dependencies]
-localoffice-geom = { workspace = true }
+localwriter-geom = { workspace = true }
 base64 = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true }

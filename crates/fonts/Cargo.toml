@@ -1,10 +1,10 @@
 [package]
-name = "localoffice-fonts"
+name = "localwriter-fonts"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word fonts: font database (bundled OFL + system), metrics, glyph outlines, shaping"
+description = "Local Writer fonts: font database (bundled OFL + system), metrics, glyph outlines, shaping"
 
 [lints]
 workspace = true

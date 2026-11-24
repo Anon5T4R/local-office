@@ -1,15 +1,15 @@
 //! Restrict Editing (Review › Protect, #412): editing restrictions (read only, comments, tracked
 //! changes, filling in forms), formatting limited to a selection of styles, exceptions — ranges
 //! everyone may still edit (`w:permStart w:edGrp="everyone"`) — and an optional password that
-//! guards Stop Protection (ECMA-376 §17.15.1.29; the hash is in `localoffice_docx`).
+//! guards Stop Protection (ECMA-376 §17.15.1.29; the hash is in `localwriter_docx`).
 //!
 //! Enforcement lives in [`crate::Session::run`]: [`check_before`] refuses commands the
 //! restrictions forbid outright, and while exceptions exist [`outside_unchanged`] checks after the
 //! command that nothing outside them changed (the command is rolled back otherwise).
 
-use localoffice_doc::para::{InlineObject, OBJ};
-use localoffice_doc::props::{CellProps, CharProps, RowProps, TableProps};
-use localoffice_doc::{Block, Blocks, Document, Path, PermRange, Pos, StoryRef};
+use localwriter_doc::para::{InlineObject, OBJ};
+use localwriter_doc::props::{CellProps, CharProps, RowProps, TableProps};
+use localwriter_doc::{Block, Blocks, Document, Path, PermRange, Pos, StoryRef};
 use serde_json::{Value, json};
 use std::collections::HashSet;
 
@@ -121,7 +121,7 @@ fn restrict(s: &mut Session, v: &Value) -> CmdResult {
         return stop_protection(s, "");
     }
     let hash = match p::str(v, "password").filter(|p| !p.is_empty()) {
-        Some(pw) => localoffice_docx::protection_hash(pw, localoffice_docx::DEFAULT_SPIN_COUNT).map_err(|e| CmdError::Params(e.to_string()))?,
+        Some(pw) => localwriter_docx::protection_hash(pw, localwriter_docx::DEFAULT_SPIN_COUNT).map_err(|e| CmdError::Params(e.to_string()))?,
         None => Vec::new(),
     };
     let st = &mut s.doc.settings;
@@ -135,16 +135,16 @@ fn restrict(s: &mut Session, v: &Value) -> CmdResult {
 }
 
 /// The error Stop Protection reports when the document's password hash uses an algorithm or form
-/// LocalOffice can't check; the protection stays on.
+/// LocalWriter can't check; the protection stays on.
 pub const UNSUPPORTED_PASSWORD: &str = "This password type isn't supported";
 
 /// Stop Protection: with the document's password when it has one. The password is checked like
 /// Word checks it — the current hash form and the legacy one (ECMA-376 Part 4 §14.8.1); a hash
-/// LocalOffice can't check refuses ([`UNSUPPORTED_PASSWORD`]) rather than unlocking.
+/// LocalWriter can't check refuses ([`UNSUPPORTED_PASSWORD`]) rather than unlocking.
 fn stop_protection(s: &mut Session, password: &str) -> CmdResult {
     if enforced(&s.doc) {
-        use localoffice_docx::PasswordCheck;
-        match localoffice_docx::check_protection_password(&s.doc.settings.protect_hash, password) {
+        use localwriter_docx::PasswordCheck;
+        match localwriter_docx::check_protection_password(&s.doc.settings.protect_hash, password) {
             PasswordCheck::NoPassword | PasswordCheck::Correct => {}
             PasswordCheck::Incorrect if password.is_empty() => {
                 return Err(CmdError::Params("type the document's password to stop protection".into()));
@@ -469,7 +469,7 @@ fn sources_unchanged(before: &Document, after: &Document) -> bool {
 }
 
 /// The section properties paragraphs end, in order.
-fn sections(doc: &Document) -> Vec<&localoffice_doc::SectionProps> {
+fn sections(doc: &Document) -> Vec<&localwriter_doc::SectionProps> {
     doc.para_paths(StoryRef::Body).iter().filter_map(|path| doc.para(StoryRef::Body, path)?.section.as_deref()).collect()
 }
 
@@ -479,7 +479,7 @@ fn sections(doc: &Document) -> Vec<&localoffice_doc::SectionProps> {
 enum Piece {
     Text(String, CharProps),
     Object(Option<InlineObject>),
-    Mark(Box<localoffice_doc::ParaProps>, CharProps),
+    Mark(Box<localwriter_doc::ParaProps>, CharProps),
     /// Tables nested deeper than the paragraph walk reaches, compared as a whole.
     Deep(String),
     Table(Box<TableProps>, Vec<f32>),
@@ -1167,7 +1167,7 @@ mod tests {
     }
 
     /// While Filling in forms is enforced, Word offers no Remove Content Control and greys out the
-    /// Developer tab's control buttons and Properties. LocalOffice removed a fillable control (its
+    /// Developer tab's control buttons and Properties. LocalWriter removed a fillable control (its
     /// content left as plain text), inserted new controls inside one, and renamed one.
     #[test]
     fn forms_mode_keeps_its_controls() {
@@ -1341,7 +1341,7 @@ mod tests {
     /// command changes, and an empty control has no content to flip either. Refused now.
     #[test]
     fn forms_mode_cannot_clear_a_controls_lock_by_properties() {
-        use localoffice_doc::control::{ContentControl, ControlKind, ControlLock, ListItem};
+        use localwriter_doc::control::{ContentControl, ControlKind, ControlLock, ListItem};
         let mut s = Session::new(Document::from_text("Fill now."));
         select(&mut s, "now");
         s.run("developer.richText", &json!({"tag": "free"})).unwrap();
@@ -1491,7 +1491,7 @@ mod tests {
     /// whatever their depth, and markers never pair across a table-cell boundary).
     #[test]
     fn forms_mode_with_malformed_markers_stays_conservative() {
-        use localoffice_doc::control::{ContentControl, ControlKind};
+        use localwriter_doc::control::{ContentControl, ControlKind};
         let mut s = Session::new(Document::from_text("Locked.\nPick.\nEnd."));
         select(&mut s, "Pick.");
         s.run("developer.dropDown", &json!({"tag": "size", "items": ["S", "M"]})).unwrap();
@@ -1581,7 +1581,7 @@ mod tests {
     }
 
     /// A Word file with the legacy hash (`w:cryptAlgorithmSid`): a wrong password is rejected, the
-    /// right one unlocks; a hash LocalOffice can't check never unlocks.
+    /// right one unlocks; a hash LocalWriter can't check never unlocks.
     #[test]
     fn legacy_password_is_verified_and_unknown_forms_refused() {
         let protected = |sid: &str| {

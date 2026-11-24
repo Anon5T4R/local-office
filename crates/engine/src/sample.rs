@@ -1,8 +1,8 @@
 //! Built-in sample documents and templates (original text, generated in code).
 
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::props::{Align, Border, BorderStyle, Borders, CharProps, NumRef, Rgb, TabAlign, TabLeader, TabStop, TextColor};
-use localoffice_doc::{Block, Document, ListKind, Paragraph, PartKind, Table, para_block};
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::props::{Align, Border, BorderStyle, Borders, CharProps, NumRef, Rgb, TabAlign, TabLeader, TabStop, TextColor};
+use localwriter_doc::{Block, Document, ListKind, Paragraph, PartKind, Table, para_block};
 
 fn para(text: &str) -> Paragraph {
     Paragraph::with_text(text, CharProps::default())
@@ -30,7 +30,7 @@ fn italic() -> CharProps {
 pub fn sample_document() -> Document {
     let mut d = Document::new();
     d.core.title = "The Open Studio Handbook".into();
-    d.core.creator = "Local Word".into();
+    d.core.creator = "Local Writer".into();
     let mut b: Vec<Block> = Vec::new();
     b.push(Block::Para(styled("The Open Studio Handbook", "Title")));
     b.push(Block::Para(styled("How a small community of makers shares space, tools and time", "Subtitle")));
@@ -112,7 +112,7 @@ pub fn sample_document() -> Document {
     add(
         &mut h,
         "Visit the project page",
-        CharProps { style: Some("Hyperlink".into()), link: Some("https://github.com/Anon5T4R/local-office".into()), ..Default::default() },
+        CharProps { style: Some("Hyperlink".into()), link: Some("https://github.com/Styx-Studios/Local-Writer".into()), ..Default::default() },
     );
     add(&mut h, " for events.", CharProps::default());
     b.push(Block::Para(h));
@@ -216,7 +216,7 @@ mod tests {
         assert_eq!(sample_document().word_count(), 361);
         for d in [sample_document(), letter(), resume(), report()] {
             assert!(d.word_count() > 5);
-            let l = localoffice_layout::layout(&d, &mut localoffice_layout::LayoutCache::new(), &Default::default());
+            let l = localwriter_layout::layout(&d, &mut localwriter_layout::LayoutCache::new(), &Default::default());
             assert!(!l.pages.is_empty());
         }
     }

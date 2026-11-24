@@ -1,5 +1,5 @@
 use super::RecoveryInfo;
-use localoffice_doc::Document;
+use localwriter_doc::Document;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
@@ -495,7 +495,7 @@ impl Recovery {
         let (tx, jobs) = mpsc::sync_channel(1);
         let (events, rx) = mpsc::channel();
         std::thread::Builder::new()
-            .name("localoffice-recovery".into())
+            .name("localwriter-recovery".into())
             .spawn(move || {
                 let mut store = match Store::new(root) {
                     Ok(s) => s,
@@ -721,13 +721,13 @@ impl Recovery {
 mod tests {
     use super::*;
     use crate::Session;
-    use localoffice_doc::StoryRef;
+    use localwriter_doc::StoryRef;
     use serde_json::json;
 
     struct Temp(PathBuf);
     impl Temp {
         fn new() -> Self {
-            let path = std::env::temp_dir().join(format!("localoffice-recovery-test-{}", new_id().unwrap()));
+            let path = std::env::temp_dir().join(format!("localwriter-recovery-test-{}", new_id().unwrap()));
             private_dir(&path).unwrap();
             Self(path)
         }

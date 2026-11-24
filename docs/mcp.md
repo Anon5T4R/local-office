@@ -1,30 +1,30 @@
 # MCP server
 
-LocalOffice speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio, so
+LocalWriter speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio, so
 Claude and other agents can write and edit documents.
 
 ```sh
-localoffice-cli mcp                          # headless session (no window)
-localoffice --control 7981 &                 # or: drive the running app…
-localoffice-cli mcp --connect 7981           # …including clicks, keys and screenshots
-localoffice-cli mcp --connect 127.0.0.1:7981 # the same address, spelled in full
+localwriter-cli mcp                          # headless session (no window)
+localwriter --control 7981 &                 # or: drive the running app…
+localwriter-cli mcp --connect 7981           # …including clicks, keys and screenshots
+localwriter-cli mcp --connect 127.0.0.1:7981 # the same address, spelled in full
 ```
 
 `--connect` takes `HOST:PORT` or a bare `PORT` (which means `127.0.0.1`, where the app listens); a
 host that isn't loopback is refused before anything connects.
 
-Claude Code: `claude mcp add localoffice -- localoffice-cli mcp`.
+Claude Code: `claude mcp add localwriter -- localwriter-cli mcp`.
 
 With `--connect`, the bridge sends the app's control key, which it reads from
-`LOCALOFFICE_CONTROL_KEY` or from the key file the app writes at start. It sends the key only to
+`LOCALWRITER_CONTROL_KEY` or from the key file the app writes at start. It sends the key only to
 loopback addresses; see [Keys](control-protocol.md#keys). The bridge serves even when the app
 isn't open yet: tool calls return "not reachable … will retry on each call" and succeed once the
-app's port opens (#4078), so a client that starts before LocalOffice doesn't lose the server for
+app's port opens (#4078), so a client that starts before LocalWriter doesn't lose the server for
 its whole session.
 
 ## Scripts from the command line
 
-`localoffice-cli run --script job.json` (`--script -` reads standard input) runs the commands in a
+`localwriter-cli run --script job.json` (`--script -` reads standard input) runs the commands in a
 file, in order, exactly like repeated `--cmd`, and then saves. Use it to generate a DOCX and its
 PDF in one run without a window:
 
@@ -58,32 +58,32 @@ suite takes its job files. They run in order and are saved with `--save`; the jo
 
 ## The command catalogue from the command line
 
-`localoffice-cli commands` prints every command (id, label, shortcut and menu location);
+`localwriter-cli commands` prints every command (id, label, shortcut and menu location);
 `commands --json` prints the same as JSON, and `commands --search TEXT` keeps the ones whose id,
 label or location contains `TEXT` (case-insensitive) — the same idea as `list_commands`'s `query`
 over MCP:
 
 ```sh
-localoffice-cli commands --search "track changes"
+localwriter-cli commands --search "track changes"
 ```
 
 ## Tracked changes by an agent
 
-Tracked changes and comments are recorded under the session's user name ("LocalOffice User" by
+Tracked changes and comments are recorded under the session's user name ("LocalWriter User" by
 default). Name the agent so reviewers can tell its edits from people's: start the headless server
-with `localoffice-cli mcp --author "Claude (copyedit)"`, or run
+with `localwriter-cli mcp --author "Claude (copyedit)"`, or run
 `file.setAuthor {"name": "Claude (copyedit)"}`. Turn tracking on explicitly with
 `review.trackChanges {"value": true}`; without `value` it toggles, which turns tracking *off* in
-a document that was saved with it on. `localoffice-cli run` takes `--author` too.
+a document that was saved with it on. `localwriter-cli run` takes `--author` too.
 
 ## Confining file access
 
 ```sh
-localoffice-cli mcp --automation-read-root /work/project --automation-write-root /work/project/out
+localwriter-cli mcp --automation-read-root /work/project --automation-write-root /work/project/out
 ```
 
 ```json
-{"mcpServers": {"localoffice": {"command": "/abs/path/target/release/localoffice-cli",
+{"mcpServers": {"localwriter": {"command": "/abs/path/target/release/localwriter-cli",
   "args": ["mcp", "--automation-read-root", "/work/project", "--automation-write-root", "/work/project/out"]}}}
 ```
 
@@ -121,8 +121,8 @@ config works across the suite) keep the agent to the folders you give it:
   given once (`--flag <dir>` or `--flag=<dir>`).
 
 The flags confine the headless server; `--connect` with them is an error, since the server would
-otherwise talk to an app that isn't confined. LocalOffice's desktop app has no equivalent flags yet,
-so a running app (`localoffice --control`) is not confined.
+otherwise talk to an app that isn't confined. LocalWriter's desktop app has no equivalent flags yet,
+so a running app (`localwriter --control`) is not confined.
 
 What the roots do not cover: commands that take no path (`text.insert`, `execute` of anything that
 works on the open document) can still read and change that document, and `get_text` and
@@ -180,7 +180,7 @@ window, so they work on the document on screen.
 `insert.picture` and `insert.icon` leave the caret after the new picture, so typing next doesn't
 replace it; Picture Format commands (`picture.*`, `arrange.*`) still act on it.
 
-Resources: `localoffice://document` (inspect) and `localoffice://commands`.
+Resources: `localwriter://document` (inspect) and `localwriter://commands`.
 
 The acceptance test `crates/mcp/src/tests.rs` writes a formatted document using MCP only.
 

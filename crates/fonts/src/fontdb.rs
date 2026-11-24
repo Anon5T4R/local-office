@@ -2001,10 +2001,10 @@ mod tests {
         assert_eq!(off(&spread), Some(23));
     }
     #[test]
-    #[ignore = "requires a locally licensed kaiu.ttf; set LOCALOFFICE_TEST_KAI_FONT"]
+    #[ignore = "requires a locally licensed kaiu.ttf; set LOCALWRITER_TEST_KAI_FONT"]
     fn kai_contours_include_complete_character_body() {
         use kurbo::Shape;
-        let path = std::env::var_os("LOCALOFFICE_TEST_KAI_FONT").expect("set LOCALOFFICE_TEST_KAI_FONT");
+        let path = std::env::var_os("LOCALWRITER_TEST_KAI_FONT").expect("set LOCALWRITER_TEST_KAI_FONT");
         let db = super::FontDb::with_font_dirs(vec![]);
         db.set_system_fallback(false);
         assert!(db.add_font(std::fs::read(path).unwrap()) > 0);

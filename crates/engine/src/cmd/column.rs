@@ -8,9 +8,9 @@
 //! Extending the selection from one cell into another (Shift+arrows, Shift+click, a drag) makes
 //! such cells, as in Word (`table::extend_selection`).
 
-use localoffice_doc::edit::Fragment;
-use localoffice_doc::props::CharProps;
-use localoffice_doc::{Block, Paragraph, Pos};
+use localwriter_doc::edit::Fragment;
+use localwriter_doc::props::CharProps;
+use localwriter_doc::{Block, Paragraph, Pos};
 use serde_json::{Value, json};
 
 use super::{parse_pos, pos_json};

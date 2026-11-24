@@ -5,8 +5,8 @@
 //! engine itself.
 
 use egui::{Align2, Rect, Sense, Stroke, Ui, pos2, vec2};
-use localoffice_doc::math::parse_linear;
-use localoffice_engine::math_gallery::{BUILT_INS, STRUCTURES, SYMBOL_SETS, Template};
+use localwriter_doc::math::parse_linear;
+use localwriter_engine::math_gallery::{BUILT_INS, STRUCTURES, SYMBOL_SETS, Template};
 use serde_json::json;
 
 use crate::WordApp;
@@ -32,7 +32,7 @@ pub(crate) fn button_picture(id: &str) -> &'static str {
 }
 
 /// A rendered equation drawn into `r` (centred), or its linear text while it renders.
-fn paint_math(app: &mut WordApp, ui: &Ui, r: Rect, key: &str, linear: &str, nodes: Option<localoffice_doc::math::Arg>, display: bool, pt: f32) {
+fn paint_math(app: &mut WordApp, ui: &Ui, r: Rect, key: &str, linear: &str, nodes: Option<localwriter_doc::math::Arg>, display: bool, pt: f32) {
     let nodes = nodes.unwrap_or_else(|| parse_linear(linear));
     match crate::previews::math_texture(app, ui.ctx(), key, &nodes, display, pt, r.size()) {
         Some((tex, uv)) => {
@@ -65,7 +65,7 @@ pub(crate) fn math_placeholder_with(linear: &str, covered: impl Fn(char) -> bool
     for c in linear.chars() {
         if c.is_whitespace() || covered(c) {
             result.push(c);
-        } else if let Some(name) = localoffice_doc::math_symbols::name_of(c) {
+        } else if let Some(name) = localwriter_doc::math_symbols::name_of(c) {
             result.push('\\');
             result.push_str(name);
         } else {
@@ -84,7 +84,7 @@ const EQUATION_PICTURE: &str = "∑_(i=1)^n";
 #[cfg(test)]
 pub(crate) fn placeholder_linears() -> impl Iterator<Item = String> {
     let pictures = STRUCTURES.iter().map(|g| button_picture(g.id).to_string());
-    let templates = localoffice_engine::math_gallery::templates().map(|t| t.linear.to_string());
+    let templates = localwriter_engine::math_gallery::templates().map(|t| t.linear.to_string());
     let symbols = SYMBOL_SETS.iter().flat_map(|(_, chars)| chars.chars()).map(|c| c.to_string());
     std::iter::once(EQUATION_PICTURE.to_string())
         .chain(pictures)
@@ -304,11 +304,11 @@ fn symbol_button(ui: &mut Ui, app: &mut WordApp, c: char, t: &Tokens) -> bool {
         ui.painter().rect_stroke(r, 2.0, Stroke::new(1.0, t.accent), egui::StrokeKind::Inside);
     }
     let s = c.to_string();
-    let nodes = vec![localoffice_doc::math::MNode::Run(localoffice_doc::math::MRun { text: s.clone(), lit: true, ..Default::default() })];
+    let nodes = vec![localwriter_doc::math::MNode::Run(localwriter_doc::math::MRun { text: s.clone(), lit: true, ..Default::default() })];
     paint_math(app, ui, r, &format!("sym:{s}"), &s, Some(nodes), false, 11.0);
     let display = math_placeholder(ui, &s);
     let name =
-        localoffice_doc::math_symbols::name_of(c).map(|n| format!("{display}  \\{n}")).unwrap_or_else(|| format!("{display}  U+{:04X}", c as u32));
+        localwriter_doc::math_symbols::name_of(c).map(|n| format!("{display}  \\{n}")).unwrap_or_else(|| format!("{display}  U+{:04X}", c as u32));
     resp.on_hover_text(name).clicked()
 }
 

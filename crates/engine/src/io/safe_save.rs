@@ -3,7 +3,7 @@
 //!
 //! When the folder refuses the temporary file (macOS privacy protection, #2138, or a read-only
 //! folder), an existing destination is never written in place: it is left exactly as it was and
-//! the error says to use Save As to another folder or to give LocalOffice access to this one. Only
+//! the error says to use Save As to another folder or to give LocalWriter access to this one. Only
 //! a destination that doesn't exist yet, so has no previous version to lose, is created directly;
 //! a failed direct write removes it again.
 use std::fs::{self, File, OpenOptions};
@@ -85,10 +85,10 @@ fn create_directly(path: &Path, refused: io::Error, prepare: impl FnOnce(&mut Fi
         Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {
             return Err(guided(
                 refused,
-                "This folder doesn't let Local Word create the temporary file a safe save needs, so the existing file was left unchanged.",
+                "This folder doesn't let Local Writer create the temporary file a safe save needs, so the existing file was left unchanged.",
             ));
         }
-        Err(e) if e.kind() == io::ErrorKind::PermissionDenied => return Err(guided(e, "Local Word can't create files in this folder.")),
+        Err(e) if e.kind() == io::ErrorKind::PermissionDenied => return Err(guided(e, "Local Writer can't create files in this folder.")),
         Err(e) => return Err(e),
     };
     let Err(failed) = prepare(&mut file) else {
@@ -116,14 +116,14 @@ impl std::error::Error for Guided {}
 /// `e`, then `why`, then how to save anyway: Save As to another folder, or access to this one.
 fn guided(e: io::Error, why: &str) -> io::Error {
     let access = if cfg!(target_os = "macos") {
-        "allow Local Word to use this folder in System Settings › Privacy & Security › Files and Folders"
+        "allow Local Writer to use this folder in System Settings › Privacy & Security › Files and Folders"
     } else {
         "get write access to this folder"
     };
     io::Error::new(e.kind(), Guided(format!("{e}. {why} Use Save As to save the document in another folder, or {access}, then save again.")))
 }
 
-/// A permission error on macOS usually means its privacy protection keeps LocalOffice out of the
+/// A permission error on macOS usually means its privacy protection keeps LocalWriter out of the
 /// folder; say where to allow it (errors from [`guided`] already do).
 fn explain(e: io::Error) -> io::Error {
     let worded = e.get_ref().is_some_and(|inner| inner.is::<Guided>());
@@ -131,7 +131,7 @@ fn explain(e: io::Error) -> io::Error {
         return io::Error::new(
             e.kind(),
             format!(
-                "{e}. macOS may be blocking LocalOffice from this folder: allow it in System Settings › Privacy & Security › Files and Folders, or save somewhere else"
+                "{e}. macOS may be blocking LocalWriter from this folder: allow it in System Settings › Privacy & Security › Files and Folders, or save somewhere else"
             ),
         );
     }
@@ -155,7 +155,7 @@ impl Temporary {
         // A short name also works beside a destination already at the filename-length limit.
         for _ in 0..128 {
             let id = NEXT.fetch_add(1, Ordering::Relaxed);
-            let path = destination.with_file_name(format!(".localoffice-save-{}-{id}.tmp", std::process::id()));
+            let path = destination.with_file_name(format!(".localwriter-save-{}-{id}.tmp", std::process::id()));
             let mut options = OpenOptions::new();
             options.write(true).create_new(true);
             #[cfg(unix)]
@@ -207,7 +207,7 @@ mod tests {
         fn new() -> Self {
             static NEXT: AtomicU64 = AtomicU64::new(0);
             let path =
-                std::env::temp_dir().join(format!("localoffice-save-owner-test-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
+                std::env::temp_dir().join(format!("localwriter-save-owner-test-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
             fs::create_dir(&path).unwrap();
             Self(path)
         }

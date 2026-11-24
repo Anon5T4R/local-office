@@ -15,7 +15,7 @@
   timestamp server, ...). Optional overrides: WINDOWS_TIMESTAMP_URL, SIGNTOOL (path to signtool.exe).
 
 .EXAMPLE
-  pwsh packaging/windows/sign.ps1 dist/localoffice.exe dist/LocalOffice.msi
+  pwsh packaging/windows/sign.ps1 dist/localwriter.exe dist/LocalWriter.msi
 #>
 param(
   [Parameter(Mandatory = $true, ValueFromRemainingArguments = $true)]
@@ -55,8 +55,8 @@ if (-not $haveCert -and -not $haveAzure) {
 }
 
 $script:SignTool = Find-SignTool
-$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'Local Word', '/du', 'https://github.com/Anon5T4R/local-office')
-$tmp = Join-Path ([IO.Path]::GetTempPath()) "localoffice-sign-$([IO.Path]::GetRandomFileName())"
+$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'Local Writer', '/du', 'https://github.com/Styx-Studios/Local-Writer')
+$tmp = Join-Path ([IO.Path]::GetTempPath()) "localwriter-sign-$([IO.Path]::GetRandomFileName())"
 New-Item -ItemType Directory -Path $tmp | Out-Null
 
 try {

@@ -2,11 +2,11 @@
 //! table-style conditional formatting. Rows are laid out as free-standing boxes; pagination
 //! moves whole rows or splits them between lines (`split_row`).
 
-use localoffice_doc::numbering::Counters;
-use localoffice_doc::props::{Align, Border, Borders, HeightRule, Rgb, TextDirection, VAlign, VMerge};
-use localoffice_doc::styles::{PartSet, TablePart, TableStyleProps};
-use localoffice_doc::{Block, Blocks, Paragraph, Row, StoryRef, Table};
-use localoffice_geom::Rect;
+use localwriter_doc::numbering::Counters;
+use localwriter_doc::props::{Align, Border, Borders, HeightRule, Rgb, TextDirection, VAlign, VMerge};
+use localwriter_doc::styles::{PartSet, TablePart, TableStyleProps};
+use localwriter_doc::{Block, Blocks, Paragraph, Row, StoryRef, Table};
+use localwriter_geom::Rect;
 
 use crate::para::{CellText, ClKind, ParaLayout};
 use crate::{BoxContext, BoxLayout, Ctx, Placed, layout_box};
@@ -120,7 +120,7 @@ fn default_margins(t: &Table, style: Option<&TableStyleProps>) -> [f32; 4] {
 /// table's defaults. The layout uses the left and right ones as they are (the app's ruler
 /// measures a cell's indents from them) but gives every cell in a row the row's largest top and
 /// bottom margins.
-pub fn cell_margins(doc: &localoffice_doc::Document, t: &Table, row: usize, cell: usize) -> [f32; 4] {
+pub fn cell_margins(doc: &localwriter_doc::Document, t: &Table, row: usize, cell: usize) -> [f32; 4] {
     let style = t.props.style.as_deref().and_then(|id| doc.styles.table_style(id));
     let defaults = default_margins(t, style.as_ref());
     t.rows.get(row).and_then(|r| r.cells.get(cell)).map_or(defaults, |cell| cell.props.resolved_margins(defaults))
@@ -136,7 +136,7 @@ const EMPTY_TEXT: f32 = 12.0;
 
 /// What one paragraph needs: the longest run of text without a break opportunity (`min`) and
 /// its longest line when nothing wraps (`max`), indents included.
-fn measure_para(p: &localoffice_doc::Paragraph, env: &crate::para::ParaEnv) -> (f32, f32) {
+fn measure_para(p: &localwriter_doc::Paragraph, env: &crate::para::ParaEnv) -> (f32, f32) {
     use crate::para::ClKind;
     let pl = crate::para::layout_para(p, env);
     let rp = &pl.rp;
@@ -181,11 +181,11 @@ fn measure_para(p: &localoffice_doc::Paragraph, env: &crate::para::ParaEnv) -> (
 /// wrap), the widest fits every paragraph on one line. A cell spanning several columns spreads
 /// what its columns lack over them. Paragraphs are laid out with the table style's formatting;
 /// after [`MEASURE_BUDGET`] paragraphs the remaining rows are skipped.
-pub fn measure_table_columns(doc: &localoffice_doc::Document, t: &Table) -> Vec<(f32, f32)> {
-    use localoffice_doc::Block;
+pub fn measure_table_columns(doc: &localwriter_doc::Document, t: &Table) -> Vec<(f32, f32)> {
+    use localwriter_doc::Block;
     let style = t.props.style.as_deref().and_then(|id| doc.styles.table_style(id));
     let margins_def = default_margins(t, style.as_ref());
-    let ncols = grid_cols(t).clamp(1, localoffice_doc::table::MAX_COLS);
+    let ncols = grid_cols(t).clamp(1, localwriter_doc::table::MAX_COLS);
     let fields = crate::FieldCtx::default();
     let mut cols = vec![(0.0f32, 0.0f32); ncols];
     // Cells spanning several columns: (first column, span, min, max), applied after the others.
@@ -733,7 +733,7 @@ pub fn layout_table(ctx: &mut Ctx, story: StoryRef, t: &Table, path: &[u32], ava
                 .items
                 .iter()
                 .filter_map(|item| match item {
-                    Placed::Object { rect, wrap: localoffice_doc::para::Wrap::BehindText, .. } => Some(rect.bottom()),
+                    Placed::Object { rect, wrap: localwriter_doc::para::Wrap::BehindText, .. } => Some(rect.bottom()),
                     _ => None,
                 })
                 .fold(c.h, f32::max);
@@ -805,7 +805,7 @@ pub fn layout_table(ctx: &mut Ctx, story: StoryRef, t: &Table, path: &[u32], ava
             items.push(Placed::Cell {
                 rect: Rect::new(c.x, 0.0, c.w, if c.vmerge == VMerge::Continue { rh } else { span_h }),
                 covered: c.vmerge == VMerge::Continue,
-                table: localoffice_doc::Path(path.to_vec()),
+                table: localwriter_doc::Path(path.to_vec()),
                 row: ri,
                 cell: ci,
                 story,
@@ -1112,7 +1112,7 @@ fn region_of(t: &Table, style: Option<&TableStyleProps>, ri: usize, g: usize, sp
 /// The table style's text formatting in `region`: each part's character formatting and paragraph
 /// alignment over the last, lowest precedence first (ECMA-376 §17.7.6).
 fn region_text(st: &TableStyleProps, region: Region) -> CellText {
-    let mut chr = localoffice_doc::CharProps::default();
+    let mut chr = localwriter_doc::CharProps::default();
     let mut para = st.para.clone();
     for part in region.iter() {
         let f = st.part(part);
@@ -1208,7 +1208,7 @@ fn blocks_content(ctx: &mut Ctx, blocks: &Blocks, text: Option<&CellText>, depth
 }
 
 /// The list level `p` is in, for its indents (without counting it: measuring isn't laying out).
-fn list_level(ctx: &Ctx, p: &Paragraph) -> Option<localoffice_doc::numbering::Level> {
+fn list_level(ctx: &Ctx, p: &Paragraph) -> Option<localwriter_doc::numbering::Level> {
     let n = p.props.numbering.or_else(|| ctx.doc.styles.resolve_para(&p.props).numbering).filter(|n| n.num != 0)?;
     ctx.doc.numbering.level(n.num, n.level).cloned()
 }

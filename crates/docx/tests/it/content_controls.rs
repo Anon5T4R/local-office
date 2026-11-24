@@ -4,9 +4,9 @@
 
 use std::io::Write;
 
-use localoffice_doc::control::{ControlKind, ControlLock, ListItem};
-use localoffice_doc::{Block, ContentControl, Document, StoryRef};
-use localoffice_docx::{read, write};
+use localwriter_doc::control::{ControlKind, ControlLock, ListItem};
+use localwriter_doc::{Block, ContentControl, Document, StoryRef};
+use localwriter_docx::{read, write};
 
 const NS: &str = r#"xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml""#;
 const ROOT_RELS: &str = r#"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>"#;
@@ -98,7 +98,7 @@ fn document_xml(docx: &[u8]) -> String {
 
 fn controls(d: &Document) -> Vec<ContentControl> {
     let mut out = Vec::new();
-    localoffice_doc::control::walk_controls(&d.body, &mut |c| out.push(c.clone()));
+    localwriter_doc::control::walk_controls(&d.body, &mut |c| out.push(c.clone()));
     out
 }
 
@@ -186,8 +186,8 @@ fn edited_documents_still_write_whole_controls() {
     let ranges = d.control_ranges(StoryRef::Body);
     let name = ranges.iter().find(|r| r.control.id == Some(7)).unwrap().clone();
     let intro = ranges.iter().find(|r| r.control.title == "Intro").unwrap().clone();
-    let from = localoffice_doc::Pos { off: 3, ..intro.end.clone() };
-    let to = localoffice_doc::Pos { off: name.start.off + 4, ..name.start.clone() };
+    let from = localwriter_doc::Pos { off: 3, ..intro.end.clone() };
+    let to = localwriter_doc::Pos { off: name.start.off + 4, ..name.start.clone() };
     d.delete_range(&from, &to).unwrap();
     // Both controls are still there, emptied where the deletion went through them.
     let after = d.control_ranges(StoryRef::Body);
@@ -293,7 +293,7 @@ fn toc_gallery_around_the_engine_form_goes_to_the_toc() {
         let d = read(&bytes).unwrap();
         assert!(controls(&d).is_empty(), "pass {pass}");
         let heading = d.body[0].as_para().unwrap();
-        assert!(heading.objects.iter().any(|o| matches!(o, localoffice_doc::InlineObject::Field { instr, .. } if instr.trim().starts_with("TOC"))));
+        assert!(heading.objects.iter().any(|o| matches!(o, localwriter_doc::InlineObject::Field { instr, .. } if instr.trim().starts_with("TOC"))));
         bytes = write(&d).unwrap();
         let xml = document_xml(&bytes);
         assert_eq!(xml.matches("<w:sdt>").count(), 1, "pass {pass}: {xml}");

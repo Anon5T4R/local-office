@@ -3,8 +3,8 @@
 //! the ruler clears it, and double-clicking one opens the Tabs dialog. A gesture runs `para.tabs`
 //! once when the button is released, so it is one undo step.
 use egui::{Painter, Rect, Sense, Shape, Stroke, Ui, pos2, vec2};
-use localoffice_doc::Pos;
-use localoffice_doc::props::{TAB_POS_EPS, TabAlign, TabLeader, TabStop};
+use localwriter_doc::Pos;
+use localwriter_doc::props::{TAB_POS_EPS, TabAlign, TabLeader, TabStop};
 use serde_json::{Value, json};
 
 use crate::WordApp;
@@ -328,7 +328,7 @@ mod tests {
     /// lands rather than where it was; a stop dragged off the ruler frees its number.
     #[test]
     fn marker_rects_cover_each_stop_and_a_dragged_one_where_it_lands() {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), Default::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), Default::default());
         let bar = Rect::from_min_max(pos2(0.0, 100.0), pos2(800.0, 115.0));
         let x_of = |pos: f32| 100.0 + pos;
         let stop = |pos: f32| TabStop { pos, align: TabAlign::Left, leader: TabLeader::None };

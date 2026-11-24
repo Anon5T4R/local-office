@@ -16,16 +16,16 @@ mod wordart;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::Arc;
 
-use localoffice_doc::control::{ControlEvent, ControlKind, control_events, pair_events};
-use localoffice_doc::graphic::{Graphic, GraphicKind};
-use localoffice_doc::numbering::{AbstractNum, Level, LevelSuffix, Num};
-use localoffice_doc::para::NoteKind;
-use localoffice_doc::para::OBJ;
-use localoffice_doc::props::Rgb;
-use localoffice_doc::props::VAlign;
-use localoffice_doc::section::NumFormat;
-use localoffice_doc::styles::{PartFormat, Style, StyleKind, StyleSheet, TablePart, TableStyleParts};
-use localoffice_doc::{
+use localwriter_doc::control::{ControlEvent, ControlKind, control_events, pair_events};
+use localwriter_doc::graphic::{Graphic, GraphicKind};
+use localwriter_doc::numbering::{AbstractNum, Level, LevelSuffix, Num};
+use localwriter_doc::para::NoteKind;
+use localwriter_doc::para::OBJ;
+use localwriter_doc::props::Rgb;
+use localwriter_doc::props::VAlign;
+use localwriter_doc::section::NumFormat;
+use localwriter_doc::styles::{PartFormat, Style, StyleKind, StyleSheet, TablePart, TableStyleParts};
+use localwriter_doc::{
     Block, Blocks, Comment, Document, InlineObject, PagePicture, Paragraph, PartKind, Revision, RevisionKind, Zoom, ZoomFit, para_block,
 };
 
@@ -100,7 +100,7 @@ pub(crate) struct Reader<'p> {
     /// The theme's fill styles, which shapes' style references point to.
     pub theme_fills: shape_style::ThemeFills,
     /// The fill of the group being read (what its members' `a:grpFill` stands for).
-    pub group_fill: Option<localoffice_doc::fill::Fill>,
+    pub group_fill: Option<localwriter_doc::fill::Fill>,
 }
 
 /// The package path that internal relationship `id` points at, if it has type `kind` (an `rt`
@@ -197,7 +197,7 @@ pub(crate) fn read_opened(pkg: &Package) -> Result<Document, DocxError> {
         lenient("numbering", r.read_numbering(&p));
     }
     // Without a stated mode (or settings at all) Word lays a document out as Word 2007 did.
-    r.doc.settings.compat_mode = localoffice_doc::LEGACY_COMPAT_MODE;
+    r.doc.settings.compat_mode = localwriter_doc::LEGACY_COMPAT_MODE;
     if let Some(p) = part(rt::SETTINGS) {
         lenient("settings", r.read_settings(&p));
     }
@@ -272,7 +272,7 @@ pub(crate) fn read_opened(pkg: &Package) -> Result<Document, DocxError> {
     if let Some(wm) = r.doc.settings.watermark.as_mut()
         && let Some([w, h]) = wm.size
     {
-        let [dw, dh] = localoffice_doc::Watermark { size: None, ..wm.clone() }.frame(pw, ph);
+        let [dw, dh] = localwriter_doc::Watermark { size: None, ..wm.clone() }.frame(pw, ph);
         if (w - dw).abs() < 0.06 && (h - dh).abs() < 0.06 {
             wm.size = None;
         }
@@ -392,7 +392,7 @@ impl Reader<'_> {
 
 /// Link the text boxes read as (id, seq, part) into chains (see [`Reader::txbx_links`]): each
 /// id's boxes in `seq` order after the box holding the text. A repeated seq, a chain without its
-/// first box or more than [`localoffice_doc::MAX_LINKED_BOXES`] boxes: the extra boxes stay apart.
+/// first box or more than [`localwriter_doc::MAX_LINKED_BOXES`] boxes: the extra boxes stay apart.
 fn link_text_boxes(doc: &mut Document, mut links: Vec<(u32, u32, u32)>) {
     links.sort_by_key(|l| (l.0, l.1));
     links.dedup_by_key(|l| (l.0, l.1));
@@ -400,7 +400,7 @@ fn link_text_boxes(doc: &mut Document, mut links: Vec<(u32, u32, u32)>) {
         if group.first().is_none_or(|l| l.1 != 0) {
             continue;
         }
-        let chain: Vec<u32> = group.iter().take(localoffice_doc::MAX_LINKED_BOXES).map(|l| l.2).collect();
+        let chain: Vec<u32> = group.iter().take(localwriter_doc::MAX_LINKED_BOXES).map(|l| l.2).collect();
         for pair in chain.windows(2) {
             if let [a, b] = pair
                 && let Some(p) = doc.parts.get_mut(a)
@@ -447,7 +447,7 @@ fn unstyle_toc_links(doc: &mut Document) {
         .map(|s| s.id.clone())
         .chain(["Hyperlink".to_string()])
         .collect();
-    for f in doc.field_ranges(localoffice_doc::StoryRef::Body) {
+    for f in doc.field_ranges(localwriter_doc::StoryRef::Body) {
         if is_toc(&f.instr) {
             let _ = doc.format_range(&f.start, &f.end, &|c| {
                 if c.link.is_some() && c.style.as_deref().is_some_and(|s| ids.contains(s)) {
@@ -578,7 +578,7 @@ fn is_toc(instr: &str) -> bool {
 /// of the last contiguous TOC entry, with no section break or trailing content outside it.
 fn toc_range_end(body: &Blocks, start: usize) -> Option<usize> {
     let entry =
-        |p: &localoffice_doc::Paragraph| p.section.is_none() && p.props.style.as_deref().is_some_and(|s| s.starts_with("TOC") && s != "TOCHeading");
+        |p: &localwriter_doc::Paragraph| p.section.is_none() && p.props.style.as_deref().is_some_and(|s| s.starts_with("TOC") && s != "TOCHeading");
     let mut depth = 0_usize;
     for (i, b) in body.iter().enumerate().skip(start) {
         let p = b.as_para().filter(|p| entry(p))?;
@@ -994,13 +994,13 @@ impl Reader<'_> {
         }
         // Styles that give only a list level take the list from the style they are based on
         // (Heading 3: level 3 of Heading 2's outline list).
-        let fixed: Vec<Option<localoffice_doc::props::NumRef>> = sheet
+        let fixed: Vec<Option<localwriter_doc::props::NumRef>> = sheet
             .styles
             .iter()
             .map(|s| match s.para.numbering {
                 Some(n) if n.num == props::LEVEL_ONLY => {
                     let base = s.based_on.as_deref().and_then(|b| props::chain_list(&sheet, b));
-                    base.map(|num| localoffice_doc::props::NumRef { num, level: n.level })
+                    base.map(|num| localwriter_doc::props::NumRef { num, level: n.level })
                 }
                 other => other,
             })
@@ -1522,7 +1522,7 @@ pub(crate) const PROTECTION_HASH_ATTRS: [&str; 16] = [
 /// Restrict Editing (`w:documentProtection`, §17.15.1.29): the editing restriction, whether
 /// formatting is limited to unlocked styles, and the password hash. Only enforced protection is
 /// kept; a hostile attribute value can't be longer than a hash needs.
-fn read_protection(k: &El, s: &mut localoffice_doc::Settings) {
+fn read_protection(k: &El, s: &mut localwriter_doc::Settings) {
     let on = |v: &str| !matches!(v, "0" | "false" | "off");
     if !k.attr("w:enforcement").is_some_and(on) {
         return;

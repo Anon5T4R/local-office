@@ -3,11 +3,11 @@
 
 use std::sync::Arc;
 
-use localoffice_doc::Rgb;
-use localoffice_doc::para::Paragraph;
-use localoffice_doc::props::{Align, Border, BorderStyle, Borders, CellProps, HeightRule, RowProps, TableProps, VAlign, VMerge};
-use localoffice_doc::table::{Cell, Row, Table};
-use localoffice_doc::{Block, Blocks, para_block};
+use localwriter_doc::Rgb;
+use localwriter_doc::para::Paragraph;
+use localwriter_doc::props::{Align, Border, BorderStyle, Borders, CellProps, HeightRule, RowProps, TableProps, VAlign, VMerge};
+use localwriter_doc::table::{Cell, Row, Table};
+use localwriter_doc::{Block, Blocks, para_block};
 
 use crate::fmt;
 use crate::sprm::{self, Prl};

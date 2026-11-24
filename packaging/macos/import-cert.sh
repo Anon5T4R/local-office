@@ -24,9 +24,9 @@ KC_PASS="${KEYCHAIN_PASSWORD:-$(openssl rand -hex 24)}"
 # a predictable name in a shared temp folder could be planted beforehand (a link that sends the key
 # somewhere readable, or a keychain someone else made) (#3692). The bundle is removed on exit; the
 # keychain is kept for the signing steps that follow, unless this script fails.
-WORK="$(mktemp -d "$TMP/localoffice-signing.XXXXXXXX")"
-CERT="$WORK/localoffice-signing.p12"
-KEYCHAIN="$WORK/localoffice-signing.keychain-db"
+WORK="$(mktemp -d "$TMP/localwriter-signing.XXXXXXXX")"
+CERT="$WORK/localwriter-signing.p12"
+KEYCHAIN="$WORK/localwriter-signing.keychain-db"
 cleanup() {
   local status=$?
   rm -f "$CERT"

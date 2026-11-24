@@ -21,11 +21,11 @@ use std::sync::Arc;
 
 use egui::accesskit::{self, Node, NodeId, Role, TextPosition, TextSelection};
 use egui::{Id, Rect};
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::props::TextDirection;
-use localoffice_doc::{Document, Path, Pos, StoryRef};
-use localoffice_layout::para::{ClKind, Line};
-use localoffice_layout::{DocLayout, LineEnd, ParaLayout, Placed};
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::props::TextDirection;
+use localwriter_doc::{Document, Path, Pos, StoryRef};
+use localwriter_layout::para::{ClKind, Line};
+use localwriter_layout::{DocLayout, LineEnd, ParaLayout, Placed};
 
 /// Most nodes described at once (a dense page has a few hundred).
 pub const MAX_NODES: usize = 6000;
@@ -140,7 +140,7 @@ pub fn build(doc: &Document, layout: &DocLayout, doc_id: Id, rects: &[Rect], pag
     for pi in pages.0..pages.1 {
         let (Some(page), Some(pr)) = (layout.pages.get(pi), rects.get(pi)) else { continue };
         let scale = crate::canvas::page_screen_scale(*pr, page, 1.0);
-        let to_screen = |r: localoffice_geom::Rect| {
+        let to_screen = |r: localwriter_geom::Rect| {
             Rect::from_min_size(egui::pos2(pr.min.x + r.x * scale, pr.min.y + r.y * scale), egui::vec2(r.w * scale, r.h * scale))
         };
         // Where floating pictures sit (their anchor character takes no room on its line).
@@ -179,8 +179,8 @@ struct LinePlace {
 }
 
 impl LinePlace {
-    fn rect(&self, r: localoffice_geom::Rect) -> Rect {
-        let p = localoffice_layout::turn_rect(self.turn, self.x, self.y, r);
+    fn rect(&self, r: localwriter_geom::Rect) -> Rect {
+        let p = localwriter_layout::turn_rect(self.turn, self.x, self.y, r);
         let s = self.scale;
         Rect::from_min_size(egui::pos2(self.origin.x + p.x * s, self.origin.y + p.y * s), egui::vec2(p.w * s, p.h * s))
     }
@@ -364,7 +364,7 @@ impl Builder<'_> {
                             }
                             let rect = pictures.get(&(path.0.as_slice(), cl.start)).copied().or_else(|| {
                                 let (x0, x1) = (line.cl_left(k)?, line.cl_right(k)?);
-                                Some(at.rect(localoffice_geom::Rect::new(x0.min(x1), lb.top, (x1 - x0).abs(), line.height)))
+                                Some(at.rect(localwriter_geom::Rect::new(x0.min(x1), lb.top, (x1 - x0).abs(), line.height)))
                             });
                             let mut n = Node::new(Role::Image);
                             if !alt.trim().is_empty() {
@@ -438,7 +438,7 @@ impl Builder<'_> {
         let x0 = run.xs.iter().map(|c| c.0).fold(f32::INFINITY, f32::min);
         let x1 = run.xs.iter().map(|c| c.0 + c.1).fold(f32::NEG_INFINITY, f32::max);
         let (x0, x1) = if x0.is_finite() && x1.is_finite() { (x0, x1) } else { (line.left, line.left) };
-        let r = at.rect(localoffice_geom::Rect::new(x0, lb.top, (x1 - x0).max(0.0), line.height));
+        let r = at.rect(localwriter_geom::Rect::new(x0, lb.top, (x1 - x0).max(0.0), line.height));
         n.set_bounds(bounds(r));
         let rtl = line.rtl || !line.vis.is_empty();
         n.set_text_direction(if line.rtl { accesskit::TextDirection::RightToLeft } else { accesskit::TextDirection::LeftToRight });
@@ -527,7 +527,7 @@ fn word_starts(text: &str, lens: &[u8]) -> Vec<u8> {
 }
 
 /// The paragraph's hyperlinked byte ranges and their targets.
-fn links(p: &localoffice_doc::Paragraph) -> Vec<(std::ops::Range<usize>, String)> {
+fn links(p: &localwriter_doc::Paragraph) -> Vec<(std::ops::Range<usize>, String)> {
     let mut out: Vec<(std::ops::Range<usize>, String)> = Vec::new();
     let mut at = 0usize;
     for r in &p.runs {
@@ -604,7 +604,7 @@ mod tests {
     #[test]
     fn the_preview_table_is_described_from_the_previewed_page() {
         let mut app =
-            crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("Lanterns\nKites")), Default::default());
+            crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("Lanterns\nKites")), Default::default());
         let update = described_with_table_preview(&mut app, &egui::Context::default(), 2, 2);
         let nodes: HashMap<NodeId, &Node> = update.nodes.iter().map(|(id, n)| (*id, n)).collect();
         let tables: Vec<_> = nodes.iter().filter(|(_, n)| n.role() == Role::Table).map(|(id, _)| *id).collect();
@@ -640,7 +640,7 @@ mod tests {
     /// text runs and the caret at its paragraph and character.
     #[test]
     fn the_canvas_describes_the_document_to_screen_readers() {
-        let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), Default::default());
+        let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), Default::default());
         for (cmd, p) in [
             ("text.insert", json!({"text": "Title here"})),
             ("para.style", json!({"style": "Heading1"})),
@@ -750,7 +750,7 @@ mod tests {
     /// breaks — and it takes room where the caret is, so the view follows the caret onto the line.
     #[test]
     fn a_magnifier_finds_the_caret_on_an_empty_line() {
-        let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), Default::default());
+        let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), Default::default());
         let ctx = egui::Context::default();
         app.run("text.insert", json!({"text": "First line"})).unwrap();
         app.run("text.newParagraph", json!({})).unwrap();
@@ -786,8 +786,8 @@ mod tests {
     /// Hostile layouts and junk geometry don't panic and the tree stays bounded.
     #[test]
     fn junk_geometry_is_harmless() {
-        let doc = localoffice_doc::Document::from_text(&"word ".repeat(4000));
-        let layout = localoffice_layout::layout(&doc, &mut localoffice_layout::LayoutCache::new(), &Default::default());
+        let doc = localwriter_doc::Document::from_text(&"word ".repeat(4000));
+        let layout = localwriter_layout::layout(&doc, &mut localwriter_layout::LayoutCache::new(), &Default::default());
         let n = layout.pages.len();
         let rects = vec![Rect::from_min_size(egui::pos2(f32::NAN, 0.0), egui::vec2(f32::INFINITY, 1.0)); n];
         let p = Pos::body(0, 1_000_000);

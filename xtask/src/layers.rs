@@ -30,7 +30,7 @@ impl Class {
     }
 }
 
-/// The layering table. Names are package names without the `localoffice-`
+/// The layering table. Names are package names without the `localwriter-`
 /// prefix.
 pub const TABLE: &[(&str, Class)] = &[
     ("geom", Class::Layer(0)),
@@ -54,7 +54,7 @@ pub const TABLE: &[(&str, Class)] = &[
     ("ui-egui", Class::Layer(6)),
     ("testkit", Class::Testkit),
     // apps and tooling
-    ("localoffice", Class::Exempt),
+    ("localwriter", Class::Exempt),
     ("cli", Class::Exempt),
     ("xtask", Class::Exempt),
 ];
@@ -81,7 +81,7 @@ pub const UI_CRATES: &[&str] = &["egui", "eframe", "winit", "egui_kittest", "rfd
 pub const UI_MIN_LAYER: u8 = 6;
 
 pub fn short_name(pkg: &str) -> &str {
-    pkg.strip_prefix("localoffice-").unwrap_or(pkg)
+    pkg.strip_prefix("localwriter-").unwrap_or(pkg)
 }
 
 pub fn classify(pkg: &str) -> Option<Class> {
@@ -139,7 +139,7 @@ impl std::fmt::Display for Violation {
                 write!(f, "{krate}: standalone crate must not depend on workspace crate {dep}")
             }
             Violation::TestkitAsNormalDep { krate } => {
-                write!(f, "{krate}: localoffice-testkit may only be a dev-dependency")
+                write!(f, "{krate}: localwriter-testkit may only be a dev-dependency")
             }
             Violation::UiBelowL6 { krate, dep, layer } => {
                 write!(f, "{krate} (L{layer}) depends on UI crate `{dep}`; UI toolkits are only allowed in L6+")
@@ -245,76 +245,76 @@ mod tests {
     #[test]
     fn clean_downward_graph_passes() {
         let g = [
-            c("localoffice-geom", &[("kurbo", Normal, false)]),
-            c("localoffice-doc", &[("localoffice-geom", Normal, true)]),
-            c("localoffice-engine", &[("localoffice-doc", Normal, true), ("localoffice-testkit", Dev, true)]),
-            c("localoffice-ui-egui", &[("localoffice-engine", Normal, true), ("egui", Normal, false)]),
-            c("localoffice-cli", &[("localoffice-ui-egui", Normal, true)]),
+            c("localwriter-geom", &[("kurbo", Normal, false)]),
+            c("localwriter-doc", &[("localwriter-geom", Normal, true)]),
+            c("localwriter-engine", &[("localwriter-doc", Normal, true), ("localwriter-testkit", Dev, true)]),
+            c("localwriter-ui-egui", &[("localwriter-engine", Normal, true), ("egui", Normal, false)]),
+            c("localwriter-cli", &[("localwriter-ui-egui", Normal, true)]),
         ];
         assert!(check(&g).is_empty(), "{:?}", check(&g));
     }
 
     #[test]
     fn upward_dependency_flagged() {
-        let v = check(&[c("localoffice-doc", &[("localoffice-engine", Normal, true)])]);
+        let v = check(&[c("localwriter-doc", &[("localwriter-engine", Normal, true)])]);
         assert!(matches!(v[..], [Violation::Upward { from: 1, to: 4, .. }]));
     }
 
     #[test]
     fn sideways_dependency_flagged() {
-        let v = check(&[c("localoffice-layout", &[("localoffice-docx", Normal, true)])]);
+        let v = check(&[c("localwriter-layout", &[("localwriter-docx", Normal, true)])]);
         assert!(matches!(v[..], [Violation::Upward { from: 2, to: 2, .. }]));
     }
 
     #[test]
     fn l0_foundation_chain_allowed_one_way() {
-        assert!(check(&[c("localoffice-doc", &[("localoffice-geom", Normal, true)])]).is_empty());
-        let v = check(&[c("localoffice-geom", &[("localoffice-doc", Normal, true)])]);
+        assert!(check(&[c("localwriter-doc", &[("localwriter-geom", Normal, true)])]).is_empty());
+        let v = check(&[c("localwriter-geom", &[("localwriter-doc", Normal, true)])]);
         assert!(matches!(v[..], [Violation::Upward { from: 0, to: 1, .. }]));
     }
 
     #[test]
     fn self_dev_dependency_ignored() {
-        assert!(check(&[c("localoffice-doc", &[("localoffice-doc", Dev, true)])]).is_empty());
+        assert!(check(&[c("localwriter-doc", &[("localwriter-doc", Dev, true)])]).is_empty());
     }
 
     #[test]
     fn upward_dev_dependency_flagged() {
-        let v = check(&[c("localoffice-geom", &[("localoffice-doc", Dev, true)])]);
+        let v = check(&[c("localwriter-geom", &[("localwriter-doc", Dev, true)])]);
         assert!(matches!(v[..], [Violation::Upward { kind: Dev, .. }]));
     }
 
     #[test]
     fn ui_crates_below_l6_flagged() {
         for dep in ["egui", "eframe", "winit", "egui_kittest", "rfd", "bevy_ecs", "bevy"] {
-            let v = check(&[c("localoffice-engine", &[(dep, Normal, false)])]);
+            let v = check(&[c("localwriter-engine", &[(dep, Normal, false)])]);
             assert!(matches!(v[..], [Violation::UiBelowL6 { layer: 4, .. }]), "{dep}");
         }
-        assert!(check(&[c("localoffice-engine", &[("egui_extras_not", Normal, false)])]).is_empty());
-        assert!(!check(&[c("localoffice-mcp", &[("winit", Normal, false)])]).is_empty());
+        assert!(check(&[c("localwriter-engine", &[("egui_extras_not", Normal, false)])]).is_empty());
+        assert!(!check(&[c("localwriter-mcp", &[("winit", Normal, false)])]).is_empty());
     }
 
     #[test]
     fn unregistered_crate_is_error() {
-        let v = check(&[c("localoffice-mystery", &[])]);
-        assert!(matches!(&v[..], [Violation::Unregistered { krate }] if krate == "localoffice-mystery"));
+        let v = check(&[c("localwriter-mystery", &[])]);
+        assert!(matches!(&v[..], [Violation::Unregistered { krate }] if krate == "localwriter-mystery"));
         assert!(v[0].to_string().contains("register"));
     }
 
     #[test]
     fn testkit_only_as_dev_dependency() {
-        let v = check(&[c("localoffice-render", &[("localoffice-testkit", Normal, true)])]);
+        let v = check(&[c("localwriter-render", &[("localwriter-testkit", Normal, true)])]);
         assert!(matches!(v[..], [Violation::TestkitAsNormalDep { .. }]));
-        assert!(check(&[c("localoffice-render", &[("localoffice-testkit", Dev, true)])]).is_empty());
+        assert!(check(&[c("localwriter-render", &[("localwriter-testkit", Dev, true)])]).is_empty());
         // testkit itself may use anything up to L5 but not L6 crates.
-        assert!(check(&[c("localoffice-testkit", &[("localoffice-engine", Normal, true)])]).is_empty());
-        assert!(!check(&[c("localoffice-testkit", &[("localoffice-ui-egui", Normal, true)])]).is_empty());
+        assert!(check(&[c("localwriter-testkit", &[("localwriter-engine", Normal, true)])]).is_empty());
+        assert!(!check(&[c("localwriter-testkit", &[("localwriter-ui-egui", Normal, true)])]).is_empty());
     }
 
     #[test]
     fn apps_and_xtask_exempt() {
-        for app in ["localoffice", "localoffice-cli", "xtask"] {
-            assert!(check(&[c(app, &[("egui", Normal, false), ("localoffice-ui-egui", Normal, true)])]).is_empty());
+        for app in ["localwriter", "localwriter-cli", "xtask"] {
+            assert!(check(&[c(app, &[("egui", Normal, false), ("localwriter-ui-egui", Normal, true)])]).is_empty());
         }
     }
 
@@ -322,17 +322,17 @@ mod tests {
     fn metadata_parsing() {
         let meta: Value = serde_json::from_str(
             r#"{"packages":[
-                {"name":"localoffice-doc","dependencies":[
-                    {"name":"localoffice-geom","kind":null,"path":"/x/crates/geom"},
+                {"name":"localwriter-doc","dependencies":[
+                    {"name":"localwriter-geom","kind":null,"path":"/x/crates/geom"},
                     {"name":"serde","kind":null},
                     {"name":"proptest","kind":"dev"}]},
-                {"name":"localoffice-geom","dependencies":[]}
+                {"name":"localwriter-geom","dependencies":[]}
             ]}"#,
         )
         .unwrap();
         let g = from_metadata(&meta).unwrap();
         assert_eq!(g.len(), 2);
-        let doc = g.iter().find(|c| c.name == "localoffice-doc").unwrap();
+        let doc = g.iter().find(|c| c.name == "localwriter-doc").unwrap();
         assert!(doc.deps[0].workspace && !doc.deps[1].workspace);
         assert_eq!(doc.deps[2].kind, Dev);
         assert!(check(&g).is_empty());

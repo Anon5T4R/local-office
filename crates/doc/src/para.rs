@@ -274,12 +274,12 @@ fn is_zero_u32(v: &u32) -> bool {
 
 impl Float {
     /// The rotation and flips, the angle normalised to `0..360` (a NaN angle is no rotation).
-    pub fn spin(&self) -> localoffice_geom::Spin {
-        localoffice_geom::Spin::new(self.rot, self.flip_h, self.flip_v)
+    pub fn spin(&self) -> localwriter_geom::Spin {
+        localwriter_geom::Spin::new(self.rot, self.flip_h, self.flip_v)
     }
     /// Set the rotation and flips (the angle normalised).
-    pub fn set_spin(&mut self, s: localoffice_geom::Spin) {
-        self.rot = localoffice_geom::normalize_degrees(s.deg);
+    pub fn set_spin(&mut self, s: localwriter_geom::Spin) {
+        self.rot = localwriter_geom::normalize_degrees(s.deg);
         self.flip_h = s.flip_h;
         self.flip_v = s.flip_v;
     }
@@ -287,7 +287,7 @@ impl Float {
     /// rotated object takes beyond its frame (zero unrotated; negative where the turned object
     /// is narrower than its frame, as a wide picture turned 90° is).
     pub fn spin_pad(&self, w: f32, h: f32) -> (f32, f32) {
-        let (w, h) = (localoffice_geom::finite(w).clamp(0.0, 4000.0), localoffice_geom::finite(h).clamp(0.0, 4000.0));
+        let (w, h) = (localwriter_geom::finite(w).clamp(0.0, 4000.0), localwriter_geom::finite(h).clamp(0.0, 4000.0));
         let (bw, bh) = self.spin().extent(w, h);
         ((bw - w) / 2.0, (bh - h) / 2.0)
     }
@@ -528,7 +528,7 @@ pub enum InlineObject {
         locked: bool,
         /// `w:dirty` (ECMA-376 §17.16.5.35): the cached result is stale — another program that
         /// couldn't compute it set the flag so Word refreshes the field on open. Kept through
-        /// saves; cleared when LocalOffice computes a result, like Word's F9.
+        /// saves; cleared when LocalWriter computes a result, like Word's F9.
         #[serde(default, skip_serializing_if = "std::ops::Not::not")]
         dirty: bool,
         /// Shows its code (`{ PAGE }`) instead of its result, the other way round from the

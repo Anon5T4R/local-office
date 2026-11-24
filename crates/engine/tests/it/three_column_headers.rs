@@ -1,7 +1,7 @@
 //! #2197: three-column header/footer presets are editable, borderless tables.
-use localoffice_doc::props::Align;
-use localoffice_doc::{Block, Document, Path, Pos, StoryRef, Table};
-use localoffice_engine::Session;
+use localwriter_doc::props::Align;
+use localwriter_doc::{Block, Document, Path, Pos, StoryRef, Table};
+use localwriter_engine::Session;
 use serde_json::json;
 
 fn table(doc: &Document, story: StoryRef) -> &Table {
@@ -70,7 +70,7 @@ fn three_columns_are_borderless_cells_with_the_story_style_and_section_width() {
         s.run("format.bold", &json!({"value": true})).unwrap();
         let mut back = s.doc.clone();
         for _ in 0..2 {
-            back = localoffice_docx::read(&localoffice_docx::write(&back).unwrap()).unwrap();
+            back = localwriter_docx::read(&localwriter_docx::write(&back).unwrap()).unwrap();
             let id = if header { back.last_section.headers.default } else { back.last_section.footers.default }.unwrap();
             let t = table(&back, StoryRef::Part(id));
             assert_eq!(t.rows.len(), 1);

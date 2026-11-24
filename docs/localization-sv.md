@@ -2,12 +2,12 @@
 
 Choose **File › Settings › Interface language › Svenska**, or follow a Swedish system display
 language (`sv-SE`, `sv_SE.UTF-8`, and `sv-FI` for Swedish in Finland). The catalog code is `sv`;
-`ui.language` with `{"value":"sv"}` selects it explicitly, and `LOCALOFFICE_LANGUAGE=sv-SE` does the
+`ui.language` with `{"value":"sv"}` selects it explicitly, and `LOCALWRITER_LANGUAGE=sv-SE` does the
 same for a headless screenshot or a launch while the preference is `auto`. The choice is saved with
 the other interface settings. Document text, command ids, CLI/MCP/control responses and file paths
 do not change.
 
-craft-i18n's `locales/sv/localoffice.tsv` (storytold/craft-i18n; it was `crates/ui-egui/src/i18n/sv.tsv`) has 2,504 entries: every key of the Spanish reference catalog and
+craft-i18n's `locales/sv/localwriter.tsv` (storytold/craft-i18n; it was `crates/ui-egui/src/i18n/sv.tsv`) has 2,504 entries: every key of the Spanish reference catalog and
 of the Bulgarian one (built-in style names, equation gallery labels, paper sizes, watermarks and
 citation styles included), plus 44 newer strings no other catalog has yet: 23 that the interface
 audit finds and 21 that the code sends through translation outside the audit's reach (native print
@@ -34,7 +34,7 @@ wording choice, and reviewed the running app.
   where the group gives the context: the button `Framhäv\nfält`, the command `Framhäv kopplingsfält`.
 - Decimal comma in fixed labels (`Radavstånd 1,5`, `8,5" × 11"`), Swedish quotation marks (”…”),
   and a spaced en dash where English has an em dash (`Redigering – redigera dokumentet direkt`).
-- Names stay as they are: LocalOffice, Zotero, SmartArt, WordArt, the Craft theme, paper sizes
+- Names stay as they are: LocalWriter, Zotero, SmartArt, WordArt, the Craft theme, paper sizes
   (Letter, Legal …) and citation styles (APA, MLA …). Loanwords Swedish speakers use stay too:
   `community`, `commit`.
 
@@ -76,7 +76,7 @@ quotes); they are translated as written and still act on English text.
 
 ## Verification and remaining scope
 
-`cargo test -p localoffice-ui-egui --lib i18n::tests` covers Swedish locale tags (`sv`, `sv-SE`,
+`cargo test -p localwriter-ui-egui --lib i18n::tests` covers Swedish locale tags (`sv`, `sv-SE`,
 `sv_SE.UTF-8`, `SV-se`, `sv-FI`) and preference order, saving and restoring `sv`, unchanged document
 content and the glyphs `ÅÄÖåäöÉé` plus every other accented letter the catalog uses in the bundled
 Inter (Regular, Medium, SemiBold) and JetBrains Mono. The shared checks (catalog validation and the missing-translation report, `cargo xtask i18n-report`)

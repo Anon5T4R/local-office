@@ -7,9 +7,9 @@ use std::path::{Path as FsPath, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use localoffice_doc::props::CharProps;
-use localoffice_doc::{Document, Pos, StoryRef};
-use localoffice_layout::LayoutCache;
+use localwriter_doc::props::CharProps;
+use localwriter_doc::{Document, Pos, StoryRef};
+use localwriter_layout::LayoutCache;
 use serde::Serialize;
 use serde_json::json;
 

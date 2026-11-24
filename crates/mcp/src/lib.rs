@@ -1,7 +1,7 @@
-//! LocalOffice's MCP server (Model Context Protocol, JSON-RPC 2.0 over stdio).
+//! LocalWriter's MCP server (Model Context Protocol, JSON-RPC 2.0 over stdio).
 //!
 //! Two backends: [`Headless`] runs an in-process editing session (no window); [`backend::Remote`]
-//! talks to a running LocalOffice app through its control channel (`localoffice --control PORT`), so
+//! talks to a running LocalWriter app through its control channel (`localwriter --control PORT`), so
 //! agents can also click, type and screenshot the real UI.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
@@ -14,12 +14,12 @@ pub use server::Server;
 
 use std::sync::Arc;
 
-use localoffice_engine::Session;
-use localoffice_engine::file_access::{self, AutomationRoots};
+use localwriter_engine::Session;
+use localwriter_engine::file_access::{self, AutomationRoots};
 use serde_json::{Value, json};
 
 /// Methods that need the desktop app.
-pub const NEEDS_APP: &str = "needs the desktop app: start `localoffice --control 7981` and run `localoffice-cli mcp --connect 127.0.0.1:7981`";
+pub const NEEDS_APP: &str = "needs the desktop app: start `localwriter --control 7981` and run `localwriter-cli mcp --connect 127.0.0.1:7981`";
 
 /// An in-process session.
 pub struct Headless {
@@ -29,7 +29,7 @@ pub struct Headless {
 
 impl Headless {
     /// Confine every file the session's commands read and write to `roots`
-    /// (`localoffice-cli mcp --automation-read-root … --automation-write-root …`).
+    /// (`localwriter-cli mcp --automation-read-root … --automation-write-root …`).
     pub fn with_automation_roots(mut self, roots: Option<Arc<AutomationRoots>>) -> Self {
         self.roots = roots;
         self
@@ -75,16 +75,16 @@ fn answer_on(session: &mut Session, method: &str, params: Value) -> Result<Value
         }
         "engine.commands" => Ok(session.registry.describe()),
         "document.inspect" => session.run("document.inspect", &params).map_err(|e| e.to_string()),
-        "ui.parity" => Ok(localoffice_engine::catalog::parity(&session.registry)),
+        "ui.parity" => Ok(localwriter_engine::catalog::parity(&session.registry)),
         "ui.render" | "render.page" => {
             let page = params.get("page").and_then(Value::as_u64).unwrap_or(1).max(1);
             let page = usize::try_from(page).unwrap_or(usize::MAX).saturating_sub(1);
             let scale = params.get("scale").and_then(Value::as_f64).unwrap_or(1.0).clamp(0.1, 4.0) as f32;
             let l = session.layout();
             let pg = l.pages.get(page).ok_or_else(|| format!("no page {}", page.saturating_add(1)))?;
-            let img = localoffice_render::render_page(&session.doc, pg, scale, &Default::default());
+            let img = localwriter_render::render_page(&session.doc, pg, scale, &Default::default());
             let png = img.to_png();
-            Ok(json!({"png": localoffice_engine::cmd::insert::base64_encode(&png), "width": img.width, "height": img.height, "pages": l.pages.len()}))
+            Ok(json!({"png": localwriter_engine::cmd::insert::base64_encode(&png), "width": img.width, "height": img.height, "pages": l.pages.len()}))
         }
         m if m.starts_with("ui.") => Err(format!("`{m}` {NEEDS_APP}")),
         other => session.run(other, &params).map_err(|e| e.to_string()),
@@ -93,7 +93,7 @@ fn answer_on(session: &mut Session, method: &str, params: Value) -> Result<Value
 
 impl Default for Headless {
     fn default() -> Self {
-        Headless { session: Session::new(localoffice_doc::Document::new()), roots: None }
+        Headless { session: Session::new(localwriter_doc::Document::new()), roots: None }
     }
 }
 

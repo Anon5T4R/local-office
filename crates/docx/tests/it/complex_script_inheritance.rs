@@ -1,8 +1,8 @@
 //! Independent complex-script formatting through style inheritance and DOCX round trips.
 //! Synthetic packages, written here; no external documents or installed fonts are needed.
 
-use localoffice_doc::props::CharProps;
-use localoffice_doc::{Document, Paragraph, Run};
+use localwriter_doc::props::CharProps;
+use localwriter_doc::{Document, Paragraph, Run};
 use std::io::Write;
 
 fn package(run: &str, defaults: &str, styles: &str, paragraph_style: &str) -> Vec<u8> {
@@ -53,10 +53,10 @@ fn undirected(runs: &[Run]) -> Vec<Run> {
 }
 
 fn check_generations(bytes: &[u8], check: impl Fn(&Document)) {
-    let mut d = localoffice_docx::read(bytes).unwrap();
+    let mut d = localwriter_docx::read(bytes).unwrap();
     for generation in 0..3 {
         check(&d);
-        let next = localoffice_docx::read(&localoffice_docx::write(&d).unwrap()).unwrap();
+        let next = localwriter_docx::read(&localwriter_docx::write(&d).unwrap()).unwrap();
         assert_eq!(paragraph(&next).text, paragraph(&d).text);
         if generation == 0 {
             // The first save splits the mixed Hebrew/Latin run by direction and names the
@@ -185,7 +185,7 @@ fn tracked_formatting_keeps_independent_complex_script_values() {
         assert_eq!((change.old.size_cs, change.old.bold_cs, change.old.italic_cs), (Some(10.0), Some(false), Some(false)));
         let old = d.styles.resolve_char(None, &change.old).complex();
         assert_eq!((old.size, old.bold, old.italic), (10.0, false, false));
-        let mut overlaid = localoffice_doc::props::CharProps::default();
+        let mut overlaid = localwriter_doc::props::CharProps::default();
         overlaid.overlay(c);
         assert_eq!(overlaid.fmt_change, c.fmt_change);
     });
@@ -206,8 +206,8 @@ fn split_runs_add_no_phantom_tracked_formatting() {
     // formatting change go into the change's "before" copy too, so Word lists no change the
     // author never made ("Formatted: Right-to-left, Hebrew").
     let run = r#"<w:sz w:val="24"/><w:rPrChange w:id="7" w:author="Synthetic Author" w:date="2026-10-11T00:00:00Z"><w:rPr><w:sz w:val="20"/></w:rPr></w:rPrChange>"#;
-    let d = localoffice_docx::read(&package(run, "", "", "")).unwrap();
-    let bytes = localoffice_docx::write(&d).unwrap();
+    let d = localwriter_docx::read(&package(run, "", "", "")).unwrap();
+    let bytes = localwriter_docx::write(&d).unwrap();
     let mut xml = String::new();
     std::io::Read::read_to_string(&mut zip::ZipArchive::new(std::io::Cursor::new(&bytes)).unwrap().by_name("word/document.xml").unwrap(), &mut xml)
         .unwrap();
@@ -219,8 +219,8 @@ fn split_runs_add_no_phantom_tracked_formatting() {
         let (now, before) = direction_markup(r);
         assert_eq!(now, before, "no direction or language difference to report: {r}");
     }
-    // And LocalOffice reads no difference back either.
-    let r = localoffice_docx::read(&bytes).unwrap();
+    // And LocalWriter reads no difference back either.
+    let r = localwriter_docx::read(&bytes).unwrap();
     for run in &paragraph(&r).runs {
         let old = &run.props.fmt_change.as_ref().unwrap().old;
         assert_eq!((old.rtl, old.lang_bidi.as_deref()), (run.props.rtl, run.props.lang_bidi.as_deref()));

@@ -6,10 +6,10 @@
 //! (`tbRl`), bottom-to-top ones from the left (`btLr`). Pictures, shapes and text boxes keep
 //! standing upright where the turn carries them; headers and footers stay horizontal.
 
-use localoffice_doc::StoryRef;
-use localoffice_doc::props::{Borders, TextDirection};
-use localoffice_doc::section::SectionProps;
-use localoffice_geom::{Point, Rect};
+use localwriter_doc::StoryRef;
+use localwriter_doc::props::{Borders, TextDirection};
+use localwriter_doc::section::SectionProps;
+use localwriter_geom::{Point, Rect};
 
 use crate::{Page, Placed, turn_point, turn_rect};
 

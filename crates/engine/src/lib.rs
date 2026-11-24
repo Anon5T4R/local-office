@@ -1,4 +1,4 @@
-//! LocalOffice engine: the editing session and its commands.
+//! LocalWriter engine: the editing session and its commands.
 //!
 //! **Everything is a command.** Each user-visible action is a [`CommandSpec`] with a stable id
 //! (`format.bold`, `insert.table`), a label, the ribbon/menu location, a default shortcut, a
@@ -60,11 +60,11 @@ pub const MAX_EQUATION_TYPE_CHARS: usize = 10_000;
 /// side of the caret. A hostile IME count must not become an unbounded command.
 pub const MAX_EQUATION_DELETE_UNITS: usize = 64;
 
-pub use localoffice_doc as doc;
-pub use localoffice_geom::Region;
-pub use localoffice_layout as layout;
-pub use localoffice_proof as proof;
-pub use localoffice_render as render;
+pub use localwriter_doc as doc;
+pub use localwriter_geom::Region;
+pub use localwriter_layout as layout;
+pub use localwriter_proof as proof;
+pub use localwriter_render as render;
 
 #[derive(Debug, thiserror::Error, Clone, PartialEq)]
 pub enum CmdError {
@@ -78,8 +78,8 @@ pub enum CmdError {
     Failed(String),
 }
 
-impl From<localoffice_doc::DocError> for CmdError {
-    fn from(e: localoffice_doc::DocError) -> Self {
+impl From<localwriter_doc::DocError> for CmdError {
+    fn from(e: localwriter_doc::DocError) -> Self {
         CmdError::Failed(e.to_string())
     }
 }

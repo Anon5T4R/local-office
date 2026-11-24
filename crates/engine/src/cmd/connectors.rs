@@ -8,9 +8,9 @@
 
 use std::collections::HashMap;
 
-use localoffice_doc::connector::{ConnEnd, Frame, ends, nearest_site, route, site_point};
-use localoffice_doc::para::{Anchor, InlineObject, Wrap};
-use localoffice_doc::{Pos, StoryRef};
+use localwriter_doc::connector::{ConnEnd, Frame, ends, nearest_site, route, site_point};
+use localwriter_doc::para::{Anchor, InlineObject, Wrap};
+use localwriter_doc::{Pos, StoryRef};
 use serde_json::{Value, json};
 
 use crate::{CmdError, CmdResult, CommandSpec, Session, p};
@@ -78,7 +78,7 @@ pub fn reroute(s: &mut Session) -> bool {
     for pos in groups {
         if let Ok(para) = s.doc.para_mut(pos.story, &pos.path)
             && let Some(group @ InlineObject::Group { .. }) = para.object_at_mut(pos.off)
-            && localoffice_doc::connector::reroute_group(group)
+            && localwriter_doc::connector::reroute_group(group)
         {
             para.touch();
             moved = true;
@@ -132,7 +132,7 @@ fn place(s: &mut Session, pos: &Pos, to: Frame, at: (f32, f32), origin: (f32, f3
     {
         return false;
     }
-    let clamp = |v: f32| localoffice_geom::finite(v).clamp(-MAX_OFFSET, MAX_OFFSET);
+    let clamp = |v: f32| localwriter_geom::finite(v).clamp(-MAX_OFFSET, MAX_OFFSET);
     // An aligned position becomes an offset from the column / paragraph (where `origin` is).
     if float.h_align.take().is_some() {
         float.h_rel = Anchor::Column;
@@ -160,7 +160,7 @@ fn body_pos(e: &Value) -> Option<Pos> {
     let path: Option<Vec<u32>> =
         e.get("path").and_then(Value::as_array).map(|a| a.iter().take(64).filter_map(Value::as_u64).filter_map(|x| u32::try_from(x).ok()).collect());
     match (path, p::u64(e, "off").and_then(|o| usize::try_from(o).ok())) {
-        (Some(path), Some(off)) if !path.is_empty() => Some(Pos { story: StoryRef::Body, path: localoffice_doc::Path(path), off }),
+        (Some(path), Some(off)) if !path.is_empty() => Some(Pos { story: StoryRef::Body, path: localwriter_doc::Path(path), off }),
         _ => super::parse_pos(e).filter(|t| t.story == StoryRef::Body),
     }
 }
@@ -237,7 +237,7 @@ fn connect(s: &mut Session, v: &Value) -> CmdResult {
             let mut best: Option<(Pos, u32, f32)> = None;
             if let Some(pg) = layout.pages.get(page) {
                 for it in &pg.items {
-                    let localoffice_layout::Placed::Object { rect, spin, story: StoryRef::Body, path, off, .. } = it else { continue };
+                    let localwriter_layout::Placed::Object { rect, spin, story: StoryRef::Body, path, off, .. } = it else { continue };
                     let at = Pos { story: StoryRef::Body, path: path.clone(), off: *off };
                     if at == pos {
                         continue;
@@ -294,8 +294,8 @@ fn connect(s: &mut Session, v: &Value) -> CmdResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use localoffice_doc::connector::ShapeExtra;
-    use localoffice_doc::para::{Float, GroupChild, ShapeKind};
+    use localwriter_doc::connector::ShapeExtra;
+    use localwriter_doc::para::{Float, GroupChild, ShapeKind};
 
     fn shape(kind: ShapeKind, extra: ShapeExtra, float: Float) -> InlineObject {
         InlineObject::Shape {
@@ -364,7 +364,7 @@ mod tests {
                                 // Rendering scales each child rectangle before applying its own spin.
                                 let before = visual_ends(&group);
                                 let expected = if free_start { before.0 } else { before.1 };
-                                let mut s = Session::new(localoffice_doc::Document::new());
+                                let mut s = Session::new(localwriter_doc::Document::new());
                                 let pos = s.doc.start_of(StoryRef::Body);
                                 s.doc.para_mut(pos.story, &pos.path).unwrap().insert_object(pos.off, group, &Default::default()).unwrap();
                                 assert!(reroute(&mut s));

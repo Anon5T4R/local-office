@@ -5,8 +5,8 @@
 //! again turns it off. The geometry decisions are the engine's (`cmd::table_draw`).
 
 use egui::{Pos2, Rect, Stroke, Ui, pos2, vec2};
-use localoffice_engine::cmd::table_draw::{self, Stroke as Kind};
-use localoffice_layout::DocLayout;
+use localwriter_engine::cmd::table_draw::{self, Stroke as Kind};
+use localwriter_layout::DocLayout;
 use serde_json::{Value, json};
 
 use crate::WordApp;
@@ -190,7 +190,7 @@ mod tests {
     /// The buttons toggle the tools (one at a time); coordinates go to the engine.
     #[test]
     fn buttons_toggle_the_pen_and_the_eraser() {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         assert_eq!(a.run("table.draw", json!({})).unwrap()["tool"], "table.draw");
         assert_eq!(a.canvas.table_tool, Some(TableTool::Draw));
         assert_eq!(a.run("table.eraser", json!({})).unwrap()["tool"], "table.eraser");
@@ -206,7 +206,7 @@ mod tests {
     /// Deleting a table or removing its last cells turns off the eraser.
     #[test]
     fn deleting_table_turns_off_the_eraser() {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         a.run("insert.table", json!({"rows": 2, "cols": 2})).unwrap();
         a.run("table.eraser", json!({"on": true})).unwrap();
         assert_eq!(a.canvas.table_tool, Some(TableTool::Erase));

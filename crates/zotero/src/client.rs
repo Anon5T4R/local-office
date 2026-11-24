@@ -8,7 +8,7 @@
 use std::net::{SocketAddr, TcpStream};
 use std::time::Duration;
 
-use localoffice_engine::Session;
+use localwriter_engine::Session;
 use serde_json::Value;
 
 use crate::wire::{self, Call};

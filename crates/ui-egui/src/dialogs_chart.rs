@@ -4,7 +4,7 @@
 //! without the dialog. Shown through [`crate::dialogs_insert::InsertDialog`].
 
 use egui::{Color32, Pos2, Rect, Sense, Shape, Stroke, Ui, pos2, vec2};
-use localoffice_doc::chart::{ChartSpec, ChartType, MAX_POINTS, MAX_SERIES};
+use localwriter_doc::chart::{ChartSpec, ChartType, MAX_POINTS, MAX_SERIES};
 use serde::Serialize;
 use serde_json::{Value, json};
 
@@ -22,7 +22,7 @@ pub struct ChartTypeForm {
 
 impl ChartTypeForm {
     pub fn new(app: &WordApp, change: bool) -> Option<ChartTypeForm> {
-        let current = localoffice_engine::cmd::chart::selected_chart(&app.session);
+        let current = localwriter_engine::cmd::chart::selected_chart(&app.session);
         if change && current.is_none() {
             return None;
         }
@@ -43,7 +43,7 @@ pub struct ChartDataForm {
 
 impl ChartDataForm {
     pub fn new(app: &WordApp) -> Option<ChartDataForm> {
-        let c = localoffice_engine::cmd::chart::selected_chart(&app.session)?;
+        let c = localwriter_engine::cmd::chart::selected_chart(&app.session)?;
         Some(Self::of(&c))
     }
 

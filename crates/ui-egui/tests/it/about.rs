@@ -1,13 +1,13 @@
 //! The About window: it only closes, so it carries a single Close button — no Cancel.
 
 use egui_kittest::kittest::{By, NodeT, Queryable};
-use localoffice_engine::Session;
-use localoffice_ui_egui::{Services, WordApp};
+use localwriter_engine::Session;
+use localwriter_ui_egui::{Services, WordApp};
 use serde_json::json;
 
-/// A LocalOffice window, with the About dialog still closed. `open_about` opens it.
+/// A LocalWriter window, with the About dialog still closed. `open_about` opens it.
 fn window() -> egui_kittest::Harness<'static, WordApp> {
-    let mut app = WordApp::new(Session::new(localoffice_doc::Document::from_text("one")), Services::default());
+    let mut app = WordApp::new(Session::new(localwriter_doc::Document::from_text("one")), Services::default());
     // The labels below are English; an integration test otherwise follows the machine's language.
     app.ui.language = "en".into();
     let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(

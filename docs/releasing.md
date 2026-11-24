@@ -1,10 +1,10 @@
-# Releasing Local Word
+# Releasing Local Writer
 
 O fluxo da suíte (gate local, tag, CI) está em `docs/git-protocol.md` do dev-notes; aqui ficam só os
 detalhes deste app.
 
 1. Bump: `cargo xtask version set X.Y.Z` (a fonte única é `[workspace.package] version`; o app mostra
-   a versão em `--version` e no Sobre, com o commit de `LOCALOFFICE_BUILD_SHA`).
+   a versão em `--version` e no Sobre, com o commit de `LOCALWRITER_BUILD_SHA`).
 2. Commit, tag `vX.Y.Z`, push. `.github/workflows/release.yml` builda e publica:
    Windows (`.msi` por máquina e por usuário, `.zip` portátil) e Linux (`.AppImage`, `.deb`, `.rpm`,
    `.tar.gz` FHS com `install.sh`), com `SHA256SUMS.txt`.

@@ -1,7 +1,7 @@
 //! Title bar (Quick Access Toolbar, title, search, account) and status bar.
 
 use egui::{Align2, Rect, Sense, Stroke, Ui, pos2, vec2};
-use localoffice_doc::{PartKind, StoryRef};
+use localwriter_doc::{PartKind, StoryRef};
 use serde_json::json;
 
 use crate::theme::{Tokens, TypeRung, fit_text, paint_text, regular, semibold, text_width};
@@ -16,7 +16,7 @@ pub(crate) fn dictionary_problem(lang: &str, unreadable: &Option<(std::path::Pat
         )),
         (None, Some(name)) => Some(crate::i18n::fmt(
             tl!(
-                "No spelling dictionary for {language} is installed, so it isn't checked. Local Word looks for the Hunspell dictionary {name} in the LOCALOFFICE_DICTIONARIES folder and in the usual system locations."
+                "No spelling dictionary for {language} is installed, so it isn't checked. Local Writer looks for the Hunspell dictionary {name} in the LOCALWRITER_DICTIONARIES folder and in the usual system locations."
             ),
             &[("language", lang), ("name", name)],
         )),
@@ -367,7 +367,7 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
             // Centred title.
             let title = if !app.has_document() {
                 // No document open (#1129): the app's name alone.
-                "Local Word".to_string()
+                "Local Writer".to_string()
             } else {
                 format!(
                     "{} — {}",
@@ -480,7 +480,7 @@ pub enum Screen {
 }
 
 impl Screen {
-    pub fn of(v: &localoffice_engine::ViewState) -> Self {
+    pub fn of(v: &localwriter_engine::ViewState) -> Self {
         if v.focus_mode {
             Screen::Focus
         } else if v.full_screen_view {
@@ -597,7 +597,7 @@ pub fn status_bar(app: &mut WordApp, ui: &mut Ui) {
                 let wtxt = if app.session.sel.is_collapsed() || crate::objects::selected(app).is_some() {
                     crate::i18n::fmt(tl!("{words} words"), &[("words", &words.to_string())])
                 } else {
-                    let sw = localoffice_doc::count_words(&app.session.selected_text());
+                    let sw = localwriter_doc::count_words(&app.session.selected_text());
                     crate::i18n::fmt(tl!("{selected} of {words} words"), &[("selected", &sw.to_string()), ("words", &words.to_string())])
                 };
                 if st(ui, &wtxt).clicked() {
@@ -686,8 +686,8 @@ pub fn status_bar(app: &mut WordApp, ui: &mut Ui) {
                     let mode = app.session.view.mode;
                     let read = app.session.view.read_mode;
                     for (icon, id, name, on) in [
-                        ("webLayout", "view.webLayout", tl!("Web Layout"), mode == localoffice_layout::ViewMode::Web),
-                        ("printLayout", "view.printLayout", tl!("Print Layout"), mode == localoffice_layout::ViewMode::Print && !read),
+                        ("webLayout", "view.webLayout", tl!("Web Layout"), mode == localwriter_layout::ViewMode::Web),
+                        ("printLayout", "view.printLayout", tl!("Print Layout"), mode == localwriter_layout::ViewMode::Print && !read),
                         ("readMode", "view.readMode", tl!("Read Mode"), read),
                     ] {
                         let (r, resp) = ui.allocate_exact_size(vec2(22.0, 20.0), Sense::click());
@@ -812,7 +812,7 @@ mod tests {
     /// row undoes three steps at once.
     #[test]
     fn undo_list_matches_the_session_and_undoes_up_to_the_clicked_row() {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         a.run("text.insert", json!({"text": "Hello"})).unwrap();
         a.run("select.all", json!({})).unwrap();
         a.run("format.bold", json!({})).unwrap();
@@ -840,7 +840,7 @@ mod tests {
         let third = ctx.read_response(undo_list_row_id(2)).unwrap();
         click(&ctx, &mut n, third.rect.center(), &mut a);
         assert_eq!(a.session.undo_history(), ["Typing"], "three steps undone in one go");
-        assert_eq!(a.session.doc.plain_text(localoffice_doc::StoryRef::Body), "Hello");
+        assert_eq!(a.session.doc.plain_text(localwriter_doc::StoryRef::Body), "Hello");
         frame(&ctx, &mut n, vec![], &mut a);
         assert!(!egui::Popup::is_id_open(&ctx, popup), "the list closes");
     }
@@ -849,7 +849,7 @@ mod tests {
     /// left must not shift with it.
     #[test]
     fn status_bar_controls_hold_still_across_zoom_levels() {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         let ctx = ctx();
         ctx.enable_accesskit();
         let names = ["Focus", "Print Layout", "Web Layout"];
@@ -884,7 +884,7 @@ mod tests {
     /// before the controls on the right, instead of being drawn over the Focus button.
     #[test]
     fn a_long_status_message_stops_before_the_controls() {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         let long = "C:\\Test\\Documents\\Reports\\Final individual test folder\\Second level folder\\Project - Gadgets and sleep of teenagers.docx: The system cannot find the path specified. (os error 3)";
         a.status_msg = Some((long.to_string(), crate::now_ms()));
         let ctx = ctx();
@@ -931,7 +931,7 @@ mod tests {
             }
             "(none shown)".to_string()
         };
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         a.run("text.insert", json!({"text": "Body text"})).unwrap();
         a.run("references.footnote", json!({})).unwrap();
         assert_eq!(label(&mut a), "Editing footnote");
@@ -945,7 +945,7 @@ mod tests {
     /// #1903: the footer's Cancel row closes the Undo list without undoing anything.
     #[test]
     fn undo_list_cancel_closes_without_undoing() {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         a.run("text.insert", json!({"text": "Hello"})).unwrap();
         let before: Vec<String> = a.session.undo_history().into_iter().map(str::to_string).collect();
         assert!(!before.is_empty());
@@ -994,7 +994,7 @@ mod tests {
     #[test]
     fn hide_quick_access_toolbar_takes_the_toolbar_out_of_the_title_bar() {
         use egui_kittest::kittest::Queryable;
-        let a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
                 let ctx = ui.ctx().clone();
@@ -1040,7 +1040,7 @@ mod tests {
     /// #3040: clicking a row in the Undo list hands the keyboard back to the document.
     #[test]
     fn undo_list_row_returns_focus_to_the_document() {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         a.run("text.insert", json!({"text": "Hello"})).unwrap();
         assert_eq!(a.session.undo_history().len(), 1);
 
@@ -1060,11 +1060,11 @@ mod tests {
 
     /// A saved .docx (so AutoSave can cover it) with the title bar drawn over it.
     fn autosave_harness() -> (egui_kittest::Harness<'static, WordApp>, std::path::PathBuf) {
-        let dir = std::env::temp_dir().join(format!("localoffice-ui-autosave-label-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-ui-autosave-label-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("draft.docx");
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         a.run("text.insert", json!({"text": "Hello"})).unwrap();
         a.run("file.save", json!({"path": path.to_string_lossy()})).unwrap();
         assert!(a.autosaves(), "a saved .docx is covered by AutoSave");

@@ -4,8 +4,8 @@
 //! document); a front end keeps the other windows' views and moves them in and out with
 //! [`Session::take_view`] and [`Session::put_view`] as it draws each window.
 
-use localoffice_doc::props::CharProps;
-use localoffice_doc::{Pos, StoryRef};
+use localwriter_doc::props::CharProps;
+use localwriter_doc::{Pos, StoryRef};
 
 use super::{ColumnBlock, MathEdit, Selection, Session, TypedWord, ViewState, Widened, next_math_session};
 

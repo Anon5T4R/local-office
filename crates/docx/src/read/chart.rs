@@ -8,9 +8,9 @@
 
 use std::f64::consts::{FRAC_PI_2, TAU};
 
-use localoffice_doc::graphic::{GraphicItem, PathSeg, TextAlign};
-use localoffice_doc::para::ShapeKind;
-use localoffice_doc::props::Rgb;
+use localwriter_doc::graphic::{GraphicItem, PathSeg, TextAlign};
+use localwriter_doc::para::ShapeKind;
+use localwriter_doc::props::Rgb;
 
 use super::drawing_color::{fill_colour, slot};
 use crate::units::{int, measure};
@@ -93,7 +93,7 @@ fn title_block(out: &mut Vec<GraphicItem>, t: &str, area: Rect) -> Rect {
     Rect { y: area.y + lh + PAD, h: (area.h - lh - PAD).max(1.0), ..area }
 }
 
-/// A chart whose plot area holds only chart types LocalOffice doesn't draw (stock, bubble…): its
+/// A chart whose plot area holds only chart types LocalWriter doesn't draw (stock, bubble…): its
 /// frame with a light border, its title and a line saying which type it is, so it isn't blank
 /// space. Nothing when the plot area has no chart type at all, or a supported one with nothing
 /// to draw.
@@ -117,7 +117,7 @@ fn placeholder(out: &mut Vec<GraphicItem>, space: &El, theme: &[Rgb], w: f32, h:
     text(out, line, &clip_text(&msg, area.w, size), size, TextAlign::Center, false);
 }
 
-/// What a placeholder calls a chart type element LocalOffice doesn't draw.
+/// What a placeholder calls a chart type element LocalWriter doesn't draw.
 fn unsupported_name(name: &str) -> &'static str {
     match name {
         "c:stockChart" => "Stock chart",
@@ -1821,7 +1821,7 @@ fn arc(segs: &mut Vec<PathSeg>, (cx, cy, r): (f64, f64, f64), a: f64, b: f64) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use localoffice_doc::THEME_COLORS;
+    use localwriter_doc::THEME_COLORS;
 
     const NS: &str =
         r#"xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main""#;

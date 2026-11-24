@@ -1,20 +1,20 @@
 [package]
-name = "localoffice-pdf"
+name = "localwriter-pdf"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word PDF export (craft-pdf / Krilla): embedded font subsets with selectable text, links, outline, tagging"
+description = "Local Writer PDF export (craft-pdf / Krilla): embedded font subsets with selectable text, links, outline, tagging"
 
 [lints]
 workspace = true
 
 [dependencies]
-localoffice-doc = { workspace = true }
-localoffice-geom = { workspace = true, features = ["image"] }
-localoffice-fonts = { workspace = true }
-localoffice-layout = { workspace = true }
-localoffice-metafile = { workspace = true }
+localwriter-doc = { workspace = true }
+localwriter-geom = { workspace = true, features = ["image"] }
+localwriter-fonts = { workspace = true }
+localwriter-layout = { workspace = true }
+localwriter-metafile = { workspace = true }
 craft-pdf = { workspace = true }
 kurbo = { workspace = true }
 image = { workspace = true }

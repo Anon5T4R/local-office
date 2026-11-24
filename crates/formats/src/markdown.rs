@@ -16,7 +16,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use localoffice_doc::{Align, Document};
+use localwriter_doc::{Align, Document};
 
 use crate::html::decode_entity;
 use crate::model::{self, Cell, FBlock, FTable, Fmt, Inline, Kind, ListInfo, Para, make_img};
@@ -34,7 +34,7 @@ pub fn import(text: &str) -> Document {
 }
 
 /// [`import`] onto `page`: Markdown gives no page size (#1381).
-pub fn import_on(text: &str, page: &localoffice_doc::SectionProps) -> Document {
+pub fn import_on(text: &str, page: &localwriter_doc::SectionProps) -> Document {
     model::begin_import();
     model::to_doc_in(&parse(text), page.clone())
 }
@@ -1640,7 +1640,7 @@ fn inlines_md_impl(inlines: &[Inline], in_table: bool) -> String {
     };
     for (text, f, raw) in pieces {
         // Links are the outermost construct; a script or other non-web target is plain text.
-        let f_link = f.link.clone().filter(|l| localoffice_doc::link::is_safe_href(l));
+        let f_link = f.link.clone().filter(|l| localwriter_doc::link::is_safe_href(l));
         if f_link != link || raw.is_some() {
             close_all(&mut out, &mut stack);
             if let Some(l) = &link {
@@ -1928,7 +1928,7 @@ mod tests {
             "<p align=\"center\">\n  <a href=\"https://x.org\">Site</a>\n</p>\n\n<h1 align=\"center\">Title</h1>\n\n<table> <tr> <td width=\"50%\">\n\n- a\n- b\n\n</td> </tr> </table>\n\n<div align=\"right\">footer</div>\n\n> [!NOTE]\n> quoted\n",
         );
         let doc = model::to_doc(&f);
-        let text = doc.plain_text(localoffice_doc::StoryRef::Body);
+        let text = doc.plain_text(localwriter_doc::StoryRef::Body);
         assert!(!text.contains('<') && !text.contains("align"), "{text}");
         let para = |n: usize| {
             f.blocks.get(n).map(|b| match b {
@@ -2014,12 +2014,12 @@ mod tests {
 
         // The definition is not a paragraph, and its text is nowhere in the body.
         let doc = import(&format!("Reference link: [click here][ref1]{def}"));
-        let text = doc.plain_text(localoffice_doc::StoryRef::Body);
+        let text = doc.plain_text(localwriter_doc::StoryRef::Body);
         assert_eq!(text, "Reference link: click here", "{text:?}");
 
         // A definition inside a fence is code, not a definition.
         let fenced = "```\n[ref1]: https://example.com/ref\n```\n\n[ref1]\n";
-        let body = import(fenced).plain_text(localoffice_doc::StoryRef::Body);
+        let body = import(fenced).plain_text(localwriter_doc::StoryRef::Body);
         assert!(body.contains("[ref1]: https://example.com/ref"), "the fenced definition is still code: {body:?}");
         assert_eq!(links(fenced), vec![], "a fenced definition defines nothing");
     }
@@ -2030,7 +2030,7 @@ mod tests {
     /// fence this pass thought had closed.
     #[test]
     fn a_definition_shaped_line_that_is_not_a_definition_stays_in_the_document() {
-        let body = |md: &str| import(md).plain_text(localoffice_doc::StoryRef::Body);
+        let body = |md: &str| import(md).plain_text(localwriter_doc::StoryRef::Body);
 
         // A definition cannot interrupt a paragraph: this is the author's text, lines and all.
         let para = "Status update\n[Warning]: unstable\nmore text\n";
@@ -2046,7 +2046,7 @@ mod tests {
         // taken and the reference resolves.
         let indented = "    ```\n\n[x]: /y\n\nSee [x].\n";
         let doc = import(indented);
-        let text = doc.plain_text(localoffice_doc::StoryRef::Body);
+        let text = doc.plain_text(localwriter_doc::StoryRef::Body);
         assert!(text.contains("```") && text.ends_with("See x."), "{text:?}");
 
         // A definition still gives up its line after a blank line, at the start of the document,
@@ -2263,7 +2263,7 @@ mod tests {
                 p.push_text(source, &Fmt { code: true, ..Default::default() });
                 let mut doc = model::to_doc(&model::Flow { blocks: vec![FBlock::Para(p)], ..Default::default() });
                 // The flow builder removes CR controls; keep the native document's raw input.
-                let p = doc.para_mut(localoffice_doc::StoryRef::Body, &localoffice_doc::Path::top(0)).unwrap();
+                let p = doc.para_mut(localwriter_doc::StoryRef::Body, &localwriter_doc::Path::top(0)).unwrap();
                 p.text = source.to_string();
                 p.runs[0].len = source.len();
                 let bytes = crate::export("md", &doc).unwrap().unwrap();
@@ -2291,7 +2291,7 @@ mod tests {
             let cell = Cell { blocks: vec![FBlock::Para(p)], ..Default::default() };
             let table = FTable { rows: vec![vec![cell, Cell::default()], vec![Cell::default(), Cell::default()]], ..Default::default() };
             let mut doc = model::to_doc(&model::Flow { blocks: vec![FBlock::Table(table)], ..Default::default() });
-            let p = doc.para_mut(localoffice_doc::StoryRef::Body, &localoffice_doc::Path(vec![0, 0, 0, 0])).unwrap();
+            let p = doc.para_mut(localwriter_doc::StoryRef::Body, &localwriter_doc::Path(vec![0, 0, 0, 0])).unwrap();
             p.text = source.clone();
             p.runs[0].len = source.len();
             let md = export(&doc);
@@ -2395,7 +2395,7 @@ mod tests {
 
     #[test]
     fn lines_after_line_break_stay_in_paragraph() {
-        use localoffice_doc::{CharProps, Document, Paragraph, StoryRef, para_block};
+        use localwriter_doc::{CharProps, Document, Paragraph, StoryRef, para_block};
         let cases = ["Shopping\n- milk\n# not a heading", "a\n1. x", "a\n2) x", "a\n+ x", "a\n---", "a\n***", "a\n==", "a\n--", "a\n> q"];
         for s in cases {
             let mut d = Document::new();

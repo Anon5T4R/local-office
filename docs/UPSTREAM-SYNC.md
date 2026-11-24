@@ -98,7 +98,7 @@ strategy = "review"
 
 [[map]]
 upstream = "packaging/windows/wordcraft.wxs"
-local = "packaging/windows/localoffice.wxs"
+local = "packaging/windows/localwriter.wxs"
 strategy = "skip"   # nosso packaging é independente
 
 [[map]]

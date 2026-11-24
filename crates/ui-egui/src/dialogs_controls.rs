@@ -42,8 +42,8 @@ impl ControlForm {
         let b = |k: &str| v.get(k).and_then(Value::as_bool).unwrap_or(false);
         let at = v.get("start").cloned().unwrap_or(Value::Null);
         // The content starts just after the start marker.
-        let at = match serde_json::from_value::<localoffice_doc::Pos>(at) {
-            Ok(p) => serde_json::to_value(localoffice_doc::Pos { off: p.off + localoffice_doc::para::OBJ.len_utf8(), ..p }).unwrap_or(Value::Null),
+        let at = match serde_json::from_value::<localwriter_doc::Pos>(at) {
+            Ok(p) => serde_json::to_value(localwriter_doc::Pos { off: p.off + localwriter_doc::para::OBJ.len_utf8(), ..p }).unwrap_or(Value::Null),
             Err(_) => Value::Null,
         };
         let items = v
@@ -202,7 +202,7 @@ fn entries(ui: &mut Ui, f: &mut ControlForm) {
     {
         f.items.remove(i);
     }
-    if f.items.len() < localoffice_doc::control::MAX_LIST_ITEMS && ui.button(tl!("Add")).clicked() {
+    if f.items.len() < localwriter_doc::control::MAX_LIST_ITEMS && ui.button(tl!("Add")).clicked() {
         f.items.push(Entry::default());
     }
 }

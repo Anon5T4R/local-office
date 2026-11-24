@@ -28,7 +28,7 @@ use zeroize::Zeroizing;
 use crate::DocxError;
 use crate::xml;
 
-/// The spin count Word uses, and LocalOffice writes.
+/// The spin count Word uses, and LocalWriter writes.
 pub const DEFAULT_SPIN_COUNT: u32 = 100_000;
 /// The largest spin count the specification allows (§2.3.4.10 `ST_SpinCount`): it bounds the
 /// work a hostile file can ask for.
@@ -74,7 +74,7 @@ const NS_PASSWORD: &str = "http://schemas.microsoft.com/office/2006/keyEncryptor
 /// Is this an encrypted Office package (a compound file with `EncryptionInfo` and
 /// `EncryptedPackage` streams) rather than a zip?
 pub fn is_encrypted(bytes: &[u8]) -> bool {
-    if bytes.get(..8) != Some(&CFB_MAGIC[..]) || localoffice_doc::cfb_guard::check(bytes).is_err() {
+    if bytes.get(..8) != Some(&CFB_MAGIC[..]) || localwriter_doc::cfb_guard::check(bytes).is_err() {
         return false;
     }
     match cfb::CompoundFile::open(Cursor::new(bytes)) {
@@ -87,7 +87,7 @@ pub fn is_encrypted(bytes: &[u8]) -> bool {
 /// [`DocxError::PasswordRequired`] once it knows the file is one it can decrypt; a password that
 /// doesn't fit gives [`DocxError::WrongPassword`].
 pub fn decrypt(bytes: &[u8], password: Option<&str>) -> Result<Vec<u8>, DocxError> {
-    localoffice_doc::cfb_guard::check(bytes).map_err(|e| bad(format!("not a readable compound file ({e})")))?;
+    localwriter_doc::cfb_guard::check(bytes).map_err(|e| bad(format!("not a readable compound file ({e})")))?;
     let mut comp = cfb::CompoundFile::open(Cursor::new(bytes)).map_err(|e| bad(format!("not a readable compound file ({e})")))?;
     let info = stream(&mut comp, "/EncryptionInfo", MAX_INFO)?;
     let package = stream(&mut comp, "/EncryptedPackage", bytes.len() as u64)?;
@@ -192,10 +192,10 @@ fn parse_standard(info: &[u8]) -> Result<Standard<'_>, DocxError> {
     };
     let flags = u32_at(4)?;
     if flags & F_EXTERNAL != 0 {
-        return Err(bad("this file uses extensible encryption, which LocalOffice can't open"));
+        return Err(bad("this file uses extensible encryption, which LocalWriter can't open"));
     }
     if flags & STANDARD_FLAGS != STANDARD_FLAGS {
-        return Err(bad("this file's encryption isn't AES, which LocalOffice can't open"));
+        return Err(bad("this file's encryption isn't AES, which LocalWriter can't open"));
     }
     // EncryptionHeader (§2.3.2): Flags, SizeExtra, AlgID, AlgIDHash, KeySize, ProviderType, two
     // reserved words, then the CSP name, which isn't needed.
@@ -322,7 +322,7 @@ pub fn encrypt_with_spin_count(package: &[u8], password: &str, spin_count: u32) 
 }
 
 /// A package encrypted with the *Standard* method (§2.3.4.5–§2.3.4.9: AES-ECB, SHA-1, 50,000
-/// spins), as Word 2007 wrote it, for tests only: LocalOffice saves with the agile method
+/// spins), as Word 2007 wrote it, for tests only: LocalWriter saves with the agile method
 /// ([`encrypt`]). `key_bits` is 128, 192 or 256. The compound file holds just the two streams
 /// [`decrypt`] reads.
 #[doc(hidden)]
@@ -401,7 +401,7 @@ pub enum PasswordCheck {
     Correct,
     /// The password doesn't match.
     Incorrect,
-    /// The hash uses an algorithm or form LocalOffice can't check, or is damaged. The protection
+    /// The hash uses an algorithm or form LocalWriter can't check, or is damaged. The protection
     /// must stay on: guessing would let any password through.
     Unsupported,
 }
@@ -557,7 +557,7 @@ fn stream<F: Read + std::io::Seek>(comp: &mut cfb::CompoundFile<F>, path: &str, 
     Ok(v)
 }
 
-/// The hash algorithms agile encryption names that LocalOffice supports.
+/// The hash algorithms agile encryption names that LocalWriter supports.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Hash {
     Sha1,
@@ -831,7 +831,7 @@ fn parse_info(info: &[u8]) -> Result<Info, DocxError> {
     };
     match (major, minor) {
         (4, 4) => {}
-        (3 | 4, 3) => return Err(bad("this file uses extensible encryption, which LocalOffice can't open")),
+        (3 | 4, 3) => return Err(bad("this file uses extensible encryption, which LocalWriter can't open")),
         _ => return Err(bad(format!("unknown encryption version {major}.{minor}"))),
     }
     let root = xml::parse(info.get(8..).unwrap_or(&[]))?;
@@ -1036,7 +1036,7 @@ mod tests {
         assert_eq!(super::check_protection_password(&attrs, "Example"), Correct);
         assert_eq!(super::check_protection_password(&attrs, "example"), Incorrect);
         assert_eq!(super::check_protection_password(&attrs, ""), Incorrect);
-        // MD5 (and the other algorithms LocalOffice lacks), hostile spin counts: refused.
+        // MD5 (and the other algorithms LocalWriter lacks), hostile spin counts: refused.
         assert_eq!(super::check_protection_password(&legacy("3", KNOWN_LEGACY_SHA1, "100000"), "Example"), Unsupported);
         assert_eq!(super::check_protection_password(&legacy("4", KNOWN_LEGACY_SHA1, "4294967295"), "Example"), Unsupported);
         assert_eq!(super::check_protection_password(&legacy("4", KNOWN_LEGACY_SHA1, "-1"), "Example"), Unsupported);
@@ -1054,7 +1054,7 @@ mod tests {
     use super::*;
 
     fn zip_package() -> Vec<u8> {
-        let mut doc = localoffice_doc::Document::from_text("Top secret plans\nSecond paragraph");
+        let mut doc = localwriter_doc::Document::from_text("Top secret plans\nSecond paragraph");
         doc.core.title = "Secret".into();
         crate::write(&doc).unwrap()
     }
@@ -1070,7 +1070,7 @@ mod tests {
         assert!(comp.is_stream("/\u{6}DataSpaces/TransformInfo/StrongEncryptionTransform/\u{6}Primary"));
         assert_eq!(decrypt(&enc, Some("pässwörd 🔑")).unwrap(), pkg);
         let doc = crate::read_with_password(&enc, Some("pässwörd 🔑")).unwrap();
-        assert!(doc.plain_text(localoffice_doc::StoryRef::Body).contains("Top secret plans"));
+        assert!(doc.plain_text(localwriter_doc::StoryRef::Body).contains("Top secret plans"));
         assert_eq!(doc.core.title, "Secret");
         // Without a password, or with the wrong one, it says so instead of opening blank.
         assert_eq!(crate::read(&enc), Err(DocxError::PasswordRequired));
@@ -1181,7 +1181,7 @@ mod tests {
     }
 
     /// Standard encryption's key derivation (§2.3.4.7) for the password "Password1234_" and the
-    /// salt 00 01 … 0F. The expected keys were computed outside LocalOffice (Python's hashlib)
+    /// salt 00 01 … 0F. The expected keys were computed outside LocalWriter (Python's hashlib)
     /// following the specification's steps, so the encryptor and decryptor can't share a mistake.
     #[test]
     fn standard_key_matches_an_independent_derivation() {
@@ -1215,7 +1215,7 @@ mod tests {
         }
         let enc = encrypt_standard_for_tests(&pkg, "pw", 128).unwrap();
         let doc = crate::read_with_password(&enc, Some("pw")).unwrap();
-        assert!(doc.plain_text(localoffice_doc::StoryRef::Body).contains("Top secret plans"));
+        assert!(doc.plain_text(localwriter_doc::StoryRef::Body).contains("Top secret plans"));
         // Sizes on and off the block boundary, and empty.
         for n in [0usize, 1, 15, 16, 17, SEGMENT + 3] {
             let data: Vec<u8> = (0..n).map(|i| (i * 7) as u8).collect();
@@ -1235,7 +1235,7 @@ mod tests {
         let key = standard_key(&salt, password, 16);
         let mut hash = sha1::Sha1::digest(verifier).to_vec();
         hash.resize(32, 0); // the hash, zero-padded to two AES blocks
-        let csp: Vec<u8> = "LocalOffice test provider".encode_utf16().chain([0]).flat_map(u16::to_le_bytes).collect();
+        let csp: Vec<u8> = "LocalWriter test provider".encode_utf16().chain([0]).flat_map(u16::to_le_bytes).collect();
 
         let mut header = Vec::new();
         header.extend_from_slice(&0x24u32.to_le_bytes()); // Flags: fCryptoAPI | fAES

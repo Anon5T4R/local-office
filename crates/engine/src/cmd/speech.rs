@@ -3,8 +3,8 @@
 //! The player lives in [`crate::speech`]; these commands drive it, so the player window, the
 //! ribbon, the CLI and agents all control reading the same way.
 
-use localoffice_doc::para::OBJ;
-use localoffice_doc::{InlineObject, Pos};
+use localwriter_doc::para::OBJ;
+use localwriter_doc::{InlineObject, Pos};
 use serde_json::Value;
 
 use super::sel_result;
@@ -158,8 +158,8 @@ fn past_citation(s: &mut Session, _: &Value) -> CmdResult {
 
 #[cfg(test)]
 mod tests {
-    use localoffice_doc::props::CharProps;
-    use localoffice_doc::{Document, InlineObject, Path, Pos, StoryRef};
+    use localwriter_doc::props::CharProps;
+    use localwriter_doc::{Document, InlineObject, Path, Pos, StoryRef};
     use serde_json::json;
 
     use crate::Session;

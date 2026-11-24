@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  LocalWriter MSI (WiX Toolset v5: `dotnet tool install -g wix`, plus its UI and Util extensions:
+  `wix extension add -g WixToolset.UI.wixext/5.0.2` and the same for WixToolset.Util.wixext).
+  Built by package.ps1:
+
+    wix build localwriter.wxs -arch x64 -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext
+      -d Version=1.2.3 -d BinDir=... -d IconPath=... -d LicenseRtf=... [-d Scope=perUserOrMachine] -o out.msi
+
+  Per-machine install into Program Files with a Start Menu shortcut. The installer shows the
+  standard WiX dialogs: welcome + license, progress, and a finish page.
+
+  Built a second time with -d Scope=perUserOrMachine for people without administrator rights
+  (#39): a dual-purpose package that WiX gives ALLUSERS=2 and MSIINSTALLPERUSER=1, so it installs
+  for the current user with no UAC prompt. Windows then redirects Program Files to
+  %LOCALAPPDATA%\Programs, the Start Menu to the user's own, and HKMU to HKCU, so the same
+  components work in both packages. Both share the UpgradeCode: each upgrades its own earlier
+  versions (Windows Installer only matches products installed in the same context).
+
+  The product was called Local Word (LocalOffice) until it became Local Writer. The UpgradeCode and the
+  component GUIDs below did not change with the name, so this MSI upgrades the old one (MajorUpgrade
+  removes the old product first: its ProgIds, "Open with" entries, Capabilities, App Paths and shortcuts
+  go with it, and the ones below are written in their place).
+
+  UpgradeCode and the component GUIDs below belong to LocalWriter alone. Never copy them from (or
+  into) a sibling Craft app: Windows Installer treats every package sharing an UpgradeCode as one
+  product, so a shared code makes one app's installer refuse to install ("a newer version is
+  already installed") or silently uninstall the other. packaging-lint.yml checks this.
+-->
+<?ifndef Scope?>
+<?define Scope = perMachine?>
+<?endif?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <?ifndef HasCraftFontLicences ?>
+  <?define HasCraftFontLicences=0 ?>
+  <?endif ?>
+  <Package
+      Name="Local Writer"
+Manufacturer="Local Writer contributors"
+      Version="$(var.Version)"
+      UpgradeCode="075497F9-E861-45D0-9C7F-A74F8C34E6BA"
+      Scope="$(var.Scope)"
+      Compressed="yes"
+      Language="1033">
+    <SummaryInformation Description="Local Writer word processor" Manufacturer="Local Writer contributors" />
+    <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
+         (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of Local Writer is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="LocalWriterIcon.ico" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="LocalWriterIcon.ico" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/Styx-Studios/Local-Writer" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://github.com/Styx-Studios/Local-Writer/releases" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/Styx-Studios/Local-Writer/issues" />
+
+    <!-- Installer UI (#198): WixUI_Minimal is welcome + license, progress, then a finish page so
+         people can see the install worked. Its dialogs and bitmaps are WiX's own
+         (WixToolset.UI.wixext); package.ps1 builds the license RTF from LICENSE-MIT and
+         LICENSE-APACHE. The finish page offers to launch LocalWriter (ticked by default) through
+         WixShellExec (WixToolset.Util.wixext); silent installs (/qn) never show it. -->
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Local Writer" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+    <Property Id="WixShellExecTarget" Value="[#LocalWriterExe]" />
+    <CustomAction Id="LaunchLocalWriter" BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)" DllEntry="WixShellExec"
+        Impersonate="yes" Return="ignore" />
+    <UI>
+      <ui:WixUI Id="WixUI_Minimal" />
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchLocalWriter"
+          Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed" />
+    </UI>
+
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="Local Writer" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <Feature Id="Main" Title="Local Writer" Level="1">
+      <ComponentGroupRef Id="AppNotices" />
+      <?if $(var.HasCraftFontLicences) = 1 ?>
+      <ComponentGroupRef Id="CraftFontLicences" />
+      <?endif ?>
+      <ComponentGroupRef Id="LocalWriterFiles" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="AppNotices" Directory="INSTALLFOLDER">
+      <Files Include="$(var.AppNoticesDir)\**" />
+    </ComponentGroup>
+    <?if $(var.HasCraftFontLicences) = 1 ?>
+    <ComponentGroup Id="CraftFontLicences" Directory="INSTALLFOLDER">
+      <Files Include="$(var.DocsDir)\**" />
+    </ComponentGroup>
+    <?endif ?>
+    <ComponentGroup Id="LocalWriterFiles" Directory="INSTALLFOLDER">
+      <Component Id="LocalWriterApp" Guid="855DCEC6-9285-444F-9382-9654B83B34F6">
+        <File Id="LocalWriterExe" Source="$(var.BinDir)\localwriter.exe" KeyPath="yes">
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Local Writer"
+              Description="Local Writer word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+              Icon="LocalWriterIcon.ico" IconIndex="0" />
+          <!-- Alias de busca: a busca do Windows casa o nome do atalho, e todo app da
+               suíte começa com Local — "writer" puro não acharia nada. -->
+          <Shortcut Id="AliasShortcut" Directory="ProgramMenuFolder" Name="Writer"
+              Description="Local Writer word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+              Icon="LocalWriterIcon.ico" IconIndex="0" />
+          <!-- Atalho no desktop (paridade com o resto da suíte; per-machine = desktop
+               comum, visível pra todos os usuários). -->
+          <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="Local Writer"
+              Description="Local Writer word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+              Icon="LocalWriterIcon.ico" IconIndex="0" />
+        </File>
+
+        <RegistryValue Root="HKMU" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\localwriter.exe" Value="[#LocalWriterExe]" Type="string" />
+        <!-- Where this MSI installed the app. The app's own updater reads it (HKLM here) under the
+             suite's key to know this is an MSI install, so it updates with the new MSI rather than
+             the portable zip. -->
+        <RegistryValue Root="HKLM" Key="Software\Anon5T4R\LocalWriter" Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
+      </Component>
+
+      <!-- File associations (#295). Each document type gets a LocalWriter ProgId (name, icon, open
+           command) and is listed under the extension's OpenWithProgids, so LocalWriter shows in
+           Explorer's "Open with". The Word, RTF and ODT types are also LocalWriter's Capabilities
+           (RegisteredApplications), so it appears in Settings › Default apps, where the user
+           makes it the default (File › Options › General opens that page). Nothing here sets an
+           extension's default: the installer never takes over .docx from another app. Markdown, HTML,
+           LaTeX and plain text are only "Open with" candidates, outside the Capabilities. Removed again on uninstall. -->
+      <Component Id="LocalWriterFileTypes" Guid="EFF89E6A-F9B8-49F9-B3AE-E243347484B4">
+        <RegistryValue Root="HKMU" Key="Software\RegisteredApplications" Name="LocalWriter" Value="Software\LocalWriter\Capabilities" Type="string" KeyPath="yes" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities" Name="ApplicationName" Value="Local Writer" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities" Name="ApplicationDescription" Value="Write and design documents; open and save Word files." Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities" Name="ApplicationIcon" Value="&quot;[#LocalWriterExe]&quot;,0" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe" Name="FriendlyAppName" Value="Local Writer" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+
+        <ProgId Id="LocalWriter.Document" Description="Word Document" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Document\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.docx\OpenWithProgids" Name="LocalWriter.Document" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".docx" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".docx" Value="LocalWriter.Document" Type="string" />
+
+        <ProgId Id="LocalWriter.DocumentMacroEnabled" Description="Word Macro-Enabled Document" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.DocumentMacroEnabled\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.docm\OpenWithProgids" Name="LocalWriter.DocumentMacroEnabled" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".docm" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".docm" Value="LocalWriter.DocumentMacroEnabled" Type="string" />
+
+        <ProgId Id="LocalWriter.Template" Description="Word Template" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Template\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.dotx\OpenWithProgids" Name="LocalWriter.Template" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".dotx" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".dotx" Value="LocalWriter.Template" Type="string" />
+
+        <ProgId Id="LocalWriter.TemplateMacroEnabled" Description="Word Macro-Enabled Template" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.TemplateMacroEnabled\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.dotm\OpenWithProgids" Name="LocalWriter.TemplateMacroEnabled" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".dotm" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".dotm" Value="LocalWriter.TemplateMacroEnabled" Type="string" />
+
+        <ProgId Id="LocalWriter.LegacyDocument" Description="Legacy Word Document" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.LegacyDocument\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.doc\OpenWithProgids" Name="LocalWriter.LegacyDocument" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".doc" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".doc" Value="LocalWriter.LegacyDocument" Type="string" />
+
+        <ProgId Id="LocalWriter.LegacyTemplate" Description="Legacy Word Template" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.LegacyTemplate\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.dot\OpenWithProgids" Name="LocalWriter.LegacyTemplate" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".dot" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".dot" Value="LocalWriter.LegacyTemplate" Type="string" />
+
+        <ProgId Id="LocalWriter.RichText" Description="Rich Text Document" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.RichText\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.rtf\OpenWithProgids" Name="LocalWriter.RichText" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".rtf" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".rtf" Value="LocalWriter.RichText" Type="string" />
+
+        <ProgId Id="LocalWriter.OpenDocumentText" Description="OpenDocument Text" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.OpenDocumentText\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.odt\OpenWithProgids" Name="LocalWriter.OpenDocumentText" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".odt" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\LocalWriter\Capabilities\FileAssociations" Name=".odt" Value="LocalWriter.OpenDocumentText" Type="string" />
+
+        <ProgId Id="LocalWriter.Markdown" Description="Markdown Document" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Markdown\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.md\OpenWithProgids" Name="LocalWriter.Markdown" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".md" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.markdown\OpenWithProgids" Name="LocalWriter.Markdown" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".markdown" Value="" Type="string" />
+
+        <ProgId Id="LocalWriter.Html" Description="Web Page" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Html\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.html\OpenWithProgids" Name="LocalWriter.Html" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".html" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.htm\OpenWithProgids" Name="LocalWriter.Html" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".htm" Value="" Type="string" />
+
+        <ProgId Id="LocalWriter.Tex" Description="LaTeX Document" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.Tex\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.tex\OpenWithProgids" Name="LocalWriter.Tex" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".tex" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.ltx\OpenWithProgids" Name="LocalWriter.Tex" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".ltx" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.latex\OpenWithProgids" Name="LocalWriter.Tex" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".latex" Value="" Type="string" />
+
+        <ProgId Id="LocalWriter.PlainText" Description="Text Document" Icon="LocalWriterExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\LocalWriter.PlainText\shell\open\command" Value="&quot;[#LocalWriterExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.txt\OpenWithProgids" Name="LocalWriter.PlainText" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\localwriter.exe\SupportedTypes" Name=".txt" Value="" Type="string" />
+      </Component>
+
+      <Component Id="LocalWriterCli">
+        <File Id="LocalWriterCliExe" Source="$(var.BinDir)\localwriter-cli.exe" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

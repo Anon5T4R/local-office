@@ -12,7 +12,7 @@
 use std::collections::{BTreeMap, HashSet};
 
 use base64::Engine as _;
-use localoffice_doc::Document;
+use localwriter_doc::Document;
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::name::ResolveResult;
 use quick_xml::reader::NsReader;

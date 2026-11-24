@@ -2,11 +2,11 @@
 //! structures, symbols, caret movement, delete, build-up), convert between built-up and linear
 //! form, inline/display, justification and equation numbers.
 
-use localoffice_doc::math::{Arg, MNode, Math, MathJc, parse_linear, to_linear};
-use localoffice_doc::math_edit::{self as me, MathPos, TypeStyle};
-use localoffice_doc::math_latex::{parse_latex, to_latex};
-use localoffice_doc::para::OBJ;
-use localoffice_doc::{InlineObject, Pos};
+use localwriter_doc::math::{Arg, MNode, Math, MathJc, parse_linear, to_linear};
+use localwriter_doc::math_edit::{self as me, MathPos, TypeStyle};
+use localwriter_doc::math_latex::{parse_latex, to_latex};
+use localwriter_doc::para::OBJ;
+use localwriter_doc::{InlineObject, Pos};
 use serde_json::{Value, json};
 
 use super::{delete_selection, sel_result, split_para};
@@ -319,7 +319,7 @@ fn type_text(s: &mut Session, v: &Value) -> CmdResult {
             return;
         }
         for c in text.chars().take(crate::MAX_EQUATION_TYPE_CHARS) {
-            let rel = matches!(localoffice_doc::math::math_class(c), localoffice_doc::math::MClass::Rel);
+            let rel = matches!(localwriter_doc::math::math_class(c), localwriter_doc::math::MClass::Rel);
             if !style.nor && (c == ' ' || c == '\t' || rel) {
                 let mut changed = false;
                 if let Some(p) = me::autocorrect(&mut math.nodes, &pos) {
@@ -616,7 +616,7 @@ fn convert_math(math: &mut Math, professional: bool, latex: bool) {
         }
     } else if !math.linear {
         let text = if latex { to_latex(&math.nodes) } else { to_linear(&math.nodes) };
-        math.nodes = vec![MNode::Run(localoffice_doc::math::MRun { text, lit: true, ..Default::default() })];
+        math.nodes = vec![MNode::Run(localwriter_doc::math::MRun { text, lit: true, ..Default::default() })];
         math.linear = true;
     }
 }
@@ -629,8 +629,8 @@ fn convert(s: &mut Session, v: &Value) -> CmdResult {
     if p::bool(v, "all").unwrap_or(false) {
         let mut n = 0;
         let mut effect = EquationEffect::default();
-        let stories: Vec<localoffice_doc::StoryRef> =
-            std::iter::once(localoffice_doc::StoryRef::Body).chain(s.doc.parts.keys().map(|k| localoffice_doc::StoryRef::Part(*k))).collect();
+        let stories: Vec<localwriter_doc::StoryRef> =
+            std::iter::once(localwriter_doc::StoryRef::Body).chain(s.doc.parts.keys().map(|k| localwriter_doc::StoryRef::Part(*k))).collect();
         for story in stories {
             for path in s.doc.para_paths(story) {
                 let offs: Vec<usize> = s
@@ -697,11 +697,11 @@ fn number(s: &mut Session, v: &Value) -> CmdResult {
     let at = equation_at_caret(s).ok_or_else(|| CmdError::Disabled("no equation at the caret".into()))?;
     let mut pos_reset = false;
     let (_, effect) = with_eq(s, &at, |math, display| {
-        let numbered = matches!(math.nodes.as_slice(), [MNode::EqArr { rows }] if rows.iter().any(|r| localoffice_doc::math::has_number_mark(r)));
+        let numbered = matches!(math.nodes.as_slice(), [MNode::EqArr { rows }] if rows.iter().any(|r| localwriter_doc::math::has_number_mark(r)));
         let want = p::bool(v, "value").unwrap_or(!numbered);
         if want && !numbered {
             let mut row = std::mem::take(&mut math.nodes);
-            row.push(MNode::Run(localoffice_doc::math::MRun::new("#")));
+            row.push(MNode::Run(localwriter_doc::math::MRun::new("#")));
             math.nodes = vec![MNode::EqArr { rows: vec![row] }];
             *display = true;
             pos_reset = true;
@@ -832,7 +832,7 @@ fn gallery(_: &mut Session, _: &Value) -> CmdResult {
 mod tests {
     use super::*;
     use crate::Session;
-    use localoffice_doc::Document;
+    use localwriter_doc::Document;
 
     fn session() -> Session {
         let mut s = Session::new(Document::new());
@@ -955,14 +955,14 @@ mod tests {
             zw.write_all(xml.as_bytes()).unwrap();
         }
         let bytes = zw.finish().unwrap().into_inner();
-        let mut s = Session::new(localoffice_docx::read(&bytes).unwrap());
+        let mut s = Session::new(localwriter_docx::read(&bytes).unwrap());
         s.run("equation.edit", &json!({})).unwrap();
         s
     }
 
     fn document_xml(s: &Session) -> String {
         use std::io::Read;
-        let bytes = localoffice_docx::write(&s.doc).unwrap();
+        let bytes = localwriter_docx::write(&s.doc).unwrap();
         let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
         let mut xml = String::new();
         z.by_name("word/document.xml").unwrap().read_to_string(&mut xml).unwrap();
@@ -977,7 +977,7 @@ mod tests {
             s.run("insert.equation", &json!({"linear": numbered})).unwrap();
             s.run("equation.number", &json!({"value": false})).unwrap();
             assert_eq!(linear(&s), "█(a@b)", "{numbered}");
-            let mut back = Session::new(localoffice_docx::read(&localoffice_docx::write(&s.doc).unwrap()).unwrap());
+            let mut back = Session::new(localwriter_docx::read(&localwriter_docx::write(&s.doc).unwrap()).unwrap());
             assert_eq!(back.run("equation.get", &json!({})).unwrap()["linear"], "█(a@b)", "{numbered} after save and reopen");
             s.run("edit.undo", &json!({})).unwrap();
             assert_eq!(linear(&s), numbered, "Undo restores the numbers");
@@ -998,20 +998,20 @@ mod tests {
         s.run("select.all", &json!({})).unwrap();
         s.run("format.color", &json!({"color": "C00000"})).unwrap();
         assert!(document_xml(&s).contains(r#"<w:color w:val="C00000"/></w:rPr><m:t"#), "the math runs carry the colour");
-        let mut back = Session::new(localoffice_docx::read(&localoffice_docx::write(&s.doc).unwrap()).unwrap());
+        let mut back = Session::new(localwriter_docx::read(&localwriter_docx::write(&s.doc).unwrap()).unwrap());
         back.run("equation.edit", &json!({})).unwrap();
         let at = back.math.as_ref().unwrap().at.clone();
         let p = back.doc.para_at(&at).unwrap();
         let (_, props) = p.run_ranges().find(|(r, _)| r.contains(&at.off)).unwrap();
         assert_eq!(
             props.color,
-            Some(localoffice_doc::props::TextColor::Rgb(localoffice_doc::props::Rgb(0xC0, 0, 0))),
+            Some(localwriter_doc::props::TextColor::Rgb(localwriter_doc::props::Rgb(0xC0, 0, 0))),
             "the equation's colour is back"
         );
         let Some(InlineObject::Equation { math, .. }) = p.object_at(at.off) else { panic!() };
         let mut nodes = math.nodes.clone();
         let mut runs = 0;
-        localoffice_doc::math_edit::each_run_mut(&mut nodes, &mut |r| {
+        localwriter_doc::math_edit::each_run_mut(&mut nodes, &mut |r| {
             runs += 1;
             assert_eq!(r.color, None, "the colour is the equation's, not stuck on each run");
         });

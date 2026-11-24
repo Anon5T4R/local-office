@@ -36,17 +36,17 @@ note = "cap de REP entries (performance do corretor ortográfico), sem risco de 
 upstream = "Cargo.toml"
 local = "Cargo.toml"
 strategy = "skip"
-note = "nomes de crate e bundle id diferem (wordcraft-* vs localoffice-*)"
+note = "nomes de crate e bundle id diferem (wordcraft-* vs localwriter-*)"
 
 [[map]]
 upstream = "packaging/windows/wordcraft.wxs"
-local = "packaging/windows/localoffice.wxs"
+local = "packaging/windows/localwriter.wxs"
 strategy = "skip"
 note = "nosso packaging é independente do upstream"
 
 [[map]]
 upstream = "packaging/linux/com.local.localpdf.*"
-local = "packaging/linux/com.local.localoffice.*"
+local = "packaging/linux/com.local.localwriter.*"
 strategy = "skip"
 note = "packaging específico de cada app"
 
@@ -66,7 +66,7 @@ note = "marca ArtCraft; removida no rebrand"
 upstream = "ROADMAP.md"
 local = "ROADMAP.md"
 strategy = "skip"
-note = "roadmap do WordCraft; não aplica ao LocalOffice"
+note = "roadmap do WordCraft; não aplica ao LocalWriter"
 
 [[map]]
 upstream = "docs/gaps.md"

@@ -1,10 +1,10 @@
 //! Sprms → model properties, and style-chain resolution.
 
-use localoffice_doc::Rgb;
-use localoffice_doc::props::{
+use localwriter_doc::Rgb;
+use localwriter_doc::props::{
     Align, Border, BorderStyle, Borders, CharProps, Highlight, LineSpacing, ParaProps, TabAlign, TabLeader, TabStop, TextColor, Underline, VertAlign,
 };
-use localoffice_doc::styles::{Style, StyleKind, StyleSheet};
+use localwriter_doc::styles::{Style, StyleKind, StyleSheet};
 
 use crate::sprm::{self, Prl, Toggle};
 

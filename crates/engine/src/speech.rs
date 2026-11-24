@@ -19,8 +19,8 @@
 
 use std::sync::{Arc, Condvar, Mutex, MutexGuard, PoisonError};
 
-use localoffice_doc::para::{COLUMN_BREAK, LINE_BREAK, OBJ, PAGE_BREAK};
-use localoffice_doc::{Document, InlineObject, Pos};
+use localwriter_doc::para::{COLUMN_BREAK, LINE_BREAK, OBJ, PAGE_BREAK};
+use localwriter_doc::{Document, InlineObject, Pos};
 use serde_json::{Value, json};
 
 /// Longest sentence handed to the speech program (longer ones are split at a space).
@@ -522,7 +522,7 @@ impl State {
 pub enum Backend {
     /// The system's speech program.
     System,
-    /// Silent; a sentence lasts until something interrupts it (tests, `LOCALOFFICE_SPEECH=off`).
+    /// Silent; a sentence lasts until something interrupts it (tests, `LOCALWRITER_SPEECH=off`).
     Hold,
     /// Silent; every sentence finishes at once (tests).
     Instant,
@@ -555,7 +555,7 @@ pub struct ReadAloud {
 
 impl Default for ReadAloud {
     fn default() -> Self {
-        let off = cfg!(test) || std::env::var("LOCALOFFICE_SPEECH").is_ok_and(|v| v == "off");
+        let off = cfg!(test) || std::env::var("LOCALWRITER_SPEECH").or_else(|_| std::env::var("LOCALOFFICE_SPEECH")).is_ok_and(|v| v == "off");
         ReadAloud {
             shared: Arc::new((
                 Mutex::new(Shared { queue: Vec::new(), index: 0, state: State::Stopped, rate: 1.0, generation: 0, error: None, running: false }),
@@ -1143,7 +1143,7 @@ mod tests {
         let mut doc = Document::from_text("Привет как твои дела?\nPrivet.");
         let s = sentences(&doc, &Pos::body(0, 0), None, true);
         assert_eq!(s.iter().map(|u| u.lang.as_deref()).collect::<Vec<_>>(), [Some("ru"), Some("en-US")]);
-        if let localoffice_doc::Block::Para(p) = Arc::make_mut(&mut doc.body[1]) {
+        if let localwriter_doc::Block::Para(p) = Arc::make_mut(&mut doc.body[1]) {
             for r in &mut p.runs {
                 r.props.lang = Some("ru-RU".into());
             }

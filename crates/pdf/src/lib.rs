@@ -1,7 +1,7 @@
-//! LocalOffice PDF export through the shared `craft-pdf` writer and Krilla drawing primitives.
+//! LocalWriter PDF export through the shared `craft-pdf` writer and Krilla drawing primitives.
 //!
 //! [`export`] lays the document out and draws each page's display list
-//! ([`localoffice_layout::display::page_display`]) into a PDF page:
+//! ([`localwriter_layout::display::page_display`]) into a PDF page:
 //!
 //! - **Text as real text:** glyph runs are written with embedded, subsetted fonts and a Unicode
 //!   mapping taken from the paragraph text, so text is selectable, searchable and extractable.
@@ -41,16 +41,16 @@ use krilla::paint::{Fill, FillRule, LineCap, LineJoin, Stroke, StrokeDash};
 use krilla::surface::Surface;
 use krilla::tagging::{Artifact, ArtifactType, ContentTag, Identifier, Node, SpanTag, Tag, TagGroup, TagKind, TagTree};
 use krilla::text::{Font, GlyphId, KrillaGlyph};
-use localoffice_doc::graphic::GraphicKind;
-use localoffice_doc::para::{InlineObject, ShapeKind};
-use localoffice_doc::{Document, Path as DocPath, Rgb, StoryRef};
-use localoffice_fonts::FaceRef;
-use localoffice_geom::Rect;
-use localoffice_layout::display::Paint;
-use localoffice_layout::display::{DisplayOptions, Draw, ItemDisplay, Stroke as LineStyle};
-use localoffice_layout::para::{ClKind, LineEnd};
-use localoffice_layout::{DocLayout, LayoutCache, LayoutOptions, NumeralMode, Page, Placed, layout};
-use localoffice_metafile::{Picture, PlacedItem};
+use localwriter_doc::graphic::GraphicKind;
+use localwriter_doc::para::{InlineObject, ShapeKind};
+use localwriter_doc::{Document, Path as DocPath, Rgb, StoryRef};
+use localwriter_fonts::FaceRef;
+use localwriter_geom::Rect;
+use localwriter_layout::display::Paint;
+use localwriter_layout::display::{DisplayOptions, Draw, ItemDisplay, Stroke as LineStyle};
+use localwriter_layout::para::{ClKind, LineEnd};
+use localwriter_layout::{DocLayout, LayoutCache, LayoutOptions, NumeralMode, Page, Placed, layout};
+use localwriter_metafile::{Picture, PlacedItem};
 
 /// Largest page side we write (200", the PDF limit).
 const MAX_SIDE: f32 = 14_400.0;
@@ -265,7 +265,7 @@ impl Fit {
             Fit { paper_w: page.w, paper_h: page.h, page_w: page.w, k: 1.0, dx: 0.0, dy: 0.0 }
         };
         let Some((w, h)) = paper else { return own };
-        let f = localoffice_geom::fit_to_paper(own.paper_w, own.paper_h, w, h);
+        let f = localwriter_geom::fit_to_paper(own.paper_w, own.paper_h, w, h);
         Fit { paper_w: f.paper_w, paper_h: f.paper_h, page_w: own.page_w, k: own.k * f.k, dx: f.dx, dy: own.dy * f.k + f.dy }
     }
 
@@ -277,7 +277,7 @@ impl Fit {
 
 /// The outlines of `glyphs` (glyph id, pen position) at `size`, as one path in page coordinates.
 fn glyph_outlines(face: &FaceRef, size: f32, glyphs: &[(u32, f32, f32)]) -> Option<Path> {
-    let db = localoffice_fonts::FontDb::global();
+    let db = localwriter_fonts::FontDb::global();
     let scale = f64::from(size) / face.upem.max(1.0);
     let mut pb = PathBuilder::new();
     for &(g, x, y) in glyphs {
@@ -368,13 +368,13 @@ fn visual_order(text: &str, glyphs: &[(u32, f32, f32)], clusters: &[std::ops::Ra
     let tie = |idx: &[usize]| -> i64 {
         let Some(r) = idx.first().and_then(|&g| clusters.get(g)) else { return 0 };
         let start = i64::try_from(r.start).unwrap_or(i64::MAX);
-        if text.get(r.clone()).is_some_and(|t| t.chars().any(localoffice_fonts::is_rtl)) { -start } else { start }
+        if text.get(r.clone()).is_some_and(|t| t.chars().any(localwriter_fonts::is_rtl)) { -start } else { start }
     };
     groups.sort_by(|a, b| a.0.total_cmp(&b.0).then_with(|| tie(&a.1).cmp(&tie(&b.1))));
     groups
         .into_iter()
         .flat_map(|(_, mut idx)| {
-            let rtl = idx.first().and_then(|&g| text.get(clusters.get(g)?.clone())).is_some_and(|t| t.chars().any(localoffice_fonts::is_rtl));
+            let rtl = idx.first().and_then(|&g| text.get(clusters.get(g)?.clone())).is_some_and(|t| t.chars().any(localwriter_fonts::is_rtl));
             if rtl {
                 idx.sort_by_key(|&g| std::cmp::Reverse(parts.get(g).map_or(0, |r| r.start)));
             }
@@ -435,7 +435,7 @@ fn clamp_side(v: f32) -> f32 {
 
 fn metadata(doc: &Document, opts: &PdfOptions) -> Metadata {
     let c = &doc.core;
-    let mut m = Metadata { creator: "Local Word".into(), producer: "Local Word".into(), ..Default::default() };
+    let mut m = Metadata { creator: "Local Writer".into(), producer: "Local Writer".into(), ..Default::default() };
     let title = opts.title.clone().unwrap_or_else(|| c.title.clone());
     if !title.trim().is_empty() {
         m.title = Some(title);
@@ -572,13 +572,13 @@ fn grown(r: &Rect, g: f32, dx: f32, dy: f32) -> Rect {
 }
 
 /// A shape's shadow and glow, behind it: bands of its silhouette (the same approximation of a
-/// blur as the raster renderer, see [`localoffice_doc::effects::bands`]).
+/// blur as the raster renderer, see [`localwriter_doc::effects::bands`]).
 fn shape_effects(
     s: &mut Surface,
     kind: ShapeKind,
     corner: Option<u32>,
     rect: &Rect,
-    fx: &localoffice_doc::effects::ShapeEffects,
+    fx: &localwriter_doc::effects::ShapeEffects,
     filled: bool,
     stroked: bool,
     sw: f32,
@@ -602,12 +602,12 @@ fn shape_effects(
     };
     if let Some(sh) = fx.shadow {
         let (dx, dy) = sh.offset();
-        for (g, a) in localoffice_doc::effects::bands(-sh.blur / 2.0, sh.blur / 2.0, sh.opacity()) {
+        for (g, a) in localwriter_doc::effects::bands(-sh.blur / 2.0, sh.blur / 2.0, sh.opacity()) {
             silhouette(s, sh.color, a, g, dx, dy);
         }
     }
     if let Some(gl) = fx.glow {
-        for (g, a) in localoffice_doc::effects::bands(0.0, gl.size, gl.opacity()) {
+        for (g, a) in localwriter_doc::effects::bands(0.0, gl.size, gl.opacity()) {
             silhouette(s, gl.color, a, g, 0.0, 0.0);
         }
     }
@@ -616,7 +616,7 @@ fn shape_effects(
 }
 
 /// Outline of a basic shape in a rectangle (same geometry as the raster renderer); `corner` is a
-/// rounded rectangle's ([`localoffice_doc::connector::ShapeExtra::corner`]).
+/// rounded rectangle's ([`localwriter_doc::connector::ShapeExtra::corner`]).
 fn shape_path(kind: ShapeKind, r: &Rect, corner: Option<u32>) -> Option<Path> {
     let flat_ok = kind.is_open() && r.w.max(r.h) > 0.0 && r.w.min(r.h) >= 0.0;
     if !(ok(r.x) && ok(r.y) && ok(r.w) && ok(r.h)) || !(flat_ok || r.w > 0.0 && r.h > 0.0) {
@@ -648,7 +648,7 @@ fn shape_path(kind: ShapeKind, r: &Rect, corner: Option<u32>) -> Option<Path> {
         // A freeform is drawn from its own paths; without them, its frame.
         ShapeKind::Rectangle | ShapeKind::TextBox | ShapeKind::Freeform => poly(&mut pb, &[(x0, y0), (x1, y0), (x1, y1), (x0, y1)]),
         ShapeKind::RoundedRectangle => {
-            let rad = localoffice_doc::connector::corner_radius(corner, r.w, r.h);
+            let rad = localwriter_doc::connector::corner_radius(corner, r.w, r.h);
             let k = rad * (1.0 - K);
             pb.move_to(x0 + rad, y0);
             pb.line_to(x1 - rad, y0);
@@ -684,7 +684,7 @@ fn shape_path(kind: ShapeKind, r: &Rect, corner: Option<u32>) -> Option<Path> {
         }
         ShapeKind::Arrow | ShapeKind::ArrowLeft | ShapeKind::ArrowUp | ShapeKind::ArrowDown => {
             let pts: Vec<(f32, f32)> =
-                localoffice_doc::wrap::arrow_outline(kind, r.w, r.h).iter().map(|&(u, v)| (x0 + u * r.w, y0 + v * r.h)).collect();
+                localwriter_doc::wrap::arrow_outline(kind, r.w, r.h).iter().map(|&(u, v)| (x0 + u * r.w, y0 + v * r.h)).collect();
             poly(&mut pb, &pts)
         }
         ShapeKind::Star => {
@@ -740,7 +740,7 @@ struct Exporter<'a> {
     /// take seconds to export.
     /// Bookmarks by exact name, and by ASCII-lowercased name for the case-blind fallback; the
     /// first in document order wins either way.
-    bookmarks: std::cell::OnceCell<(HashMap<String, localoffice_doc::Pos>, HashMap<String, localoffice_doc::Pos>)>,
+    bookmarks: std::cell::OnceCell<(HashMap<String, localwriter_doc::Pos>, HashMap<String, localwriter_doc::Pos>)>,
 }
 
 /// What the content being drawn is, for tagging.
@@ -766,7 +766,7 @@ impl Exporter<'_> {
                 let variations = face.is_variable().then_some(face.coords.as_slice());
                 let font = match write::font(face.data(), face.index(), variations) {
                     Ok(font) => Some(font),
-                    // Keep LocalOffice's existing policy: unreadable faces are skipped.
+                    // Keep LocalWriter's existing policy: unreadable faces are skipped.
                     Err(WriteError::InvalidFont) => None,
                     Err(error) => {
                         // Allocation, validation or backend failures must fail the export,
@@ -799,7 +799,7 @@ impl Exporter<'_> {
     fn vector(&mut self, key: &str) -> Option<Arc<Vector>> {
         let doc = self.doc;
         let bytes = doc.media.get(key)?;
-        if !localoffice_metafile::is_metafile(bytes) {
+        if !localwriter_metafile::is_metafile(bytes) {
             return None;
         }
         if let Some(v) = self.vectors.get(key) {
@@ -987,7 +987,7 @@ impl Exporter<'_> {
     /// A heading's text for bookmarks and tags: what the pages show. That leaves out what its
     /// layout `pl` left out (hidden text, resolved as laid out, so table formatting counts too) and,
     /// without markup, tracked deletions.
-    fn title_text(&self, p: &localoffice_doc::Paragraph, pl: &localoffice_layout::para::ParaLayout) -> String {
+    fn title_text(&self, p: &localwriter_doc::Paragraph, pl: &localwriter_layout::para::ParaLayout) -> String {
         let mut dropped = pl.left_out.clone();
         if !self.opts.include_markup {
             dropped.extend(p.deleted_ranges());
@@ -996,7 +996,7 @@ impl Exporter<'_> {
     }
 
     /// The structure entry for a paragraph (created on first sight, in reading order).
-    fn entry(&mut self, story: StoryRef, path: &DocPath, pl: &localoffice_layout::para::ParaLayout) -> usize {
+    fn entry(&mut self, story: StoryRef, path: &DocPath, pl: &localwriter_layout::para::ParaLayout) -> usize {
         if let Some(i) = self.tag_index.get(&(story, path.clone())) {
             return *i;
         }
@@ -1064,7 +1064,7 @@ impl Exporter<'_> {
             Draw::Image { rect, media, crop, alpha, .. } => self.picture(s, rect, media, crop, *alpha),
             Draw::Path { segs, fill: f, stroke, stroke_width, dash, cap } => {
                 let mut pb = PathBuilder::new();
-                append_path(&mut pb, &localoffice_layout::display::seg_path(segs));
+                append_path(&mut pb, &localwriter_layout::display::seg_path(segs));
                 let Some(p) = pb.finish() else { return };
                 s.set_fill(f.as_ref().map(paint_fill));
                 s.set_stroke(stroke.map(|c| Stroke {
@@ -1122,7 +1122,7 @@ impl Exporter<'_> {
                 if let (Some(rad), Some(c), true) = (fx.soft_edge, f.as_ref(), can_fill) {
                     let rad = rad.min(rect.w.min(rect.h) / 2.0).max(0.0);
                     s.set_stroke(None);
-                    for (g, a) in localoffice_doc::effects::bands(-rad, 0.0, 1.0) {
+                    for (g, a) in localwriter_doc::effects::bands(-rad, 0.0, 1.0) {
                         if let Some(p) = shape_path(*kind, &grown(rect, g, 0.0, 0.0), *corner) {
                             s.set_fill(Some(paint_fill(&c.faded(a))));
                             s.draw_path(&p);
@@ -1146,7 +1146,7 @@ impl Exporter<'_> {
                 s.set_stroke(None);
             }
             Draw::Art { path, fx, color, alpha, .. } => {
-                for l in localoffice_layout::wordart::art_layers(path, fx, *color, *alpha) {
+                for l in localwriter_layout::wordart::art_layers(path, fx, *color, *alpha) {
                     let mut pb = PathBuilder::new();
                     append_path(&mut pb, &l.path);
                     let Some(p) = pb.finish() else { continue };
@@ -1294,7 +1294,7 @@ impl Exporter<'_> {
 
     /// The page's picture or texture fill: tiled at 96 dpi for a `tile` fill (when that is a sane
     /// number of tiles), else stretched over the page.
-    fn page_picture(&mut self, s: &mut Surface, pic: &localoffice_doc::PagePicture, w: f32, h: f32) {
+    fn page_picture(&mut self, s: &mut Surface, pic: &localwriter_doc::PagePicture, w: f32, h: f32) {
         const MAX_TILES: f32 = 4096.0;
         if !(w.is_finite() && h.is_finite() && w > 0.0 && h > 0.0) {
             return;
@@ -1335,7 +1335,7 @@ impl Exporter<'_> {
             s.set_fill(None);
             return;
         };
-        let [cl, ct, vis_w, vis_h] = localoffice_metafile::crop_window(*crop).map(|v| v as f32);
+        let [cl, ct, vis_w, vis_h] = localwriter_metafile::crop_window(*crop).map(|v| v as f32);
         let (fw, fh) = (rect.w / vis_w, rect.h / vis_h);
         let Some(size) = Size::from_wh(fw.max(0.01), fh.max(0.01)) else { return };
         let fade = alpha < 0.999;
@@ -1665,9 +1665,9 @@ impl Exporter<'_> {
 
     /// Draws a metafile text run as PDF text (outlines when the font cannot be embedded). `tf` maps
     /// the run's own space (see [`PlacedItem::Text`]) to the page.
-    fn vector_text(&mut self, s: &mut Surface, t: &localoffice_metafile::Text, tf: kurbo::Affine) {
-        let face = localoffice_fonts::word::resolve(&t.font, t.bold, t.italic).face;
-        let shaped = localoffice_fonts::shape(&face, &t.text, &[], |c| c);
+    fn vector_text(&mut self, s: &mut Surface, t: &localwriter_metafile::Text, tf: kurbo::Affine) {
+        let face = localwriter_fonts::word::resolve(&t.font, t.bold, t.italic).face;
+        let shaped = localwriter_fonts::shape(&face, &t.text, &[], |c| c);
         let glyphs: Vec<_> = shaped.iter().map(|g| (g.cluster, f64::from(g.x_advance), f64::from(g.x_offset), f64::from(g.y_offset))).collect();
         let Some(lay) = t.layout(face.upem, face.ascent, face.descent, &glyphs) else { return };
         let font = self.font(&face);
@@ -1720,11 +1720,11 @@ impl Exporter<'_> {
     /// the box's width, its em down the box's height with the em's foot (the font's descent below
     /// the baseline) on the box's bottom; the box centred on the margins (`area`, else the page)
     /// and, when diagonal, turned 45° counterclockwise.
-    fn watermark(&mut self, s: &mut Surface, wm: &localoffice_doc::Watermark, w: f32, h: f32, area: Rect) {
-        let r = localoffice_fonts::word::resolve(&wm.font, false, false);
+    fn watermark(&mut self, s: &mut Surface, wm: &localwriter_doc::Watermark, w: f32, h: f32, area: Rect) {
+        let r = localwriter_fonts::word::resolve(&wm.font, false, false);
         let face = r.face;
         let text: String = wm.text.chars().take(200).collect();
-        let shaped = localoffice_fonts::shape(&face, &text, &[], |c| c);
+        let shaped = localwriter_fonts::shape(&face, &text, &[], |c| c);
         let upem = face.upem.max(1.0) as f32;
         let raw_w: f32 = shaped.iter().map(|g| g.x_advance as f32).sum::<f32>() / upem;
         if raw_w <= 0.0 || !raw_w.is_finite() {
@@ -1733,7 +1733,7 @@ impl Exporter<'_> {
         let [bw, bh] = wm.frame(w, h);
         let size = bh.min(2000.0);
         let stretch = bw / (raw_w * size);
-        let descent = (localoffice_fonts::word::line_metrics(&face).1 / face.upem.max(1.0)) as f32;
+        let descent = (localwriter_fonts::word::line_metrics(&face).1 / face.upem.max(1.0)) as f32;
         let angle = if wm.diagonal { -std::f32::consts::FRAC_PI_4 } else { 0.0 };
         let (c, sn) = (angle.cos(), angle.sin());
         let (dx, dy) = (-bw / 2.0, bh / 2.0 - descent.clamp(0.0, 1.0) * bh);
@@ -1794,7 +1794,7 @@ struct Vector {
 
 /// Parses a metafile and embeds its bitmaps. None when the picture has no usable size.
 fn build_vector(bytes: &[u8]) -> Option<Vector> {
-    let mut pic = localoffice_metafile::parse(bytes).ok()?;
+    let mut pic = localwriter_metafile::parse(bytes).ok()?;
     if !pic.has_size() {
         return None;
     }
@@ -1855,7 +1855,7 @@ fn vector_picture(ex: &mut Exporter, s: &mut Surface, v: &Vector, r: &Rect, crop
                 s.pop();
             }
             PlacedItem::Text { index, tf } => {
-                if let Some(localoffice_metafile::Item::Text(t)) = v.pic.items.get(index) {
+                if let Some(localwriter_metafile::Item::Text(t)) = v.pic.items.get(index) {
                     ex.vector_text(s, t, tf);
                 }
             }
@@ -1897,10 +1897,10 @@ fn cluster_ends(clusters: &[usize], len: usize) -> Vec<usize> {
 /// can't fail the whole export).
 fn load_image(data: &Arc<Vec<u8>>) -> Option<Image> {
     // The shared probe also charges what the decoder holds beside its output (#3644).
-    if !localoffice_geom::picture::probe(data).is_ok_and(|p| p.fits(localoffice_geom::MAX_DECODED_BYTES)) {
+    if !localwriter_geom::picture::probe(data).is_ok_and(|p| p.fits(localwriter_geom::MAX_DECODED_BYTES)) {
         return None;
     }
-    load_image_within(data, localoffice_geom::MAX_DECODED_BYTES)
+    load_image_within(data, localwriter_geom::MAX_DECODED_BYTES)
 }
 
 /// [`load_image`] with an explicit RGBA byte budget (a small one in tests).
@@ -1923,7 +1923,7 @@ fn load_image_within(data: &Arc<Vec<u8>>, budget: u64) -> Option<Image> {
         let (w, h) = d.dimensions();
         (w, h, u64::from(d.color_type().bytes_per_pixel()))
     };
-    if !localoffice_geom::decode_peak_fits(hw, hh, native, budget) {
+    if !localwriter_geom::decode_peak_fits(hw, hh, native, budget) {
         return None;
     }
     let dec = reader()?.decode().ok()?;
@@ -1938,11 +1938,11 @@ fn load_image_within(data: &Arc<Vec<u8>>, budget: u64) -> Option<Image> {
 }
 
 /// Map the document cap to the PDF backend for both shape and path outlines.
-fn pdf_line_cap(cap: localoffice_doc::connector::LineCap) -> LineCap {
+fn pdf_line_cap(cap: localwriter_doc::connector::LineCap) -> LineCap {
     match cap {
-        localoffice_doc::connector::LineCap::Flat => LineCap::Butt,
-        localoffice_doc::connector::LineCap::Square => LineCap::Square,
-        localoffice_doc::connector::LineCap::Round => LineCap::Round,
+        localwriter_doc::connector::LineCap::Flat => LineCap::Butt,
+        localwriter_doc::connector::LineCap::Square => LineCap::Square,
+        localwriter_doc::connector::LineCap::Round => LineCap::Round,
     }
 }
 

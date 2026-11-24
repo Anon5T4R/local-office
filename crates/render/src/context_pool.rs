@@ -63,9 +63,9 @@ impl ContextPool {
 mod tests {
     use super::*;
     use crate::{MAX_SIDE, RenderOptions, Rendered, render_page, render_region};
-    use localoffice_doc::props::{Highlight, Rgb};
-    use localoffice_doc::{Document, Pos};
-    use localoffice_layout::{LayoutCache, LayoutOptions, Page, layout};
+    use localwriter_doc::props::{Highlight, Rgb};
+    use localwriter_doc::{Document, Pos};
+    use localwriter_layout::{LayoutCache, LayoutOptions, Page, layout};
     use vello_cpu::kurbo::{self, Affine, BezPath, Shape};
     use vello_cpu::{Resources, peniko};
 

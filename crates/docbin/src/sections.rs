@@ -1,8 +1,8 @@
 //! Sections and headers/footers: `PlcfSed` → `Sed` → `Sepx` (grpprls of section sprms) and
 //! the `Plcfhdd` stories of the header subdocument ([MS-DOC] §2.8.25, §2.9.244).
 
-use localoffice_doc::section::NumFormat;
-use localoffice_doc::section::{Columns, SectionProps, SectionStart};
+use localwriter_doc::section::NumFormat;
+use localwriter_doc::section::{Columns, SectionProps, SectionStart};
 
 use crate::fib::{Fib, pair};
 use crate::sprm::{self, Prl};

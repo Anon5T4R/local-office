@@ -21,10 +21,10 @@
 //! glues it to the nearest connection site there (`shape.connect`), elsewhere leaves it free.
 
 use egui::{Color32, Painter, Pos2, Rect, Ui};
-use localoffice_doc::para::{InlineObject, OBJ, Wrap};
-use localoffice_doc::{PartKind, Pos, StoryRef};
-use localoffice_layout::DocLayout;
-use localoffice_layout::hit::ObjectHit;
+use localwriter_doc::para::{InlineObject, OBJ, Wrap};
+use localwriter_doc::{PartKind, Pos, StoryRef};
+use localwriter_layout::DocLayout;
+use localwriter_layout::hit::ObjectHit;
 use serde_json::json;
 
 use crate::WordApp;
@@ -74,7 +74,7 @@ fn connector_ends(app: &WordApp, layout: &DocLayout) -> Option<(ObjectHit, (f32,
     }
     let (flip_h, flip_v) = (float.flip_h, float.flip_v);
     let o = layout.object(&pos, app.session.page_hint)?;
-    let (a, b) = localoffice_doc::connector::ends(o.rect.x, o.rect.y, o.rect.w, o.rect.h, flip_h, flip_v);
+    let (a, b) = localwriter_doc::connector::ends(o.rect.x, o.rect.y, o.rect.w, o.rect.h, flip_h, flip_v);
     Some((o, a, b))
 }
 
@@ -98,7 +98,7 @@ fn connector_end_at(app: &WordApp, layout: &DocLayout, pages: &[Rect], scale: f3
 /// The selected object: the selection is exactly one picture, shape or text box, in the body
 /// or in a header/footer.
 pub fn selected(app: &WordApp) -> Option<(Pos, &InlineObject)> {
-    localoffice_engine::cmd::objects::object_selection(&app.session).filter(|(p, _)| selectable_story(app, p.story))
+    localwriter_engine::cmd::objects::object_selection(&app.session).filter(|(p, _)| selectable_story(app, p.story))
 }
 
 /// Whether objects of `story` can be selected and dragged on the canvas: the body and
@@ -122,7 +122,7 @@ fn active_story(app: &WordApp, layout: &DocLayout) -> StoryRef {
     }
 }
 
-/// Whether the object under `hit` keeps its place and size: a chart or diagram LocalOffice has no
+/// Whether the object under `hit` keeps its place and size: a chart or diagram LocalWriter has no
 /// model for can be selected and deleted, not moved or resized, so it gets no handles, no move
 /// cursor and no drag.
 fn fixed(app: &WordApp, hit: &ObjectHit) -> bool {
@@ -130,7 +130,7 @@ fn fixed(app: &WordApp, hit: &ObjectHit) -> bool {
     matches!(app.session.doc.para_at(&pos).and_then(|p| p.object_at(pos.off)), Some(InlineObject::Graphic { .. })) && !size_only(app, hit)
 }
 
-/// Whether the object under `hit` is a chart or SmartArt that LocalOffice can edit: it takes
+/// Whether the object under `hit` is a chart or SmartArt that LocalWriter can edit: it takes
 /// resize handles and is laid out again at the new size, but it can't be moved or turned.
 fn size_only(app: &WordApp, hit: &ObjectHit) -> bool {
     let pos = hit.pos();
@@ -160,7 +160,7 @@ pub fn active(app: &WordApp, layout: &DocLayout) -> Option<(ObjectHit, bool)> {
     }
 }
 
-fn screen(pages: &[Rect], scale: f32, page: usize, r: localoffice_geom::Rect) -> Option<Rect> {
+fn screen(pages: &[Rect], scale: f32, page: usize, r: localwriter_geom::Rect) -> Option<Rect> {
     pages.get(page).map(|p| frame::to_screen(*p, scale, r))
 }
 
@@ -264,7 +264,7 @@ pub fn pointer(app: &mut WordApp, ui: &Ui, resp: &egui::Response, pages: &[Rect]
     let grabbed = grab_at(app, layout, pages, scale, at).or_else(|| pressed.then(|| behind_drag_at(app, layout, pages, scale, at)).flatten());
     let Some((object, grab)) = grabbed else { return false };
     // Double-click a SmartArt graphic (selected by the first click) to edit its text.
-    if resp.double_clicked() && localoffice_engine::cmd::smart_art::selected_smart_art(&app.session).is_some() {
+    if resp.double_clicked() && localwriter_engine::cmd::smart_art::selected_smart_art(&app.session).is_some() {
         let _ = app.run("smartArt.textPane", json!({"value": true}));
         return true;
     }
@@ -278,7 +278,7 @@ pub fn pointer(app: &mut WordApp, ui: &Ui, resp: &egui::Response, pages: &[Rect]
     }
     if pressed && grab == Grab::Move && object.behind() && behind_draggable(app, &object) {
         let (min, picture) = match app.session.doc.para_at(&object.pos()).and_then(|p| p.object_at(object.pos().off)) {
-            Some(o) => (localoffice_engine::cmd::objects::min_size(o), matches!(o, InlineObject::Image { .. })),
+            Some(o) => (localwriter_engine::cmd::objects::min_size(o), matches!(o, InlineObject::Image { .. })),
             None => return false,
         };
         app.canvas.obj_drag = Some(ObjectDrag {
@@ -300,7 +300,7 @@ pub fn pointer(app: &mut WordApp, ui: &Ui, resp: &egui::Response, pages: &[Rect]
         let end = Pos { off: pos.off + OBJ.len_utf8(), ..pos.clone() };
         let _ = app.run("select.range", json!({"anchor": pos, "focus": end}));
         let (min, picture) = match selected(app) {
-            Some((_, o)) => (localoffice_engine::cmd::objects::min_size(o), matches!(o, InlineObject::Image { .. })),
+            Some((_, o)) => (localwriter_engine::cmd::objects::min_size(o), matches!(o, InlineObject::Image { .. })),
             None => return true,
         };
         // Objects in table cells can be selected and resized, not moved; charts neither.
@@ -362,13 +362,13 @@ fn snap_move(layout: &DocLayout, d: &mut ObjectDrag, scale: f32) {
 }
 
 /// The page's own width, without the comment balloons' markup area.
-fn paper_width(pg: &localoffice_layout::Page) -> f32 {
+fn paper_width(pg: &localwriter_layout::Page) -> f32 {
     (pg.w - pg.markup).max(0.0)
 }
 
 /// The bounds of the floating objects on `pg` that `me` can snap to: all but itself and, for a
 /// text box, the objects in its text (they move with it).
-fn snap_targets(pg: &localoffice_layout::Page, me: &ObjectHit) -> Vec<localoffice_geom::Rect> {
+fn snap_targets(pg: &localwriter_layout::Page, me: &ObjectHit) -> Vec<localwriter_geom::Rect> {
     let pos = me.pos();
     let own = me.text_box.map(StoryRef::Part);
     pg.items
@@ -376,7 +376,7 @@ fn snap_targets(pg: &localoffice_layout::Page, me: &ObjectHit) -> Vec<localoffic
         .chain(&pg.header)
         .chain(&pg.footer)
         .filter_map(|it| match it {
-            localoffice_layout::Placed::Object { rect, spin, story, path, off, wrap, .. }
+            localwriter_layout::Placed::Object { rect, spin, story, path, off, wrap, .. }
                 if *wrap != Wrap::Inline && !(*story == pos.story && *path == pos.path && *off == pos.off) && Some(*story) != own =>
             {
                 Some(spin.bounds(*rect))
@@ -408,7 +408,7 @@ fn link_click(app: &mut WordApp, layout: &DocLayout, pages: &[Rect], scale: f32,
         return;
     }
     let target = crate::canvas::page_at(pages, layout, scale, at).and_then(|(page, x, y)| {
-        layout.find_object(page, |o| o.page == page && o.text_box.is_some() && o.rect.contains(localoffice_geom::Point::new(x, y)))
+        layout.find_object(page, |o| o.page == page && o.text_box.is_some() && o.rect.contains(localwriter_geom::Point::new(x, y)))
     });
     let Some(target) = target else {
         app.status(tl!("Not linked: click a text box"));
@@ -430,7 +430,7 @@ pub fn select_at(app: &mut WordApp, layout: &DocLayout, pages: &[Rect], scale: f
     let Some((object, _)) = grab_at(app, layout, pages, scale, at) else { return false };
     let pos = object.pos();
     // Already selected (alone or among several picked for Group): keep the selection.
-    if !localoffice_engine::cmd::objects::picked_objects(&app.session).contains(&pos) {
+    if !localwriter_engine::cmd::objects::picked_objects(&app.session).contains(&pos) {
         let end = Pos { off: pos.off + OBJ.len_utf8(), ..pos.clone() };
         let _ = app.run("select.range", json!({"anchor": pos, "focus": end}));
     }
@@ -520,9 +520,9 @@ fn preview(app: &WordApp, ctx: &egui::Context, layout: &DocLayout, o: &ObjectHit
     let page = layout.pages.get(o.page)?;
     let mut opts = crate::canvas::screen_render_options();
     opts.dark = app.session.view.dark_mode;
-    let items = localoffice_layout::display::object_display(&app.session.doc, page, obj, o.rect, o.text_box, &opts.display);
+    let items = localwriter_layout::display::object_display(&app.session.doc, page, obj, o.rect, o.text_box, &opts.display);
     let b = o.bounds();
-    let img = localoffice_render::render_items(&app.session.doc, &items, b.x, b.y, b.w, b.h, scale * ctx.pixels_per_point(), &opts);
+    let img = localwriter_render::render_items(&app.session.doc, &items, b.x, b.y, b.w, b.h, scale * ctx.pixels_per_point(), &opts);
     let ci = egui::ColorImage::from_rgba_unmultiplied([img.width as usize, img.height as usize], &img.to_straight());
     Some(ctx.load_texture("object-drag", ci, egui::TextureOptions::LINEAR))
 }
@@ -603,7 +603,7 @@ pub fn paint(app: &WordApp, painter: &Painter, t: &Tokens, layout: &DocLayout, p
                 let mut mesh = egui::Mesh::with_texture(tex.id());
                 let uv = Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
                 mesh.add_rect_with_uv(bounds, uv, Color32::from_white_alpha(PREVIEW_OPACITY));
-                let delta = localoffice_geom::normalize_degrees(d.drag.deg - d.object.spin.deg);
+                let delta = localwriter_geom::normalize_degrees(d.drag.deg - d.object.spin.deg);
                 mesh.rotate(egui::emath::Rot2::from_angle(delta.to_radians()), to.center());
                 painter.add(egui::Shape::mesh(mesh));
             }
@@ -616,7 +616,7 @@ pub fn paint(app: &WordApp, painter: &Painter, t: &Tokens, layout: &DocLayout, p
             // A turned object's pixels fill its rotated bounds, which move with it.
             let r = d.object.bounds();
             let (dx, dy) = (d.drag.rect.x - d.drag.start.x, d.drag.rect.y - d.drag.start.y);
-            let moved = localoffice_geom::Rect::new(r.x + dx, r.y + dy, r.w, r.h);
+            let moved = localwriter_geom::Rect::new(r.x + dx, r.y + dy, r.w, r.h);
             let to = if d.object.spin.is_identity() { to } else { screen(pages, scale, d.drag.to_page, moved).unwrap_or(to) };
             let uv = Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
             painter.image(tex.id(), to, uv, Color32::from_white_alpha(PREVIEW_OPACITY));
@@ -648,7 +648,7 @@ pub fn paint(app: &WordApp, painter: &Painter, t: &Tokens, layout: &DocLayout, p
 fn paint_drop_caret(d: &ObjectDrag, painter: &Painter, layout: &DocLayout, pages: &[Rect], scale: f32) {
     let Some((pos, color)) = &d.drop_at else { return };
     let Some(c) = layout.caret_on(pos, d.drag.to_page) else { return };
-    let Some(r) = screen(pages, scale, c.page, localoffice_geom::Rect::new(c.x, c.top, 0.0, c.height)) else { return };
+    let Some(r) = screen(pages, scale, c.page, localwriter_geom::Rect::new(c.x, c.top, 0.0, c.height)) else { return };
     painter.extend(egui::Shape::dashed_line(&[r.left_top(), r.left_bottom()], egui::Stroke::new(1.5, *color), 2.0, 2.0));
 }
 
@@ -658,11 +658,11 @@ fn paint_end_drag(app: &WordApp, d: &ObjectDrag, painter: &Painter, t: &Tokens, 
     let Some((which, at)) = d.end.filter(|_| d.drag.moved) else { return };
     let Some((_, a, b)) = connector_ends(app, layout) else { return };
     let fixed = if which { a } else { b };
-    let snap = localoffice_engine::cmd::connectors::SNAP;
+    let snap = localwriter_engine::cmd::connectors::SNAP;
     let mut best: Option<((f32, f32), f32)> = None;
     if let Some(pg) = layout.pages.get(d.object.page) {
         for it in &pg.items {
-            let localoffice_layout::Placed::Object { rect, spin, story: StoryRef::Body, path, off, .. } = it else { continue };
+            let localwriter_layout::Placed::Object { rect, spin, story: StoryRef::Body, path, off, .. } = it else { continue };
             let pos = Pos { story: StoryRef::Body, path: path.clone(), off: *off };
             let Some(InlineObject::Shape { kind, .. }) = app.session.doc.para_at(&pos).and_then(|p| p.object_at(pos.off)) else { continue };
             if kind.is_connector() || pos == d.object.pos() {
@@ -673,8 +673,8 @@ fn paint_end_drag(app: &WordApp, d: &ObjectDrag, painter: &Painter, t: &Tokens, 
             if at.0 < rect.x - 4.0 * snap || at.0 > rect.right() + 4.0 * snap || at.1 < rect.y - 4.0 * snap || at.1 > rect.bottom() + 4.0 * snap {
                 continue;
             }
-            for (i, _) in localoffice_doc::connector::sites(*kind, rect.w, rect.h).iter().enumerate() {
-                let Some(p) = localoffice_doc::connector::site_point(*kind, r, *spin, i as u32) else { continue };
+            for (i, _) in localwriter_doc::connector::sites(*kind, rect.w, rect.h).iter().enumerate() {
+                let Some(p) = localwriter_doc::connector::site_point(*kind, r, *spin, i as u32) else { continue };
                 let dist = ((p.0 - at.0).powi(2) + (p.1 - at.1).powi(2)).sqrt();
                 if let Some(c) = point_on_screen(pages, scale, d.object.page, p) {
                     painter.circle_stroke(c, 3.5, egui::Stroke::new(1.0, t.accent));
@@ -754,14 +754,14 @@ pub fn enter_text_box(app: &mut WordApp) -> bool {
 mod tests {
     use std::sync::Arc;
 
-    use localoffice_doc::para::{InlineObject, ShapeKind};
-    use localoffice_doc::{Document, Pos};
+    use localwriter_doc::para::{InlineObject, ShapeKind};
+    use localwriter_doc::{Document, Pos};
 
     use super::*;
 
     /// An app whose first paragraph holds `obj`, and where it's laid out.
     fn app_with(obj: InlineObject) -> (WordApp, ObjectHit) {
-        let mut app = WordApp::new(localoffice_engine::Session::new(Document::new()), crate::Services::default());
+        let mut app = WordApp::new(localwriter_engine::Session::new(Document::new()), crate::Services::default());
         app.session.doc.insert_object(&Pos::body(0, 0), obj, &Default::default()).unwrap();
         let hit = app.session.layout().object(&Pos::body(0, 0), 0).expect("laid out");
         (app, hit)
@@ -792,7 +792,7 @@ mod tests {
 
     #[test]
     fn editable_smart_art_takes_resize_handles_but_not_a_move() {
-        let mut app = WordApp::new(localoffice_engine::Session::new(Document::new()), crate::Services::default());
+        let mut app = WordApp::new(localwriter_engine::Session::new(Document::new()), crate::Services::default());
         app.run("insert.smartArt", json!({"layout": "pyramid", "items": ["a", "b"]})).unwrap();
         let hit = app.session.layout().object(&Pos::body(0, 0), 0).expect("laid out");
         assert!(!fixed(&app, &hit));
@@ -812,7 +812,7 @@ mod tests {
     #[test]
     fn dragging_a_shape_snaps_to_the_page_centre_unless_alt() {
         use egui::{Event, Modifiers, PointerButton};
-        let mut a = WordApp::new(localoffice_engine::Session::new(Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(Document::new()), crate::Services::default());
         a.run("view.commentsPane", json!({"value": false})).unwrap();
         a.run("insert.shape", json!({"kind": "rectangle", "width": 100, "height": 50})).unwrap();
         a.run("arrange.bounds", json!({"page": 0, "x": 100, "y": 250})).unwrap();
@@ -875,11 +875,11 @@ mod tests {
     #[test]
     fn dropping_a_shape_on_another_page_keeps_the_view_where_it_is() {
         use egui::{Event, PointerButton};
-        let mut a = WordApp::new(localoffice_engine::Session::new(Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(Document::new()), crate::Services::default());
         a.run("view.commentsPane", json!({"value": false})).unwrap();
         a.run("insert.shape", json!({"kind": "rectangle", "width": 100, "height": 50})).unwrap();
         a.run("arrange.bounds", json!({"page": 0, "x": 100, "y": 250})).unwrap();
-        let end = Pos::body(0, localoffice_doc::para::OBJ.len_utf8());
+        let end = Pos::body(0, localwriter_doc::para::OBJ.len_utf8());
         a.run("caret.set", json!({"pos": end})).unwrap();
         a.run("text.insert", json!({"text": "one"})).unwrap();
         a.run("text.newParagraph", json!({})).unwrap();
@@ -928,7 +928,7 @@ mod tests {
             fill: None,
             stroke: None,
             stroke_width: 1.0,
-            float: localoffice_doc::para::Float { wrap: Wrap::InFrontOfText, x: 10.0, y: 10.0, ..Default::default() },
+            float: localwriter_doc::para::Float { wrap: Wrap::InFrontOfText, x: 10.0, y: 10.0, ..Default::default() },
             story: None,
             freeform: None,
             effects: Default::default(),
@@ -939,14 +939,14 @@ mod tests {
     /// A text box doesn't snap to the objects inside it (they move with it).
     #[test]
     fn a_text_box_does_not_snap_to_its_own_contents() {
-        let mut app = WordApp::new(localoffice_engine::Session::new(Document::new()), crate::Services::default());
+        let mut app = WordApp::new(localwriter_engine::Session::new(Document::new()), crate::Services::default());
         app.run("insert.textBox", json!({"text": "Box"})).unwrap();
         let bx = app.session.layout().find_object(0, |o| o.text_box.is_some()).expect("the box");
         let end = Pos { off: bx.off + OBJ.len_utf8(), ..bx.pos() };
         app.run("select.range", json!({"anchor": bx.pos(), "focus": end})).unwrap();
         app.run("arrange.bounds", json!({"page": 0, "x": 100, "y": 200, "width": 200, "height": 150})).unwrap();
         let id = app.session.layout().find_object(0, |o| o.text_box.is_some()).and_then(|o| o.text_box).unwrap();
-        let inner = Pos { story: StoryRef::Part(id), path: localoffice_doc::Path::top(0), off: 0 };
+        let inner = Pos { story: StoryRef::Part(id), path: localwriter_doc::Path::top(0), off: 0 };
         app.session.doc.insert_object(&inner, floating_rect(30.0, 20.0), &Default::default()).unwrap();
         app.session.touch();
         let layout = app.session.layout();
@@ -965,7 +965,7 @@ mod tests {
     #[test]
     fn alt_pressed_during_a_drag_unsnaps_and_keeps_keytips_off() {
         use egui::{Event, Modifiers, PointerButton};
-        let mut a = WordApp::new(localoffice_engine::Session::new(Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(Document::new()), crate::Services::default());
         a.run("view.commentsPane", json!({"value": false})).unwrap();
         a.run("insert.shape", json!({"kind": "rectangle", "width": 100, "height": 50})).unwrap();
         a.run("arrange.bounds", json!({"page": 0, "x": 100, "y": 250})).unwrap();
@@ -1022,7 +1022,7 @@ mod tests {
     fn an_inline_picture_drags_to_the_insertion_cursor_and_stays_inline() {
         use crate::table_resize::tests::{H, button, steps};
         let mut a = WordApp::new(
-            localoffice_engine::Session::new(Document::from_text("The first paragraph of text.\nThe second paragraph, where the picture starts.")),
+            localwriter_engine::Session::new(Document::from_text("The first paragraph of text.\nThe second paragraph, where the picture starts.")),
             Default::default(),
         );
         a.run("view.commentsPane", json!({"value": false})).unwrap();
@@ -1088,15 +1088,15 @@ mod tests {
     fn a_dragged_shape_leaves_the_text_behind_it() {
         use crate::table_resize::tests::{H, button, steps};
         let text = "MMMMMMMMMMMM ".repeat(12);
-        let mut a = WordApp::new(localoffice_engine::Session::new(Document::from_text(&text)), Default::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(Document::from_text(&text)), Default::default());
         let shape = InlineObject::Shape {
             kind: ShapeKind::Rectangle,
             w: 120.0,
             h: 60.0,
             fill: None,
-            stroke: Some(localoffice_doc::Rgb(0xFF, 0, 0)),
+            stroke: Some(localwriter_doc::Rgb(0xFF, 0, 0)),
             stroke_width: 3.0,
-            float: localoffice_doc::para::Float { wrap: localoffice_doc::para::Wrap::InFrontOfText, ..Default::default() },
+            float: localwriter_doc::para::Float { wrap: localwriter_doc::para::Wrap::InFrontOfText, ..Default::default() },
             story: None,
             freeform: None,
             effects: Default::default(),
@@ -1153,7 +1153,7 @@ mod tests {
             kind: ShapeKind::Rectangle,
             w: 100.0,
             h: 60.0,
-            fill: Some(localoffice_doc::fill::Fill::solid(localoffice_doc::props::Rgb(0xE2, 0xEF, 0xDA))),
+            fill: Some(localwriter_doc::fill::Fill::solid(localwriter_doc::props::Rgb(0xE2, 0xEF, 0xDA))),
             stroke: None,
             stroke_width: 0.0,
             float: Default::default(),
@@ -1166,9 +1166,9 @@ mod tests {
 
     /// How many pixels of the first page have the fill colour: how many copies of the shape the
     /// page shows.
-    fn fill_pixels(app: &mut WordApp, opts: &localoffice_render::RenderOptions) -> usize {
+    fn fill_pixels(app: &mut WordApp, opts: &localwriter_render::RenderOptions) -> usize {
         let layout = app.session.layout();
-        let img = localoffice_render::render_page(&app.session.doc, &layout.pages[0], 1.0, opts);
+        let img = localwriter_render::render_page(&app.session.doc, &layout.pages[0], 1.0, opts);
         img.to_straight().as_chunks::<4>().0.iter().filter(|p| (p[0], p[1], p[2]) == (0xE2, 0xEF, 0xDA)).count()
     }
 
@@ -1182,7 +1182,7 @@ mod tests {
     fn a_dragged_inline_object_is_left_out_of_its_page() {
         let (mut app, hit) = app_with(filled_shape());
         let pos = hit.pos();
-        let on = localoffice_render::RenderOptions::default();
+        let on = localwriter_render::RenderOptions::default();
         let before = fill_pixels(&mut app, &on);
         assert!(before > 1000, "the shape is on its page to begin with: {before} px");
         let mut hidden = on.clone();
@@ -1196,13 +1196,13 @@ mod tests {
     fn a_dragged_floating_shape_is_left_out_of_its_page() {
         let (mut app, hit) = app_with(filled_shape());
         let pos = hit.pos();
-        let end = Pos { off: pos.off + localoffice_doc::para::OBJ.len_utf8(), ..pos.clone() };
+        let end = Pos { off: pos.off + localwriter_doc::para::OBJ.len_utf8(), ..pos.clone() };
         let _ = app.run("select.range", serde_json::json!({"anchor": pos, "focus": end}));
         app.run("arrange.bounds", serde_json::json!({"page": 0, "x": 100.0, "y": 150.0})).expect("floats it");
         let hit = app.session.layout().object(&pos, 0).expect("laid out");
         assert!(hit.floating(), "arrange.bounds makes it float");
 
-        let on = localoffice_render::RenderOptions::default();
+        let on = localwriter_render::RenderOptions::default();
         let before = fill_pixels(&mut app, &on);
         assert!(before > 1000, "the floating shape is on its page to begin with: {before} px");
         let mut hidden = on.clone();
@@ -1217,7 +1217,7 @@ mod tests {
     #[test]
     fn a_shape_dragged_onto_the_next_page_is_dropped_there() {
         use egui::{Event, PointerButton};
-        let mut a = WordApp::new(localoffice_engine::Session::new(Document::new()), crate::Services::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(Document::new()), crate::Services::default());
         a.run("view.commentsPane", json!({"value": false})).unwrap();
         for i in 0..40 {
             if i > 0 {
@@ -1304,7 +1304,7 @@ mod tests {
                 w: 200.0,
                 h: 100.0,
                 alt: String::new(),
-                float: localoffice_doc::para::Float {
+                float: localwriter_doc::para::Float {
                     wrap: Wrap::InFrontOfText,
                     x: 150.0,
                     y: 180.0,
@@ -1330,7 +1330,7 @@ mod tests {
             let top = crate::canvas::page_to_screen(h.state_mut(), 0, cx, o.rect.y).unwrap();
             let radius = center.distance(top) + 22.0;
             let handle = |degrees: f32| center + egui::emath::Rot2::from_angle(degrees.to_radians()) * egui::vec2(0.0, -radius);
-            let target = localoffice_geom::normalize_degrees(initial + 90.0);
+            let target = localwriter_geom::normalize_degrees(initial + 90.0);
             let start = handle(initial);
             let end = handle(target);
             h.event(egui::Event::PointerMoved(start));
@@ -1346,12 +1346,14 @@ mod tests {
             assert_eq!(h.state().session.undo_depth(), depth);
             let rendered = h.render().unwrap();
             if initial == 0.0
-                && let Ok(path) = std::env::var("LOCALOFFICE_ROTATION_SHOT")
+                && let Ok(path) = std::env::var("LOCALWRITER_ROTATION_SHOT")
+                    .or_else(|_| std::env::var("LOCALOFFICE_ROTATION_SHOT"))
+                    .or_else(|_| std::env::var("LOCALOFFICE_ROTATION_SHOT"))
             {
                 rendered.save(path).unwrap();
             }
             let ppp = h.ctx.pixels_per_point();
-            let spin = localoffice_geom::Spin::new(target, flip_h, flip_v);
+            let spin = localwriter_geom::Spin::new(target, flip_h, flip_v);
             for ((x, y), colour) in [(-75.0, -20.0), (75.0, -20.0), (75.0, 20.0), (-75.0, 20.0)].into_iter().zip(colours) {
                 let (x, y) = spin.apply(cx, cy, cx + x, cy + y);
                 let at = crate::canvas::page_to_screen(h.state_mut(), 0, x, y).unwrap();
@@ -1398,7 +1400,7 @@ mod tests {
     #[test]
     fn rotation_drag_keeps_text_boxes_outline_only_until_their_text_can_rotate() {
         use crate::table_resize::tests::{button, steps};
-        let mut app = WordApp::new(localoffice_engine::Session::new(Document::new()), Default::default());
+        let mut app = WordApp::new(localwriter_engine::Session::new(Document::new()), Default::default());
         app.run("insert.textBox", json!({"text": "Text stays upright on release"})).unwrap();
         let bx = app.session.layout().find_object(0, |o| o.text_box.is_some()).unwrap();
         app.run("select.range", json!({"anchor": bx.pos(), "focus": Pos { off: bx.off + OBJ.len_utf8(), ..bx.pos() }})).unwrap();

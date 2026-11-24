@@ -7,8 +7,8 @@
 //! (`cmd::table_mouse`); this sends the presses as its commands, in page points.
 
 use egui::{Color32, Pos2, Rect, Shape, Stroke, Ui, vec2};
-use localoffice_engine::cmd::table_mouse::{self, Spot, Target};
-use localoffice_layout::DocLayout;
+use localwriter_engine::cmd::table_mouse::{self, Spot, Target};
+use localwriter_layout::DocLayout;
 use serde_json::json;
 
 use crate::WordApp;
@@ -155,8 +155,8 @@ pub fn pointer(app: &mut WordApp, ui: &Ui, resp: &egui::Response, rects: &[Rect]
 }
 
 /// Whether the selection's anchor (or its selected cells) is in the table at `tp`.
-fn in_table(app: &WordApp, tp: &localoffice_doc::Path) -> bool {
-    let body = |story| story == localoffice_doc::StoryRef::Body;
+fn in_table(app: &WordApp, tp: &localwriter_doc::Path) -> bool {
+    let body = |story| story == localwriter_doc::StoryRef::Body;
     app.session.cell_range().is_some_and(|c| body(c.story) && &c.table == tp)
         || (body(app.session.sel.anchor.story) && app.session.sel.anchor.path.cell().is_some_and(|(t, ..)| &t == tp))
 }
@@ -290,7 +290,7 @@ fn arrow(painter: &egui::Painter, tip: Pos2, spot: Spot, dark: bool) {
 /// grey in dark mode, where black would vanish), white on black beside a row.
 fn arrow_colors(spot: Spot, dark: bool) -> (Color32, Color32) {
     match spot {
-        Spot::Column(_) | Spot::Cell(..) if dark => (Color32::WHITE, Color32::from_gray(localoffice_render::DARK_PAPER)),
+        Spot::Column(_) | Spot::Cell(..) if dark => (Color32::WHITE, Color32::from_gray(localwriter_render::DARK_PAPER)),
         Spot::Column(_) | Spot::Cell(..) => (Color32::BLACK, Color32::WHITE),
         _ => (Color32::WHITE, Color32::BLACK),
     }
@@ -305,7 +305,7 @@ mod tests {
     /// white paper they stay black, and the hollow row arrow is the same on both.
     #[test]
     fn the_selection_arrow_is_light_on_dark_paper() {
-        let dark_paper = Color32::from_gray(localoffice_render::DARK_PAPER);
+        let dark_paper = Color32::from_gray(localwriter_render::DARK_PAPER);
         assert_eq!(arrow_colors(Spot::Column(0), false), (Color32::BLACK, Color32::WHITE));
         assert_eq!(arrow_colors(Spot::Cell(0, 0), false), (Color32::BLACK, Color32::WHITE));
         assert_eq!(arrow_colors(Spot::Column(0), true), (Color32::WHITE, dark_paper));
@@ -449,7 +449,7 @@ mod tests {
             let s = &h.state().session;
             // From the first cell's start to the end of the paragraph after the table.
             let (a, e) = s.sel.ordered();
-            a.path == localoffice_doc::Path(vec![0, 0, 0, 0]) && a.off == 0 && e == localoffice_doc::Pos::body(1, 0)
+            a.path == localwriter_doc::Path(vec![0, 0, 0, 0]) && a.off == 0 && e == localwriter_doc::Pos::body(1, 0)
         };
         // One click: the row.
         click(&mut h, at);
@@ -483,10 +483,10 @@ mod tests {
     /// that selection (the ordinary Shift+click into a table), instead of selecting only the row.
     #[test]
     fn shift_click_beside_a_row_extends_a_selection_from_above() {
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), Default::default());
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), Default::default());
         a.run("text.insert", json!({"text": "Above"})).unwrap();
         a.run("insert.table", json!({"rows": 3, "cols": 2})).unwrap();
-        a.run("caret.set", json!({"pos": serde_json::to_value(localoffice_doc::Pos::body(0, 0)).unwrap()})).unwrap();
+        a.run("caret.set", json!({"pos": serde_json::to_value(localwriter_doc::Pos::body(0, 0)).unwrap()})).unwrap();
         a.run("view.commentsPane", json!({"value": false})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).with_step_dt(1.0 / 60.0).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -505,7 +505,7 @@ mod tests {
         h.event(egui::Event::ModifiersChanged(egui::Modifiers::default()));
         h.step();
         let sel = h.state().session.sel.clone();
-        assert_eq!(sel.anchor, localoffice_doc::Pos::body(0, 0), "the selection still starts above the table");
+        assert_eq!(sel.anchor, localwriter_doc::Pos::body(0, 0), "the selection still starts above the table");
         assert!(!sel.is_collapsed());
         assert!(sel.focus.path.cell().is_some_and(|(_, r, _)| r == 1), "and runs into the clicked row: {:?}", sel.focus);
     }

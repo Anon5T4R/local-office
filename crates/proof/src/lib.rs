@@ -1,4 +1,4 @@
-//! LocalOffice proofing, per language. A run's language (its BCP 47 tag) picks the tools through
+//! LocalWriter proofing, per language. A run's language (its BCP 47 tag) picks the tools through
 //! [`ProofLang`]; the `*_in` functions take it, the older English-only ones remain.
 //!
 //! - **English** ([`ProofLang::En`]; also text with no language): spelling against the
@@ -76,7 +76,7 @@ use std::sync::{OnceLock, RwLock};
 /// What the spelling check skips (File › Options › Proofing). Word's defaults: all on.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Options {
-    /// Words in capitals (`NASA`, `LOCALOFFICE`) are taken as correct.
+    /// Words in capitals (`NASA`, `LOCALWRITER`) are taken as correct.
     pub ignore_uppercase: bool,
     /// Words containing digits (`B2B`, `mp3`) are taken as correct.
     pub ignore_numbers: bool,
@@ -813,7 +813,7 @@ pub fn suggest_in(word: &str, max: usize, lang: ProofLang) -> Vec<String> {
 /// Grammar issues in a paragraph of text in `lang`: the English rules, the Polish ones
 /// ([`pl::grammar`]), the Portuguese ones ([`pt::grammar`]), the Italian ones ([`it::grammar`]),
 /// the Turkish ones ([`tr::grammar`]), Czech and Indonesian generic checks ([`cs::grammar`], [`id::grammar`]), the Spanish ones
-/// ([`es::grammar`]), or none for a language LocalOffice doesn't proof.
+/// ([`es::grammar`]), or none for a language LocalWriter doesn't proof.
 pub fn check_grammar_in(text: &str, lang: ProofLang) -> Vec<Issue> {
     grammar_in(text, lang, true)
 }
@@ -1591,9 +1591,9 @@ mod tests {
     #[test]
     fn user_dictionary_works() {
         let _guard = DICTIONARY_TESTS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-        assert!(!is_correct("zxqlocalofficey"));
-        add_word("zxqlocalofficey");
-        assert!(is_correct("zxqlocalofficey"));
+        assert!(!is_correct("zxqlocalwritery"));
+        add_word("zxqlocalwritery");
+        assert!(is_correct("zxqlocalwritery"));
     }
 
     /// #40: the user dictionary survives a save and a fresh load.

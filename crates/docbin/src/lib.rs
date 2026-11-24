@@ -1,9 +1,9 @@
-//! LocalOffice reader for the Word 97-2003 binary file format (`.doc`, [MS-DOC]).
+//! LocalWriter reader for the Word 97-2003 binary file format (`.doc`, [MS-DOC]).
 //!
-//! [`read`] turns the bytes of a `.doc` file into a [`localoffice_doc::Document`]. There is no
+//! [`read`] turns the bytes of a `.doc` file into a [`localwriter_doc::Document`]. There is no
 //! writer: saving always goes through the other formats. The reader is written from the public
 //! specification ([MS-DOC], Word (.doc) Binary File Format, Microsoft Open Specifications) and,
-//! like every LocalOffice parser, is lenient by design (unknown structures are skipped, bad numbers
+//! like every LocalWriter parser, is lenient by design (unknown structures are skipped, bad numbers
 //! fall back to defaults) and bounded (stream sizes, piece counts and property counts are
 //! capped), so hostile input yields an error or a best-effort document, never a panic.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
@@ -26,15 +26,15 @@ mod table;
 
 use std::io::{Read, Seek};
 
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::para::NoteKind;
-use localoffice_doc::para::Paragraph;
-use localoffice_doc::para::Run;
-use localoffice_doc::props::CharProps;
-use localoffice_doc::props::NumRef;
-use localoffice_doc::section::HeaderSet;
-use localoffice_doc::styles::StyleSheet;
-use localoffice_doc::{Document, PartKind};
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::para::NoteKind;
+use localwriter_doc::para::Paragraph;
+use localwriter_doc::para::Run;
+use localwriter_doc::props::CharProps;
+use localwriter_doc::props::NumRef;
+use localwriter_doc::section::HeaderSet;
+use localwriter_doc::styles::StyleSheet;
+use localwriter_doc::{Document, PartKind};
 
 use fkp::Bins;
 use piece::{PieceTable, PrmRef};
@@ -122,7 +122,7 @@ impl Work {
     fn log(&self) {
         let dropped = self.dropped();
         for c in &dropped {
-            log::warn!(".doc: the document repeats more than LocalOffice copies ({MAX_WORK} bytes): {}", c.left_out());
+            log::warn!(".doc: the document repeats more than LocalWriter copies ({MAX_WORK} bytes): {}", c.left_out());
         }
         #[cfg(test)]
         LAST_DROPPED.with(|d| *d.borrow_mut() = dropped);
@@ -158,7 +158,7 @@ pub enum DocbinError {
     /// The password does not open the document.
     #[error("the password is incorrect")]
     WrongPassword,
-    /// The document is encrypted in a way LocalOffice can't read (AES, an external provider, an
+    /// The document is encrypted in a way LocalWriter can't read (AES, an external provider, an
     /// unknown header).
     #[error("encrypted document: {0}")]
     Encryption(String),
@@ -177,9 +177,9 @@ pub fn is_encrypted(bytes: &[u8]) -> bool {
     stream(&mut comp, "WordDocument").is_some_and(|w| fib::peek_encryption(&w).is_some())
 }
 
-/// Open the compound file around a `.doc`, after [`localoffice_doc::cfb_guard::check`].
+/// Open the compound file around a `.doc`, after [`localwriter_doc::cfb_guard::check`].
 fn open_container(bytes: &[u8]) -> Result<cfb::CompoundFile<std::io::Cursor<&[u8]>>, DocbinError> {
-    localoffice_doc::cfb_guard::check(bytes).map_err(DocbinError::Container)?;
+    localwriter_doc::cfb_guard::check(bytes).map_err(DocbinError::Container)?;
     cfb::CompoundFile::open(std::io::Cursor::new(bytes)).map_err(|e| DocbinError::Container(e.to_string()))
 }
 
@@ -437,7 +437,7 @@ struct WalkCtx<'a> {
 struct ParaBuild {
     text: String,
     runs: Vec<Run>,
-    props: localoffice_doc::props::ParaProps,
+    props: localwriter_doc::props::ParaProps,
     mark: CharProps,
     /// The current run's properties, so runs only break when formatting changes.
     cur: Option<CharProps>,

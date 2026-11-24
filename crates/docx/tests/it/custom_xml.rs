@@ -1,5 +1,5 @@
 //! Original synthetic custom XML stores, written from the public OOXML package contract.
-use localoffice_doc::{Path, StoryRef};
+use localwriter_doc::{Path, StoryRef};
 use std::collections::BTreeMap;
 use std::io::{Cursor, Read, Write};
 
@@ -62,12 +62,12 @@ fn text(parts: &BTreeMap<String, Vec<u8>>, name: &str) -> String {
 }
 
 fn edited_cycles(input: &BTreeMap<String, Vec<u8>>, check: impl Fn(&BTreeMap<String, Vec<u8>>)) {
-    let mut doc = localoffice_docx::read(&zip(input)).unwrap();
+    let mut doc = localwriter_docx::read(&zip(input)).unwrap();
     for _ in 0..2 {
         doc.para_mut(StoryRef::Body, &Path::top(0)).unwrap().insert_text(0, "Unrelated edit. ", &Default::default()).unwrap();
-        let bytes = localoffice_docx::write(&doc).unwrap();
+        let bytes = localwriter_docx::write(&doc).unwrap();
         check(&unzip(&bytes));
-        doc = localoffice_docx::read(&bytes).unwrap();
+        doc = localwriter_docx::read(&bytes).unwrap();
     }
 }
 
@@ -139,9 +139,9 @@ fn absent_and_external_stores_are_not_fetched_or_written() {
 
 #[test]
 fn custom_stores_do_not_shadow_reserved_bibliography_names() {
-    let mut doc = localoffice_docx::read(&zip(&fixture())).unwrap();
-    doc.sources.push(localoffice_doc::Source { tag: "OriginalSource".into(), title: "Original synthetic reference".into(), ..Default::default() });
-    let out = unzip(&localoffice_docx::write(&doc).unwrap());
+    let mut doc = localwriter_docx::read(&zip(&fixture())).unwrap();
+    doc.sources.push(localwriter_doc::Source { tag: "OriginalSource".into(), title: "Original synthetic reference".into(), ..Default::default() });
+    let out = unzip(&localwriter_docx::write(&doc).unwrap());
     assert_eq!(out.get("customXml/item1_2.xml").map(Vec::as_slice), Some(DATA.as_bytes()));
     assert_eq!(out.get("customXml/itemProps1_2.xml").map(Vec::as_slice), Some(PROPS.as_bytes()));
     assert!(text(&out, "word/_rels/document.xml.rels").contains(r#"Target="../customXml/item1_2.xml""#));

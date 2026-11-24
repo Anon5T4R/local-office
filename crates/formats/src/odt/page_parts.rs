@@ -2,7 +2,7 @@
 //! reader (#863).
 use std::collections::HashSet;
 
-use localoffice_doc::{Document, Part, PartKind};
+use localwriter_doc::{Document, Part, PartKind};
 
 use super::{Body, Ev, FBlock, Pages, SectionProps, Styles, events, get, model};
 

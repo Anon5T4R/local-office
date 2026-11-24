@@ -3,7 +3,7 @@
 
 use std::io::{Read, Seek};
 
-use localoffice_doc::CoreProps;
+use localwriter_doc::CoreProps;
 
 const MAX_STREAM: u64 = 2 << 20;
 const MAX_STRING: usize = 64 << 10;
@@ -152,8 +152,8 @@ fn text(value: &[u8], codepage: u16) -> Option<String> {
         let bytes = bytes.split(|b| *b == 0).next().unwrap_or_default();
         if codepage == 65001 {
             Some(String::from_utf8_lossy(bytes).into_owned())
-        } else if localoffice_doc::encoding::SINGLE_BYTE_CODE_PAGES.contains(&codepage) {
-            Some(bytes.iter().map(|b| localoffice_doc::encoding::windows_byte(codepage, *b)).collect())
+        } else if localwriter_doc::encoding::SINGLE_BYTE_CODE_PAGES.contains(&codepage) {
+            Some(bytes.iter().map(|b| localwriter_doc::encoding::windows_byte(codepage, *b)).collect())
         } else {
             None
         }

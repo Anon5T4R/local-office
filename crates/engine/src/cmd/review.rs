@@ -2,8 +2,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::{Comment, Paragraph, PartKind, Pos, StoryRef, para_block};
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::{Comment, Paragraph, PartKind, Pos, StoryRef, para_block};
 use serde_json::{Value, json};
 
 use super::{fmt_revisions, now_iso, pos_json, sel_result};
@@ -80,11 +80,11 @@ pub fn specs() -> Vec<CommandSpec> {
                 return Err(CmdError::Params("no word".into()));
             }
             // The same rule as loading the dictionary file, so a word added is never dropped later.
-            if localoffice_proof::custom_word(&w).is_none() {
-                let max = localoffice_proof::MAX_CUSTOM_WORD_CHARS;
+            if localwriter_proof::custom_word(&w).is_none() {
+                let max = localwriter_proof::MAX_CUSTOM_WORD_CHARS;
                 return Err(CmdError::Params(format!("{w:?} isn't a single word of at most {max} characters")));
             }
-            localoffice_proof::add_word(w.trim());
+            localwriter_proof::add_word(w.trim());
             s.persist_user_dictionary(&[]);
             s.relayout();
             Ok(json!({"added": w}))
@@ -100,7 +100,7 @@ pub fn specs() -> Vec<CommandSpec> {
             };
             // For this session only, as in Word: not added to (or saved with) the dictionary.
             if !w.trim().is_empty() {
-                localoffice_proof::ignore_word(w.trim());
+                localwriter_proof::ignore_word(w.trim());
             }
             s.relayout();
             Ok(json!({"ignored": w}))
@@ -205,7 +205,7 @@ fn reply(s: &mut Session, v: &Value) -> CmdResult {
 /// An id no comment has: one past the largest, or the lowest free one once a file used `u32::MAX`.
 fn comment_id(s: &Session) -> Result<u32, CmdError> {
     let ids = &s.doc.comments;
-    localoffice_doc::free_id(ids.keys().next_back().copied(), ids.keys().copied(), 0).ok_or_else(|| CmdError::Failed("no free comment id".into()))
+    localwriter_doc::free_id(ids.keys().next_back().copied(), ids.keys().copied(), 0).ok_or_else(|| CmdError::Failed("no free comment id".into()))
 }
 
 /// Comments can't be written or edited in a document protected as read only or for filling in
@@ -279,7 +279,7 @@ fn remove_anchors(s: &mut Session, ids: &BTreeSet<u32>) -> Result<(), CmdError> 
             }
             let para = s.doc.para_mut(story, &path)?;
             for o in offs.into_iter().rev() {
-                para.delete(o, o + localoffice_doc::para::OBJ.len_utf8())?;
+                para.delete(o, o + localwriter_doc::para::OBJ.len_utf8())?;
             }
         }
     }
@@ -389,7 +389,7 @@ fn nav_comment(s: &mut Session, dir: i32) -> CmdResult {
 }
 
 /// Accept or reject the tracked formatting and text of `from..to` in one paragraph (not its mark).
-fn resolve_runs(para: &mut localoffice_doc::Paragraph, from: usize, to: usize, props: bool, accept: bool) -> Result<(), CmdError> {
+fn resolve_runs(para: &mut localwriter_doc::Paragraph, from: usize, to: usize, props: bool, accept: bool) -> Result<(), CmdError> {
     if props && (para.props.fmt_change.is_some() || para.props.num_change.is_some()) {
         fmt_revisions::resolve_para(&mut para.props, accept);
         para.touch();
@@ -419,7 +419,7 @@ fn resolve_runs(para: &mut localoffice_doc::Paragraph, from: usize, to: usize, p
 fn resolve_para(
     s: &mut Session,
     story: StoryRef,
-    path: &localoffice_doc::Path,
+    path: &localwriter_doc::Path,
     from: usize,
     to: usize,
     mark: bool,
@@ -460,7 +460,7 @@ fn resolve_para(
 
 /// Accept or reject the changes of the table cell `path` is in: the table's, its row's and the
 /// cell's own. Returns whether there were any.
-fn resolve_cell(s: &mut Session, story: StoryRef, path: &localoffice_doc::Path, accept: bool) -> Result<bool, CmdError> {
+fn resolve_cell(s: &mut Session, story: StoryRef, path: &localwriter_doc::Path, accept: bool) -> Result<bool, CmdError> {
     let Some((tp, r, c)) = path.cell() else { return Ok(false) };
     let has = s.doc.table(story, &tp).is_some_and(|t| {
         let row = t.rows.get(r);
@@ -500,7 +500,7 @@ impl Change {
 
 /// The tracked paragraph mark at the end of the paragraph at `path`, as a change range: from
 /// the paragraph's end to the start of the next paragraph (or the end itself when none follows).
-fn mark_change(s: &Session, story: StoryRef, path: &localoffice_doc::Path) -> Option<Change> {
+fn mark_change(s: &Session, story: StoryRef, path: &localwriter_doc::Path) -> Option<Change> {
     let p = s.doc.para(story, path)?;
     let kind = run_kind(&s.doc, p.mark.ins, p.mark.del);
     if kind.is_empty() {
@@ -513,7 +513,7 @@ fn mark_change(s: &Session, story: StoryRef, path: &localoffice_doc::Path) -> Op
 
 /// The kind of an insertion / deletion change: `insert`, `delete`, or for one end of a move
 /// `moveTo` / `moveFrom`; empty when neither.
-fn run_kind(doc: &localoffice_doc::Document, ins: Option<u32>, del: Option<u32>) -> &'static str {
+fn run_kind(doc: &localwriter_doc::Document, ins: Option<u32>, del: Option<u32>) -> &'static str {
     match (ins, del) {
         (Some(_), _) if doc.move_name(ins).is_some() => "moveTo",
         (Some(_), _) => "insert",
@@ -546,9 +546,9 @@ pub fn move_changes(s: &Session) -> Vec<(Pos, String, bool)> {
 
 /// Accept or reject the tracked text and paragraph marks of the top-level paragraphs in a block
 /// list that is not a story (a note separator).
-fn resolve_loose_blocks(blocks: &mut localoffice_doc::Blocks, accept: bool) -> Result<(), CmdError> {
+fn resolve_loose_blocks(blocks: &mut localwriter_doc::Blocks, accept: bool) -> Result<(), CmdError> {
     for b in blocks.iter_mut() {
-        let localoffice_doc::Block::Para(p) = std::sync::Arc::make_mut(b) else { continue };
+        let localwriter_doc::Block::Para(p) = std::sync::Arc::make_mut(b) else { continue };
         let len = p.len();
         resolve_runs(p, 0, len, true, accept)?;
         if p.mark.fmt_change.is_some() || p.section.as_ref().is_some_and(|x| x.fmt_change.is_some()) {
@@ -698,7 +698,7 @@ fn resolve_sel(s: &mut Session, accept: bool, next: bool) -> CmdResult {
 
 fn changes(s: &Session) -> Vec<Change> {
     let mut out: Vec<Change> = Vec::new();
-    let mk = |path: &localoffice_doc::Path, off| Pos { story: StoryRef::Body, path: path.clone(), off };
+    let mk = |path: &localwriter_doc::Path, off| Pos { story: StoryRef::Body, path: path.clone(), off };
     for path in s.doc.para_paths(StoryRef::Body) {
         let Some(p) = s.doc.para(StoryRef::Body, &path) else { continue };
         // A table's, row's and cell's changes sit at the start of the cell's first paragraph.
@@ -766,7 +766,7 @@ pub fn format_changes(s: &Session) -> Vec<(Pos, String, Vec<Value>)> {
 }
 
 /// Whether the document has any tracked formatting change (cheap: stops at the first).
-pub fn has_format_changes(doc: &localoffice_doc::Document) -> bool {
+pub fn has_format_changes(doc: &localwriter_doc::Document) -> bool {
     if doc.last_section.fmt_change.is_some() {
         return true;
     }
@@ -805,7 +805,7 @@ const MAX_DELETION_BALLOONS: usize = 500;
 pub fn deletion_balloons(s: &Session) -> Vec<DeletionBalloon> {
     let doc = &s.doc;
     let author = |rev: u32| doc.revisions.get(rev as usize).map(|r| r.author.clone()).unwrap_or_default();
-    let mk = |path: &localoffice_doc::Path, off| Pos { story: StoryRef::Body, path: path.clone(), off };
+    let mk = |path: &localwriter_doc::Path, off| Pos { story: StoryRef::Body, path: path.clone(), off };
     let mut out = Vec::new();
     for path in doc.para_paths(StoryRef::Body) {
         let Some(p) = doc.para(StoryRef::Body, &path) else { continue };
@@ -843,8 +843,8 @@ fn push_deletion(out: &mut Vec<(DeletionBalloon, Pos, usize)>, at: Pos, end: Pos
         }
         let c = match c {
             // Pictures, fields and other objects show no text of their own.
-            localoffice_doc::para::OBJ => continue,
-            '\t' | localoffice_doc::para::LINE_BREAK | localoffice_doc::para::PAGE_BREAK | localoffice_doc::para::COLUMN_BREAK => ' ',
+            localwriter_doc::para::OBJ => continue,
+            '\t' | localwriter_doc::para::LINE_BREAK | localwriter_doc::para::PAGE_BREAK | localwriter_doc::para::COLUMN_BREAK => ' ',
             c if c.is_control() => continue,
             c => c,
         };
@@ -855,13 +855,13 @@ fn push_deletion(out: &mut Vec<(DeletionBalloon, Pos, usize)>, at: Pos, end: Pos
 
 /// A deletion revision that is not the source of a move (`w:moveFrom` is a deletion revision
 /// with a move name).
-fn plain_deletion(doc: &localoffice_doc::Document, del: Option<u32>) -> Option<u32> {
+fn plain_deletion(doc: &localwriter_doc::Document, del: Option<u32>) -> Option<u32> {
     del.filter(|_| doc.move_name(del).is_none())
 }
 
 /// Whether the body has any tracked deletion other than a move's source (cheap: stops at the
 /// first).
-pub fn has_deletions(doc: &localoffice_doc::Document) -> bool {
+pub fn has_deletions(doc: &localwriter_doc::Document) -> bool {
     doc.para_paths(StoryRef::Body).iter().any(|path| {
         doc.para(StoryRef::Body, path)
             .is_some_and(|p| plain_deletion(doc, p.mark.del).is_some() || p.runs.iter().any(|r| plain_deletion(doc, r.props.del).is_some()))
@@ -934,7 +934,7 @@ fn word_count(s: &mut Session, v: &Value) -> CmdResult {
     let words = if s.sel.is_collapsed() || super::objects::object_selection(s).is_some() {
         stories.iter().map(|st| s.doc.story_word_count(*st)).sum()
     } else {
-        localoffice_doc::count_words(&text)
+        localwriter_doc::count_words(&text)
     };
     let chars = text.chars().filter(|c| *c != '\n' && *c != '\r').count();
     let chars_no_spaces = text.chars().filter(|c| !c.is_whitespace()).count();
@@ -945,7 +945,7 @@ fn word_count(s: &mut Session, v: &Value) -> CmdResult {
             .iter()
             .flat_map(|p| p.items.iter())
             .map(|it| {
-                if let localoffice_layout::Placed::Lines { l0, l1, story, .. } = it
+                if let localwriter_layout::Placed::Lines { l0, l1, story, .. } = it
                     && stories.contains(story)
                 {
                     l1 - l0
@@ -964,26 +964,26 @@ fn word_count(s: &mut Session, v: &Value) -> CmdResult {
 
 /// Issues (spelling + grammar) in one paragraph as positions, each in its run's language and
 /// skipping text left unchecked — the same issues the layout underlines.
-fn para_issues(s: &Session, story: StoryRef, path: &localoffice_doc::Path) -> Vec<(Pos, Pos, localoffice_proof::Issue)> {
+fn para_issues(s: &Session, story: StoryRef, path: &localwriter_doc::Path) -> Vec<(Pos, Pos, localwriter_proof::Issue)> {
     let Some(p) = s.doc.para(story, path) else { return Vec::new() };
-    let runs = localoffice_layout::para::proof_runs(&s.doc, p, None);
-    localoffice_layout::para::paragraph_issues(p, &runs, &s.prefs.spelling(), true, localoffice_layout::para::is_list_item(&s.doc, p))
+    let runs = localwriter_layout::para::proof_runs(&s.doc, p, None);
+    localwriter_layout::para::paragraph_issues(p, &runs, &s.prefs.spelling(), true, localwriter_layout::para::is_list_item(&s.doc, p))
         .into_iter()
         .map(|i| (Pos { story, path: path.clone(), off: i.start }, Pos { story, path: path.clone(), off: i.end }, i))
         .collect()
 }
 
 /// The issue under a position.
-fn issue_at(s: &Session, at: &Pos) -> Option<(Pos, Pos, localoffice_proof::Issue)> {
+fn issue_at(s: &Session, at: &Pos) -> Option<(Pos, Pos, localwriter_proof::Issue)> {
     para_issues(s, at.story, &at.path).into_iter().find(|(a, b, _)| a.off <= at.off && at.off <= b.off)
 }
 
-fn issue_json(s: &Session, a: &Pos, b: &Pos, i: &localoffice_proof::Issue) -> Value {
+fn issue_json(s: &Session, a: &Pos, b: &Pos, i: &localwriter_proof::Issue) -> Value {
     let word = s.doc.para_at(a).and_then(|p| p.text.get(a.off..b.off)).unwrap_or("").to_string();
-    let sugg = if i.kind == localoffice_proof::IssueKind::Spelling { localoffice_proof::suggest_in(&word, 6, i.lang) } else { i.suggestions.clone() };
+    let sugg = if i.kind == localwriter_proof::IssueKind::Spelling { localwriter_proof::suggest_in(&word, 6, i.lang) } else { i.suggestions.clone() };
     json!({
         "start": pos_json(a), "end": pos_json(b), "text": word,
-        "kind": if i.kind == localoffice_proof::IssueKind::Spelling { "spelling" } else { "grammar" },
+        "kind": if i.kind == localwriter_proof::IssueKind::Spelling { "spelling" } else { "grammar" },
         "message": i.message, "suggestions": sugg, "lang": i.lang.code(),
     })
 }
@@ -1078,8 +1078,8 @@ fn thesaurus(s: &mut Session, v: &Value) -> CmdResult {
 
 /// Track Changes Options: change the fields given, return them all. A per-user preference.
 fn tracking_options(s: &mut Session, v: &Value) -> CmdResult {
-    use localoffice_doc::Rgb;
-    use localoffice_layout::display::{BalloonMode, ChangeBar, CommentDisplay, DeleteMark, InsertMark};
+    use localwriter_doc::Rgb;
+    use localwriter_layout::display::{BalloonMode, ChangeBar, CommentDisplay, DeleteMark, InsertMark};
     let mut m = s.prefs.markup.clone();
     let color = |k: &str, auto: &str, cur: Option<Rgb>| -> Result<Option<Rgb>, CmdError> {
         match p::str(v, k) {
@@ -1154,8 +1154,8 @@ fn tracking_options(s: &mut Session, v: &Value) -> CmdResult {
 }
 
 /// The Track Changes Options as `review.trackingOptions` takes them.
-pub fn tracking_json(m: &localoffice_layout::display::MarkupOptions) -> Value {
-    let hex = |c: Option<localoffice_doc::Rgb>, auto: &str| c.map(|c| c.hex()).unwrap_or_else(|| auto.to_string());
+pub fn tracking_json(m: &localwriter_layout::display::MarkupOptions) -> Value {
+    let hex = |c: Option<localwriter_doc::Rgb>, auto: &str| c.map(|c| c.hex()).unwrap_or_else(|| auto.to_string());
     json!({
         "comments": m.comments,
         "ink": m.ink,
@@ -1179,8 +1179,8 @@ pub fn tracking_json(m: &localoffice_layout::display::MarkupOptions) -> Value {
 
 #[cfg(test)]
 mod tests {
-    use localoffice_doc::Document;
-    use localoffice_layout::display::{DisplayOptions, Draw, page_display};
+    use localwriter_doc::Document;
+    use localwriter_layout::display::{DisplayOptions, Draw, page_display};
     use serde_json::json;
 
     use crate::Session;
@@ -1193,7 +1193,7 @@ mod tests {
         (page_display(&s.doc, page, &opts), page.body.x)
     }
 
-    fn glyph_colors(d: &[Draw]) -> Vec<(localoffice_doc::Rgb, bool)> {
+    fn glyph_colors(d: &[Draw]) -> Vec<(localwriter_doc::Rgb, bool)> {
         d.iter().filter_map(|x| if let Draw::Glyphs { color, synth_bold, .. } = x { Some((*color, *synth_bold)) } else { None }).collect()
     }
 
@@ -1222,7 +1222,7 @@ mod tests {
         assert_eq!(bars.len(), 1, "one changed line, one bar in the left margin");
         let horizontal = lines(&d).into_iter().filter(|(_, y0, _, y1)| y0 == y1).count();
         assert_eq!(horizontal, 2, "an underline and a strikethrough: {:?}", lines(&d));
-        let author = glyph_colors(&d).iter().filter(|(c, _)| *c != localoffice_doc::Rgb::BLACK).count();
+        let author = glyph_colors(&d).iter().filter(|(c, _)| *c != localwriter_doc::Rgb::BLACK).count();
         assert!(author >= 2, "insertion and deletion in the author's colour");
 
         // Bold, fixed-colour insertions; hidden deletions; no bars.
@@ -1235,7 +1235,7 @@ mod tests {
         assert_eq!((r["insertMark"].as_str(), r["deleteColor"].as_str(), r["balloons"].as_str()), (Some("bold"), Some("byAuthor"), Some("inline")));
         let (d, _) = draws(&mut s);
         assert!(lines(&d).is_empty(), "no underline, no strikethrough, no bar: {:?}", lines(&d));
-        assert!(glyph_colors(&d).contains(&(localoffice_doc::Rgb(0, 0xAA, 0), true)), "a bold green insertion");
+        assert!(glyph_colors(&d).contains(&(localwriter_doc::Rgb(0, 0xAA, 0), true)), "a bold green insertion");
         let text: String = d.iter().filter_map(|x| if let Draw::Glyphs { text, .. } = x { Some(text.as_str()) } else { None }).collect();
         assert!(!text.contains("gone"), "the deletion takes no room: {text:?}");
 
@@ -1247,7 +1247,7 @@ mod tests {
     /// #1055: comments show in the margin as in Word unless the option says otherwise.
     #[test]
     fn comment_display_defaults_to_margin_and_is_validated() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         assert_eq!(s.run("review.trackingOptions", &json!({})).unwrap()["commentDisplay"], "margin");
         assert_eq!(s.run("review.trackingOptions", &json!({"commentDisplay": "selected"})).unwrap()["commentDisplay"], "selected");
         assert_eq!(s.run("review.trackingOptions", &json!({})).unwrap()["commentDisplay"], "selected");
@@ -1260,8 +1260,8 @@ mod tests {
     /// double underline where it went.
     #[test]
     fn move_marks_and_colours_change_how_moved_text_is_drawn() {
-        use localoffice_doc::Rgb;
-        use localoffice_layout::display::{MOVE_COLOR, Stroke};
+        use localwriter_doc::Rgb;
+        use localwriter_layout::display::{MOVE_COLOR, Stroke};
         let mut s = Session::new(Document::new());
         s.view.proofing = false;
         s.run("document.setText", &json!({"text": "First one.\nSecond one.\nThird one."})).unwrap();
@@ -1309,7 +1309,7 @@ mod tests {
         // By author: the insertion and deletion colour of the author.
         s.run("review.trackingOptions", &json!({"moveToColor": "byAuthor"})).unwrap();
         let (d, _) = draws(&mut s);
-        let author = localoffice_layout::display::revision_color(0);
+        let author = localwriter_layout::display::revision_color(0);
         assert!(glyph_colors(&d).contains(&(author, true)), "{:?}", glyph_colors(&d));
 
         // Unknown choices are refused.
@@ -1334,7 +1334,7 @@ mod tests {
 
     /// The caret at body paragraph `block`, offset `off`: (x, top).
     fn caret_at(s: &mut Session, block: usize, off: usize) -> (f32, f32) {
-        let c = s.layout().caret(&localoffice_doc::Pos::body(block, off)).unwrap();
+        let c = s.layout().caret(&localwriter_doc::Pos::body(block, off)).unwrap();
         (c.x, c.top)
     }
 
@@ -1364,7 +1364,7 @@ mod tests {
 
     /// Each "Second" run drawn, in page order (the moved-to paragraph first, then the moved-from
     /// one): (colour, bold, italic).
-    fn seconds(d: &[Draw]) -> Vec<(localoffice_doc::Rgb, bool, bool)> {
+    fn seconds(d: &[Draw]) -> Vec<(localwriter_doc::Rgb, bool, bool)> {
         d.iter()
             .filter_map(|x| match x {
                 Draw::Glyphs { text, color, synth_bold, synth_italic, .. } if text.starts_with("Second") => {
@@ -1376,7 +1376,7 @@ mod tests {
     }
 
     /// Horizontal lines (underlines and strikethroughs): their strokes.
-    fn h_strokes(d: &[Draw]) -> Vec<localoffice_layout::display::Stroke> {
+    fn h_strokes(d: &[Draw]) -> Vec<localwriter_layout::display::Stroke> {
         d.iter().filter_map(|x| if let Draw::Line { y0, y1, stroke, .. } = x { (y0 == y1).then_some(*stroke) } else { None }).collect()
     }
 
@@ -1389,7 +1389,7 @@ mod tests {
     /// plain text, no mark and no colour, although the colour stays set; the change bar stays.
     #[test]
     fn moved_to_none_is_plain_text_with_its_change_bar() {
-        use localoffice_layout::display::{MOVE_COLOR, Stroke};
+        use localwriter_layout::display::{MOVE_COLOR, Stroke};
         let mut s = moved_with(json!({}));
         let (d, body_x) = draws(&mut s);
         let default_bars = bars(&d, body_x);
@@ -1398,7 +1398,7 @@ mod tests {
         assert_eq!(s.run("review.trackingOptions", &json!({})).unwrap()["moveToColor"], MOVE_COLOR.hex());
         let (d, body_x) = draws(&mut s);
         let sec = seconds(&d);
-        assert_eq!(sec.first().map(|c| c.0), Some(localoffice_doc::Rgb::BLACK), "{sec:?}");
+        assert_eq!(sec.first().map(|c| c.0), Some(localwriter_doc::Rgb::BLACK), "{sec:?}");
         assert_eq!(sec.get(1).map(|c| c.0), Some(MOVE_COLOR), "the moved-from end keeps its colour");
         assert_eq!(h_strokes(&d), vec![Stroke::Double], "only the moved-from strikethrough");
         assert_eq!(bars(&d, body_x), default_bars, "the change bars stay");
@@ -1409,7 +1409,7 @@ mod tests {
     /// deletion marked (none) keeps its colour.
     #[test]
     fn deletion_marks_none_bold_italic_and_double_underline() {
-        use localoffice_layout::display::{MOVE_COLOR, Stroke};
+        use localwriter_layout::display::{MOVE_COLOR, Stroke};
         let plain = json!({"moveToMark": "none", "moveToColor": "byAuthor"});
         let with = |extra: serde_json::Value| {
             let mut o = plain.clone();
@@ -1418,7 +1418,7 @@ mod tests {
         };
         let mut s = with(json!({"moveFromMark": "none"}));
         let (d, _) = draws(&mut s);
-        assert_eq!(seconds(&d).get(1).map(|c| c.0), Some(localoffice_doc::Rgb::BLACK), "{:?}", seconds(&d));
+        assert_eq!(seconds(&d).get(1).map(|c| c.0), Some(localwriter_doc::Rgb::BLACK), "{:?}", seconds(&d));
         assert!(h_strokes(&d).is_empty(), "{:?}", h_strokes(&d));
         let mut s = with(json!({"moveFromMark": "bold"}));
         let (d, _) = draws(&mut s);
@@ -1444,7 +1444,7 @@ mod tests {
         let (d, _) = draws(&mut s);
         assert!(h_strokes(&d).is_empty());
         let gone = d.iter().find_map(|x| if let Draw::Glyphs { text, color, .. } = x { text.contains("gone").then_some(*color) } else { None });
-        assert_eq!(gone, Some(localoffice_layout::display::revision_color(0)));
+        assert_eq!(gone, Some(localwriter_layout::display::revision_color(0)));
     }
 
     /// Review of gap #5: Deletions = Hidden hides deletions, not moved-away text, which follows
@@ -1452,7 +1452,7 @@ mod tests {
     /// as in Word for Mac 16.113.4 (user-checked 2026-10-15).
     #[test]
     fn hidden_deletions_leave_moved_from_text_shown() {
-        use localoffice_layout::display::{MOVE_COLOR, Stroke};
+        use localwriter_layout::display::{MOVE_COLOR, Stroke};
         let mut accepted = moved_with(json!({}));
         accepted.run("review.acceptAll", &json!({})).unwrap();
         let third_accepted = caret_at(&mut accepted, 2, 0).1;
@@ -1483,14 +1483,14 @@ mod tests {
         assert!(s.run("review.trackingOptions", &json!({"trackMoves": false, "moveToMark": "sparkles"})).is_err());
         assert!(s.doc.settings.track_moves);
         // Documents saved before the setting existed keep tracking moves.
-        let old: localoffice_doc::Settings = serde_json::from_value(json!({"trackChanges": true})).unwrap();
+        let old: localwriter_doc::Settings = serde_json::from_value(json!({"trackChanges": true})).unwrap();
         assert!(old.track_moves);
     }
 
     /// #1055: the caret's own comment is the one whose range holds it, not any in its paragraph.
     #[test]
     fn comment_range_at_caret_needs_the_caret_inside_the_range() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("one two three"));
+        let mut s = Session::new(localwriter_doc::Document::from_text("one two three"));
         s.run("select.text", &json!({"text": "two"})).unwrap();
         let id = s.run("review.newComment", &json!({"text": "note"})).unwrap()["id"].as_u64().unwrap() as u32;
         s.run("select.text", &json!({"text": "two"})).unwrap();
@@ -1531,11 +1531,11 @@ mod tests {
         let horizontal = lines(&d).into_iter().filter(|(_, y0, _, y1)| y0 == y1).count();
         assert_eq!(horizontal, 0, "no strikethrough left behind: {:?}", lines(&d));
         assert_eq!(lines(&d).into_iter().filter(|(x0, _, x1, _)| x0 == x1 && *x0 < body_x).count(), 1, "the changed line keeps its bar");
-        let at = localoffice_doc::Pos::body(0, 5);
+        let at = localwriter_doc::Pos::body(0, 5);
         assert_eq!(deletion_balloons(&s), vec![DeletionBalloon { at: at.clone(), author: "Ana".into(), text: "gone ".into() }]);
         // The balloon's anchor is where the deletion was: between "keep " and "stay".
         let l = s.layout();
-        let (anchor, stay) = (l.caret(&at).unwrap().x, l.caret(&localoffice_doc::Pos::body(0, 10)).unwrap().x);
+        let (anchor, stay) = (l.caret(&at).unwrap().x, l.caret(&localwriter_doc::Pos::body(0, 10)).unwrap().x);
         assert!((anchor - stay).abs() < 0.01, "the deletion takes no room: {anchor} vs {stay}");
 
         // No balloons beside the page while the Comments pane lists comments: inline again.
@@ -1570,7 +1570,7 @@ mod tests {
         let b = deletion_balloons(&s);
         let got: Vec<(&str, &str)> = b.iter().map(|d| (d.author.as_str(), d.text.as_str())).collect();
         assert_eq!(got, vec![("Ana", "two¶three"), ("Bo", " four")]);
-        assert_eq!(b[0].at, localoffice_doc::Pos::body(0, 4));
+        assert_eq!(b[0].at, localwriter_doc::Pos::body(0, 4));
 
         // A deletion far longer than a balloon shows: its first characters and an ellipsis.
         let mut s = Session::new(Document::new());
@@ -1591,7 +1591,7 @@ mod tests {
     #[test]
     fn a_moves_source_gets_no_deletion_balloon() {
         use super::{DeletionBalloon, deletion_balloons, has_deletions, move_changes};
-        use localoffice_doc::Pos;
+        use localwriter_doc::Pos;
         let mut s = Session::new(Document::new());
         s.run("document.setText", &json!({"text": "First one.\nSecond one.\nThird one."})).unwrap();
         s.run("file.setAuthor", &json!({"name": "Ana"})).unwrap();
@@ -1624,7 +1624,7 @@ mod tests {
     #[test]
     fn deletions_outside_the_body_stay_inline_when_revisions_go_in_balloons() {
         use super::{DeletionBalloon, deletion_balloons};
-        use localoffice_doc::{Path, Pos, StoryRef};
+        use localwriter_doc::{Path, Pos, StoryRef};
         let mut s = Session::new(Document::new());
         s.view.proofing = false;
         s.author = "Ana".into();
@@ -1678,8 +1678,8 @@ mod tests {
         assert_eq!(deletion_balloons(&s), vec![DeletionBalloon { at: Pos::body(0, at), author: "Ana".into(), text: "zeta".into() }]);
     }
 
-    fn body_para(s: &Session) -> &localoffice_doc::Paragraph {
-        s.doc.para(localoffice_doc::StoryRef::Body, &localoffice_doc::Path::top(0)).unwrap()
+    fn body_para(s: &Session) -> &localwriter_doc::Paragraph {
+        s.doc.para(localwriter_doc::StoryRef::Body, &localwriter_doc::Path::top(0)).unwrap()
     }
 
     /// A comment inside a tracked insertion splits it into several runs; Accept and Reject at the
@@ -1700,7 +1700,7 @@ mod tests {
             let p = body_para(&s);
             assert!(p.runs.iter().all(|r| r.props.ins.is_none()), "no tracked insertion is left");
             // The comment's anchors are objects in the text; read past them.
-            let shown: String = p.text.chars().filter(|c| *c != localoffice_doc::para::OBJ).collect();
+            let shown: String = p.text.chars().filter(|c| *c != localwriter_doc::para::OBJ).collect();
             assert_eq!(shown.contains("hello"), accept, "{:?}", p.text);
         }
     }
@@ -1751,7 +1751,7 @@ mod tests {
             assert_eq!(after[0].0, "delete", "{cmd}");
             let deletion = (after[0].1 as usize, after[0].2 as usize);
             assert_eq!(selected(&s), deletion, "{cmd}: the deletion is selected next");
-            assert_eq!(s.doc.plain_text(localoffice_doc::StoryRef::Body).starts_with("new "), accept, "{cmd}");
+            assert_eq!(s.doc.plain_text(localwriter_doc::StoryRef::Body).starts_with("new "), accept, "{cmd}");
 
             // Without `next`, the caret stays at the resolved change.
             let mut s = three_changes();
@@ -1794,7 +1794,7 @@ mod tests {
         let after = change_spans(&mut s);
         assert_eq!(after.iter().map(|c| c.0.as_str()).collect::<Vec<_>>(), ["format", "insert"], "{after:?}");
         let (a, b) = s.sel.ordered();
-        let at = (localoffice_doc::Path::top(1), 0);
+        let at = (localwriter_doc::Path::top(1), 0);
         assert_eq!(((a.path.clone(), a.off), (b.path.clone(), b.off)), (at.clone(), at), "the centering is selected");
     }
 
@@ -1846,7 +1846,7 @@ mod tests {
         let ch = p.props_of_char(6).fmt_change.as_deref().expect("a formatting change on \"words\"");
         assert_eq!((ch.old.bold, ch.old.size), (None, None), "the formatting before the first change is kept");
         let rev = &s.doc.revisions[ch.rev as usize];
-        assert_eq!((rev.kind, rev.author.as_str()), (localoffice_doc::RevisionKind::Format, "Ana"));
+        assert_eq!((rev.kind, rev.author.as_str()), (localwriter_doc::RevisionKind::Format, "Ana"));
         assert!(p.props_of_char(0).fmt_change.is_none() && p.props_of_char(13).fmt_change.is_none());
         assert_eq!(p.props.fmt_change.as_deref().map(|c| c.old.align), Some(None));
 
@@ -1886,7 +1886,7 @@ mod tests {
         assert!(p.props.fmt_change.is_some(), "the paragraph's change is still there");
         s.run("review.acceptAll", &json!({})).unwrap();
         let p = body_para(&s);
-        assert_eq!((p.props.align, p.props.fmt_change.is_none()), (Some(localoffice_doc::props::Align::Center), true));
+        assert_eq!((p.props.align, p.props.fmt_change.is_none()), (Some(localwriter_doc::props::Align::Center), true));
         assert!(s.run("review.changes", &json!({})).unwrap().as_array().unwrap().is_empty());
     }
 
@@ -1907,9 +1907,9 @@ mod tests {
 
     /// Comment anchors left in any story (the body, headers, footers, notes and text boxes), with
     /// the story each sits in.
-    fn anchors(s: &Session) -> Vec<(localoffice_doc::StoryRef, u32)> {
-        use localoffice_doc::StoryRef;
-        use localoffice_doc::para::InlineObject;
+    fn anchors(s: &Session) -> Vec<(localwriter_doc::StoryRef, u32)> {
+        use localwriter_doc::StoryRef;
+        use localwriter_doc::para::InlineObject;
         let stories = std::iter::once(StoryRef::Body).chain(s.doc.parts.keys().map(|k| StoryRef::Part(*k)));
         let mut ids = Vec::new();
         for story in stories {
@@ -1935,7 +1935,7 @@ mod tests {
         let hdr = s.run("insert.header", &json!({"text": "Header text"})).unwrap()["story"].as_u64().unwrap() as u32;
         s.run("select.all", &json!({})).unwrap();
         let id = s.run("review.newComment", &json!({"text": "in the header"})).unwrap()["id"].as_u64().unwrap() as u32;
-        let in_header = vec![(localoffice_doc::StoryRef::Part(hdr), id); 2];
+        let in_header = vec![(localwriter_doc::StoryRef::Part(hdr), id); 2];
         assert_eq!(anchors(&s), in_header, "both anchors sit in the header");
         s.run("review.deleteComment", &json!({"id": id})).unwrap();
         assert!(anchors(&s).is_empty(), "no anchor points at the deleted comment");
@@ -1994,7 +1994,7 @@ mod tests {
         let root = s.run("review.newComment", &json!({"text": "root"})).unwrap()["id"].as_u64().unwrap() as u32;
         let template = s.doc.comments.get(&root).unwrap().clone();
         for k in 1..=50_000u32 {
-            s.doc.comments.insert(root + k, localoffice_doc::Comment { parent: Some(root + k - 1), ..template.clone() });
+            s.doc.comments.insert(root + k, localwriter_doc::Comment { parent: Some(root + k - 1), ..template.clone() });
         }
         let started = std::time::Instant::now();
         s.run("review.deleteComment", &json!({"id": root})).unwrap();
@@ -2003,7 +2003,7 @@ mod tests {
     }
 
     /// A comment on the whole of the story the caret is in; its id and that story.
-    fn comment_here(s: &mut Session, text: &str) -> (u64, localoffice_doc::StoryRef) {
+    fn comment_here(s: &mut Session, text: &str) -> (u64, localwriter_doc::StoryRef) {
         let story = s.sel.focus.story;
         s.run("select.all", &json!({})).unwrap();
         (s.run("review.newComment", &json!({"text": text})).unwrap()["id"].as_u64().unwrap(), story)
@@ -2013,7 +2013,7 @@ mod tests {
     /// on a word of the body. Returns each comment's id and story in reading order, which isn't
     /// the order they were made: the body, the text box and footnote it shows, then the header
     /// and the footer.
-    fn comments_in_every_story(s: &mut Session) -> Vec<(u64, localoffice_doc::StoryRef)> {
+    fn comments_in_every_story(s: &mut Session) -> Vec<(u64, localwriter_doc::StoryRef)> {
         s.view.proofing = false;
         s.run("document.setText", &json!({"text": "Body text with a comment on it."})).unwrap();
         s.run("insert.header", &json!({"text": "header"})).unwrap();
@@ -2031,19 +2031,19 @@ mod tests {
         let note = comment_here(s, "footnote");
         s.run("insert.closeHeader", &json!({})).unwrap();
         s.run("select.text", &json!({"text": "comment"})).unwrap();
-        let body = (s.run("review.newComment", &json!({"text": "body"})).unwrap()["id"].as_u64().unwrap(), localoffice_doc::StoryRef::Body);
+        let body = (s.run("review.newComment", &json!({"text": "body"})).unwrap()["id"].as_u64().unwrap(), localwriter_doc::StoryRef::Body);
         s.run("caret.docStart", &json!({})).unwrap();
         vec![body, text_box, note, header, footer]
     }
 
     /// `review.comments` as (id, the anchor's story).
-    fn listed(s: &mut Session) -> Vec<(u64, Option<localoffice_doc::StoryRef>)> {
+    fn listed(s: &mut Session) -> Vec<(u64, Option<localwriter_doc::StoryRef>)> {
         let list = s.run("review.comments", &json!({})).unwrap();
         list.as_array().unwrap().iter().map(|c| (c["id"].as_u64().unwrap(), serde_json::from_value(c["anchor"]["story"].clone()).ok())).collect()
     }
 
     /// The stories Next Comment visits, `n` presses from the caret.
-    fn next_stories(s: &mut Session, n: usize) -> Vec<localoffice_doc::StoryRef> {
+    fn next_stories(s: &mut Session, n: usize) -> Vec<localwriter_doc::StoryRef> {
         (0..n)
             .map(|_| {
                 s.run("review.nextComment", &json!({})).unwrap();
@@ -2119,7 +2119,7 @@ mod tests {
 
     /// A body comment, then, with `option` on, a comment in the header of page `page`; `option`
     /// is turned off again. Returns the header comment's id and story.
-    fn comment_in_header_version(s: &mut Session, option: &str, page: usize) -> (u64, localoffice_doc::StoryRef) {
+    fn comment_in_header_version(s: &mut Session, option: &str, page: usize) -> (u64, localwriter_doc::StoryRef) {
         s.view.proofing = false;
         s.run("document.setText", &json!({"text": "Body text with a comment on it."})).unwrap();
         s.run("select.text", &json!({"text": "comment"})).unwrap();
@@ -2145,10 +2145,10 @@ mod tests {
             let (id, story) = comment_in_header_version(&mut s, option, page);
             let headers = s.doc.sections().first().map(|(_, sec)| sec.headers).unwrap();
             let want = if slot == "first" { headers.first } else { headers.even };
-            assert_eq!(want.map(localoffice_doc::StoryRef::Part), Some(story), "{option}: the comment is in the {slot} header");
+            assert_eq!(want.map(localwriter_doc::StoryRef::Part), Some(story), "{option}: the comment is in the {slot} header");
             assert!(listed(&mut s).contains(&(id, None)), "{option} off: no anchor");
             for st in next_stories(&mut s, 3) {
-                assert_eq!(st, localoffice_doc::StoryRef::Body, "{option} off: Next went to the hidden {slot} header");
+                assert_eq!(st, localwriter_doc::StoryRef::Body, "{option} off: Next went to the hidden {slot} header");
             }
             s.run(option, &json!({"value": true})).unwrap();
             assert!(listed(&mut s).contains(&(id, Some(story))), "{option} on: anchored again");
@@ -2199,7 +2199,7 @@ mod tests {
         s.run("insert.closeHeader", &json!({})).unwrap();
         s.run("caret.set", &json!({"pos": {"story": first, "path": [0], "off": 0}})).unwrap();
         s.run("shape.link", &json!({"target": 1})).unwrap();
-        assert_eq!(s.doc.text_box_chains().first().and_then(|c| c.get(1)).copied().map(localoffice_doc::StoryRef::Part), Some(follower));
+        assert_eq!(s.doc.text_box_chains().first().and_then(|c| c.get(1)).copied().map(localwriter_doc::StoryRef::Part), Some(follower));
         s.run("caret.docStart", &json!({})).unwrap();
         assert!(listed(&mut s).contains(&(id, None)), "linked: no anchor");
         for st in next_stories(&mut s, 3) {
@@ -2220,27 +2220,27 @@ mod tests {
         s.run("select.all", &json!({})).unwrap();
         let id = s.run("review.newComment", &json!({"text": "note"})).unwrap()["id"].as_u64().unwrap() as u32;
         let part = s.doc.comments.get(&id).unwrap().part;
-        let at = localoffice_doc::Pos { story: localoffice_doc::StoryRef::Part(part), path: localoffice_doc::Path::top(0), off: 0 };
-        s.doc.insert_object(&at, localoffice_doc::InlineObject::CommentStart { id }, &Default::default()).unwrap();
+        let at = localwriter_doc::Pos { story: localwriter_doc::StoryRef::Part(part), path: localwriter_doc::Path::top(0), off: 0 };
+        s.doc.insert_object(&at, localwriter_doc::InlineObject::CommentStart { id }, &Default::default()).unwrap();
         let list = super::comment_list(&s);
         assert_eq!(list.iter().filter(|(x, _)| *x == id).count(), 1);
-        assert_eq!(list.first().and_then(|(_, p)| p.as_ref()).map(|p| p.story), Some(localoffice_doc::StoryRef::Body));
+        assert_eq!(list.first().and_then(|(_, p)| p.as_ref()).map(|p| p.story), Some(localwriter_doc::StoryRef::Body));
     }
 
     #[test]
     fn rtf_tracked_changes_accept_and_reject_after_opening_and_round_trip() {
         // Gap 19: an RTF file's tracked insertions and deletions open as tracked changes, also
-        // after a LocalOffice → RTF → LocalOffice round trip.
+        // after a LocalWriter → RTF → LocalWriter round trip.
         let rtf: &[u8] = br"{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}{\*\revtbl {Unknown;}{Alice;}{Bob;}}
 \pard Keep {\revised\revauth1\revdttm-1480361314 added }text{\deleted\revauthdel2\revdttmdel-2016341499  gone} end{\revised\revauth1\revdttm-1480361314\deleted\revauthdel2\revdttmdel-2016341499  both}.\par}";
-        let opened = localoffice_formats::rtf::import(rtf).unwrap();
-        let again = localoffice_formats::rtf::import(localoffice_formats::rtf::export(&opened).as_bytes()).unwrap();
+        let opened = localwriter_formats::rtf::import(rtf).unwrap();
+        let again = localwriter_formats::rtf::import(localwriter_formats::rtf::export(&opened).as_bytes()).unwrap();
         for doc in [opened, again] {
             for (cmd, want) in [("review.acceptAll", "Keep added text end."), ("review.rejectAll", "Keep text gone end.")] {
                 let mut s = Session::new(doc.clone());
                 assert!(!s.run("review.changes", &json!({})).unwrap().as_array().unwrap().is_empty(), "{cmd}");
                 s.run(cmd, &json!({})).unwrap();
-                assert_eq!(s.doc.plain_text(localoffice_doc::StoryRef::Body).trim_end(), want, "{cmd}");
+                assert_eq!(s.doc.plain_text(localwriter_doc::StoryRef::Body).trim_end(), want, "{cmd}");
                 assert!(s.run("review.changes", &json!({})).unwrap().as_array().unwrap().is_empty(), "{cmd}");
             }
         }

@@ -1,7 +1,7 @@
 //! Hunspell dictionaries: the suite's bundled ones (extracted once) and any installed on the
 //! system, read at runtime.
 //!
-//! LocalOffice ships the main dictionaries (Brazilian Portuguese — VERO — and Spanish as spoken
+//! LocalWriter ships the main dictionaries (Brazilian Portuguese — VERO — and Spanish as spoken
 //! in Spain — RLA-ES; their licenses travel with the files in `assets/dictionaries`). They are
 //! extracted once into a directory the search below already visits, so spelling works out of the
 //! box, and a dictionary the user (or their package manager) puts there first wins. For other
@@ -11,7 +11,7 @@
 //! language has no spelling check (no marks, no errors), like Word without the language's
 //! proofing tools.
 //!
-//! Search order: the directory in `LOCALOFFICE_DICTIONARIES` (or one set with
+//! Search order: the directory in `LOCALWRITER_DICTIONARIES` (or one set with
 //! [`set_dictionary_dir`]), then the usual system locations. On the web there are none.
 
 use std::path::{Path, PathBuf};
@@ -39,9 +39,9 @@ fn bundled_dir() -> Option<PathBuf> {
     } else if cfg!(target_family = "unix") {
         home.map(|h| h.join(".local/share/hunspell"))
     } else {
-        // Windows: `%APPDATA%\LocalOffice\dictionaries`, one of the two variants `search_dirs`
-        // visits (`LOCALAPPDATA` is its sibling, not `LocalOffice`'s own).
-        std::env::var_os("APPDATA").filter(|v| !v.is_empty()).map(|d| PathBuf::from(d).join("LocalOffice").join("dictionaries"))
+        // Windows: `%APPDATA%\LocalWriter\dictionaries`, one of the two variants `search_dirs`
+        // visits (`LOCALAPPDATA` is its sibling, not `LocalWriter`'s own).
+        std::env::var_os("APPDATA").filter(|v| !v.is_empty()).map(|d| PathBuf::from(d).join("LocalWriter").join("dictionaries"))
     }
 }
 
@@ -128,7 +128,7 @@ pub fn search_dirs(lo_exts: Option<&[String]>) -> Vec<PathBuf> {
     if let Some(d) = EXTRA_DIR.read().unwrap_or_else(std::sync::PoisonError::into_inner).clone() {
         dirs.push(d);
     }
-    if let Some(d) = std::env::var_os("LOCALOFFICE_DICTIONARIES").filter(|v| !v.is_empty()) {
+    if let Some(d) = std::env::var_os("LOCALWRITER_DICTIONARIES").or_else(|| std::env::var_os("LOCALOFFICE_DICTIONARIES")).filter(|v| !v.is_empty()) {
         dirs.push(PathBuf::from(d));
     }
     // LibreOffice keeps each language under `…/share/extensions/<dict-xx>`.
@@ -138,7 +138,7 @@ pub fn search_dirs(lo_exts: Option<&[String]>) -> Vec<PathBuf> {
     if cfg!(windows) {
         for var in ["LOCALAPPDATA", "APPDATA"] {
             if let Some(base) = std::env::var_os(var).filter(|v| !v.is_empty()).map(PathBuf::from) {
-                dirs.push(base.join("LocalOffice").join("dictionaries"));
+                dirs.push(base.join("LocalWriter").join("dictionaries"));
                 dirs.push(base.join("hunspell"));
             }
         }
@@ -299,7 +299,7 @@ mod tests {
     /// the user already has is never overwritten.
     #[test]
     fn the_bundled_dictionaries_extract_and_load() {
-        let dir = std::env::temp_dir().join(format!("localoffice-bundled-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-bundled-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         // A pair the user already has: the extraction must keep it.
         std::fs::write(dir.join("es.aff"), b"SET UTF-8\n").unwrap();
@@ -389,7 +389,7 @@ mod tests {
 
     #[test]
     fn finds_and_loads_a_pair_in_a_directory() {
-        let dir = std::env::temp_dir().join(format!("localoffice-hunspell-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-hunspell-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         assert!(find_in(&dir, &["xx_XX"]).is_none(), "no files: nothing found");
         std::fs::write(dir.join("xx_XX.aff"), "SET UTF-8\nSFX A Y 1\nSFX A 0 y .\n").unwrap();
@@ -404,7 +404,7 @@ mod tests {
 
     #[test]
     fn reads_are_bounded_and_regular_files_only() {
-        let dir = std::env::temp_dir().join(format!("localoffice-hunspell-cap-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-hunspell-cap-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let aff = dir.join("xx.aff");
         std::fs::write(&aff, "SET UTF-8\n").unwrap();
@@ -439,7 +439,7 @@ mod tests {
     /// Turkish dictionary went through this reader it was read as UTF-8, which these bytes are not.
     #[test]
     fn a_turkish_dictionary_in_iso_8859_9_loads_from_disk() {
-        let dir = std::env::temp_dir().join(format!("localoffice-hunspell-latin5-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-hunspell-latin5-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let (aff, dic) = (dir.join("tr_TR.aff"), dir.join("tr_TR.dic"));
         std::fs::write(&aff, b"SET ISO8859-9\nSFX 1 Y 2\nSFX 1 0 lar .\nSFX 1 0 \xfd .\nSFX 2 Y 1\nSFX 2 0 ler .\n").unwrap();

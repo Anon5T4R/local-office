@@ -1,5 +1,5 @@
 # English spelling variants: American and British forms of the same word, for the English
-# dialects (#1281, #1045). Written by LocalOffice contributors from general knowledge of English
+# dialects (#1281, #1045). Written by Local Writer contributors from general knowledge of English
 # spelling (MIT OR Apache-2.0); no other word list copied. See ATTRIBUTION.md.
 #
 # Each line: POLICY AMERICAN BRITISH

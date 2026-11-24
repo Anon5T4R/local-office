@@ -1,0 +1,25 @@
+[package]
+name = "localwriter-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Local Writer command line: convert, inspect, render, run commands, MCP server"
+
+[[bin]]
+name = "localwriter-cli"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+localwriter-doc = { workspace = true }
+localwriter-engine = { workspace = true }
+localwriter-render = { workspace = true }
+localwriter-mcp = { workspace = true }
+localwriter-zotero = { workspace = true }
+# The suite's MCP plumbing: `--connect PORT` normalization (loopback only), as every Craft app.
+craft-mcp = { workspace = true }
+serde_json = { workspace = true }
+sys-locale = "0.3"

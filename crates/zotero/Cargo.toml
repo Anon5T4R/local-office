@@ -1,22 +1,22 @@
 [package]
-name = "localoffice-zotero"
+name = "localwriter-zotero"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word Zotero integration: Zotero's word-processor wire protocol, answered against an engine Session"
+description = "Local Writer Zotero integration: Zotero's word-processor wire protocol, answered against an engine Session"
 
 [lints]
 workspace = true
 
 [dependencies]
-localoffice-doc = { workspace = true }
-localoffice-engine = { workspace = true }
-localoffice-formats = { workspace = true }
+localwriter-doc = { workspace = true }
+localwriter-engine = { workspace = true }
+localwriter-formats = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 log = { workspace = true }
 
 [dev-dependencies]
-localoffice-docx = { workspace = true }
+localwriter-docx = { workspace = true }
 proptest = { workspace = true }

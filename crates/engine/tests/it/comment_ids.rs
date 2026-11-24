@@ -1,6 +1,6 @@
 //! #1690, finding 3: malformed command IDs must never target another comment.
-use localoffice_doc::{Document, StoryRef};
-use localoffice_engine::{CmdError, Session};
+use localwriter_doc::{Document, StoryRef};
+use localwriter_engine::{CmdError, Session};
 use serde_json::{Value, json};
 
 fn commented() -> Session {
@@ -33,11 +33,11 @@ fn invalid_ids_leave_state_untouched(command: &str) {
                 before,
                 "{command}, id={id}, at_comment={at_comment}"
             );
-            let back = localoffice_docx::read(&localoffice_docx::write(&s.doc).unwrap()).unwrap();
+            let back = localwriter_docx::read(&localwriter_docx::write(&s.doc).unwrap()).unwrap();
             assert_eq!(back.comments.len(), 1);
             let comment = back.comments.get(&0).unwrap();
             assert!(!comment.resolved);
-            assert_eq!(back.plain_text(localoffice_doc::StoryRef::Part(comment.part)), "Keep this comment");
+            assert_eq!(back.plain_text(localwriter_doc::StoryRef::Part(comment.part)), "Keep this comment");
         }
     }
 }
@@ -83,8 +83,8 @@ fn largest_comment_id_is_accepted_without_a_caret_fallback() {
     let mut s = commented();
     let comment = s.doc.comments.remove(&0).unwrap();
     s.doc.comments.insert(u32::MAX, comment);
-    for object in &mut s.doc.para_mut(StoryRef::Body, &localoffice_doc::Path::top(0)).unwrap().objects {
-        if let localoffice_doc::para::InlineObject::CommentStart { id } | localoffice_doc::para::InlineObject::CommentEnd { id } = object {
+    for object in &mut s.doc.para_mut(StoryRef::Body, &localwriter_doc::Path::top(0)).unwrap().objects {
+        if let localwriter_doc::para::InlineObject::CommentStart { id } | localwriter_doc::para::InlineObject::CommentEnd { id } = object {
             *id = u32::MAX;
         }
     }
@@ -127,7 +127,7 @@ fn valid_comment_ids_and_omitted_caret_ids_keep_undo_redo_and_docx_fidelity() {
             };
             let mut back = after.clone();
             for _ in 0..2 {
-                back = localoffice_docx::read(&localoffice_docx::write(&back).unwrap()).unwrap();
+                back = localwriter_docx::read(&localwriter_docx::write(&back).unwrap()).unwrap();
                 assert_eq!(comments(&back), comments(&after), "{command}");
                 assert_eq!(back.plain_text(StoryRef::Body), after.plain_text(StoryRef::Body), "{command}");
             }

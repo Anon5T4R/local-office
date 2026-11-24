@@ -6,9 +6,9 @@
 use std::collections::{BTreeSet, HashMap};
 use std::hash::{Hash, Hasher};
 
-use localoffice_doc::{Block, Document, Pos, StoryRef};
-use localoffice_layout::ViewMode;
-use localoffice_layout::outline::{self as ol, BODY, OutlineView};
+use localwriter_doc::{Block, Document, Pos, StoryRef};
+use localwriter_layout::ViewMode;
+use localwriter_layout::outline::{self as ol, BODY, OutlineView};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 

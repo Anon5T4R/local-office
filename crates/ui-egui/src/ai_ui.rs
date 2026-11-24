@@ -6,8 +6,8 @@
 //! the document, and driving the shared `local-ai` client with what the panel hands over.
 
 use craft_ai_ui as ui;
-use localoffice_ai as ai;
-use localoffice_engine::Session;
+use localwriter_ai as ai;
+use localwriter_engine::Session;
 
 use crate::WordApp;
 
@@ -262,7 +262,7 @@ const SYSTEM_PROMPT: &str = "You are a writing assistant inside a word processor
 
 /// The document as the panel's context: the head of the body, within the budget.
 fn context_source(session: &Session) -> Option<ui::ContextSource> {
-    let text = session.doc.plain_text(localoffice_doc::StoryRef::Body);
+    let text = session.doc.plain_text(localwriter_doc::StoryRef::Body);
     if text.trim().is_empty() {
         return None;
     }
@@ -387,7 +387,7 @@ mod tests {
     use serde_json::json;
 
     fn app() -> WordApp {
-        WordApp::new(localoffice_engine::Session::new(localoffice_engine::sample::sample_document()), crate::Services::default())
+        WordApp::new(localwriter_engine::Session::new(localwriter_engine::sample::sample_document()), crate::Services::default())
     }
 
     /// Home ? AI is a UI command: no value toggles the panel, `value` opens or closes it, and a
@@ -445,14 +445,14 @@ mod tests {
 
     /// Visual QA (ignored in CI): renders the panel and the artifact dialog in both themes to PNGs
     /// for the vision pass. Run with
-    /// `cargo test -p localoffice-ui-egui --lib ai_ui::tests::renders_the_ai_surfaces_for_visual_qa -- --ignored --nocapture`.
+    /// `cargo test -p localwriter-ui-egui --lib ai_ui::tests::renders_the_ai_surfaces_for_visual_qa -- --ignored --nocapture`.
     #[test]
     #[ignore = "visual QA: renders the AI surfaces to PNGs for review"]
     fn renders_the_ai_surfaces_for_visual_qa() {
         fn save(h: &mut egui_kittest::Harness<'_, WordApp>, name: &str) {
             h.run_steps(3);
             let image = h.render().expect("render");
-            let path = std::env::temp_dir().join(format!("localoffice-{name}.png"));
+            let path = std::env::temp_dir().join(format!("localwriter-{name}.png"));
             image.save(&path).expect("save");
             println!("{}", path.display());
         }

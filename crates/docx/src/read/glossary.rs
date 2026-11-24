@@ -8,7 +8,7 @@
 
 use std::sync::Arc;
 
-use localoffice_doc::{Blocks, BuildingBlock};
+use localwriter_doc::{Blocks, BuildingBlock};
 
 use super::Reader;
 use super::story::StoryCtx;

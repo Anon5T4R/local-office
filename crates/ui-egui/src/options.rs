@@ -1,14 +1,14 @@
 //! File › Options (#485): a list of panes on the left (General, Display, Proofing, Save,
 //! Language, Accessibility, Advanced, Agents), the chosen pane's settings on the right. Only
-//! settings LocalOffice carries out are shown. Each pane is one function below, so a new setting
+//! settings LocalWriter carries out are shown. Each pane is one function below, so a new setting
 //! goes into its pane's function. Settings agents can change too go through `file.options`; the
 //! rest live in [`crate::UiState`] (saved in `ui.json`).
 
 use std::cell::Cell;
 
 use egui::{RichText, Ui, vec2};
-use localoffice_engine::cmd::options::{MAX_WORD_CHARS, PANES};
-use localoffice_geom::Unit;
+use localwriter_engine::cmd::options::{MAX_WORD_CHARS, PANES};
+use localwriter_geom::Unit;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value, json};
@@ -72,7 +72,7 @@ pub fn parse_length(text: &str, unit: Unit) -> Option<f64> {
             break;
         }
     }
-    localoffice_geom::parse_measure(&text, unit).map(|pt| f64::from(pt / unit.pt_per_unit()))
+    localwriter_geom::parse_measure(&text, unit).map(|pt| f64::from(pt / unit.pt_per_unit()))
 }
 
 /// Copy the session's settings the UI reads without the app.
@@ -226,9 +226,9 @@ fn general(app: &mut WordApp, ui: &mut Ui) {
     section(ui, "Start-up");
     let mut start = app.ui.start_screen;
     if ui
-        .checkbox(&mut start, tl!("Show the Start screen when Local Word starts"))
+        .checkbox(&mut start, tl!("Show the Start screen when Local Writer starts"))
         .on_hover_text(tl!(
-            "On: Local Word opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document."
+            "On: Local Writer opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document."
         ))
         .changed()
     {
@@ -239,7 +239,7 @@ fn general(app: &mut WordApp, ui: &mut Ui) {
     egui::Grid::new("options_user").num_columns(2).spacing(vec2(8.0, 6.0)).show(ui, |ui| {
         let user_label = ui.label(tl!("User name:"));
         let mut n = app.session.author.clone();
-        let protected = localoffice_engine::cmd::protect::enforced(&app.session.doc);
+        let protected = localwriter_engine::cmd::protect::enforced(&app.session.doc);
         if ui.add_enabled(!protected, egui::TextEdit::singleline(&mut n).desired_width(260.0)).labelled_by(user_label.id).changed() && !protected {
             app.session.author = n;
         }
@@ -251,7 +251,7 @@ fn general(app: &mut WordApp, ui: &mut Ui) {
             .add(
                 egui::TextEdit::singleline(&mut i)
                     .desired_width(80.0)
-                    .char_limit(localoffice_engine::cmd::options::MAX_INITIALS_CHARS)
+                    .char_limit(localwriter_engine::cmd::options::MAX_INITIALS_CHARS)
                     .hint_text(hint),
             )
             .labelled_by(initials_label.id)
@@ -322,7 +322,7 @@ fn proofing(app: &mut WordApp, ui: &mut Ui) {
 
 /// Where the spelling dictionaries come from (#1063): a folder searched before the system's
 /// usual places, saved with the settings, and the dictionary each language found. An app started
-/// from Finder or the Dock doesn't see `LOCALOFFICE_DICTIONARIES`, so this is how it finds a
+/// from Finder or the Dock doesn't see `LOCALWRITER_DICTIONARIES`, so this is how it finds a
 /// dictionary kept in a folder of the user's own.
 fn dictionaries(app: &mut WordApp, ui: &mut Ui) {
     let saved = app.session.prefs.dictionaries_folder.clone().unwrap_or_default();
@@ -353,15 +353,15 @@ fn dictionaries(app: &mut WordApp, ui: &mut Ui) {
     note(ui, "Hunspell .aff and .dic files here (pl_PL, pt_BR, it_IT, hr_HR, tr_TR) are used before the system's.");
     // The dictionary each language found, looked up again after the folder changes.
     let found_id = egui::Id::unique("options_dictionaries_found");
-    let generation = localoffice_engine::proof::dictionary_generation();
+    let generation = localwriter_engine::proof::dictionary_generation();
     let cached = ui.data(|d| d.get_temp::<(u64, Vec<(String, Option<String>, Option<String>)>)>(found_id)).filter(|(g, _)| *g == generation);
     let found = match cached {
         Some((_, f)) => f,
         None => {
-            let f: Vec<(String, Option<String>, Option<String>)> = localoffice_engine::proof::installed_dictionaries()
+            let f: Vec<(String, Option<String>, Option<String>)> = localwriter_engine::proof::installed_dictionaries()
                 .into_iter()
                 .map(|(lang, dic)| {
-                    let error = localoffice_engine::proof::dictionary_load_error(lang);
+                    let error = localwriter_engine::proof::dictionary_load_error(lang);
                     (language_name(lang).to_string(), dic.map(|d| d.to_string_lossy().into_owned()), error)
                 })
                 .collect();
@@ -382,8 +382,8 @@ fn dictionaries(app: &mut WordApp, ui: &mut Ui) {
 }
 
 /// The interface name of a language with a Hunspell dictionary.
-fn language_name(lang: localoffice_engine::proof::ProofLang) -> &'static str {
-    use localoffice_engine::proof::ProofLang;
+fn language_name(lang: localwriter_engine::proof::ProofLang) -> &'static str {
+    use localwriter_engine::proof::ProofLang;
     match lang {
         ProofLang::Pl => tl!("Polish"),
         ProofLang::Pt => tl!("Portuguese (Brazil)"),
@@ -405,7 +405,7 @@ fn language_name(lang: localoffice_engine::proof::ProofLang) -> &'static str {
 /// The custom dictionary: the words Add to Dictionary kept, each with a Remove button, and a
 /// field to add one.
 fn custom_dictionary(app: &mut WordApp, ui: &mut Ui) {
-    let words = localoffice_engine::proof::user_dictionary();
+    let words = localwriter_engine::proof::user_dictionary();
     if words.is_empty() {
         note(ui, "No words yet. Add to Dictionary on a misspelled word puts it here.");
     }
@@ -444,7 +444,7 @@ fn save(app: &mut WordApp, ui: &mut Ui) {
     // The browser can't write to the user's files, so AutoSave can't be turned on there (#176).
     let browser = app.autosave_block() == Some(crate::AutoSaveBlock::Browser);
     let mut autosave = app.autosave && !browser;
-    let r = ui.add_enabled(!browser, egui::Checkbox::new(&mut autosave, tl!("AutoSave documents you have saved in Local Word")));
+    let r = ui.add_enabled(!browser, egui::Checkbox::new(&mut autosave, tl!("AutoSave documents you have saved in Local Writer")));
     if browser {
         r.on_disabled_hover_text(crate::AutoSaveBlock::Browser.reason());
     } else if r.changed() {
@@ -481,7 +481,7 @@ fn language(app: &mut WordApp, ui: &mut Ui) {
     let text = if crate::ribbon::caret_no_proof(app) {
         tl!("The text at the insertion point is marked Do not check spelling or grammar.").to_string()
     } else if !crate::ribbon::caret_language_proofed(app) {
-        crate::i18n::fmt(tl!("{language}: Local Word doesn't check spelling or grammar in this language yet."), &[("language", &lang)])
+        crate::i18n::fmt(tl!("{language}: Local Writer doesn't check spelling or grammar in this language yet."), &[("language", &lang)])
     } else {
         let unreadable = crate::ribbon::caret_unreadable_dictionary(app);
         crate::chrome::dictionary_problem(&lang, &unreadable, crate::ribbon::caret_missing_dictionary(app))
@@ -492,7 +492,7 @@ fn language(app: &mut WordApp, ui: &mut Ui) {
 
 /// Draws Accessibility options: the animation setting and Read Aloud speed and skip-citations.
 fn accessibility(app: &mut WordApp, ui: &mut Ui) {
-    use localoffice_engine::speech::{MAX_RATE, MIN_RATE};
+    use localwriter_engine::speech::{MAX_RATE, MIN_RATE};
     section(ui, "Visual effects");
     animations_picker(app, ui);
     ui.add_space(8.0);
@@ -643,7 +643,7 @@ fn templates_folder(app: &mut WordApp, ui: &mut Ui) {
 
 fn agents(ui: &mut Ui) {
     section(ui, "Agents");
-    ui.label(tl!("Every command is available to scripts and AI agents: run `localoffice-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel."));
+    ui.label(tl!("Every command is available to scripts and AI agents: run `localwriter-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel."));
 }
 
 /// Interface theme: Light, Dark, or follow the system's appearance (#115).
@@ -810,23 +810,23 @@ fn overlay<T: DeserializeOwned>(
     }
 }
 
-/// File ▸ Options ▸ General: make LocalOffice the default app for Word documents (#295). Only where
+/// File ▸ Options ▸ General: make LocalWriter the default app for Word documents (#295). Only where
 /// the host can (`Services::make_default_app`: Windows opens Default apps, Linux and BSD use
 /// `xdg-mime`); macOS shows how to do it in Finder, the web shows nothing.
 fn default_app_button(app: &mut WordApp, ui: &mut Ui) {
     if app.services.make_default_app.is_some() {
         let hint = if cfg!(target_os = "windows") {
-            tl!("Opens Settings › Default apps, where you choose Local Word for .docx and the other document types.")
+            tl!("Opens Settings › Default apps, where you choose Local Writer for .docx and the other document types.")
         } else {
-            tl!("Opens .docx, .doc, .rtf and .odt files and Word templates with Local Word from now on.")
+            tl!("Opens .docx, .doc, .rtf and .odt files and Word templates with Local Writer from now on.")
         };
-        if ui.button(tl!("Make Local Word the default for Word documents…")).on_hover_text(hint).clicked() {
+        if ui.button(tl!("Make Local Writer the default for Word documents…")).on_hover_text(hint).clicked() {
             // Straight to the hook, not through `run`: only a click may change system defaults.
             let _ = app.make_default_app();
         }
     } else if cfg!(target_os = "macos") {
         ui.label(
-            egui::RichText::new(tl!("To open Word documents with Local Word by default: select one in Finder, choose File › Get Info, pick Local Word under Open with, then click Change All."))
+            egui::RichText::new(tl!("To open Word documents with Local Writer by default: select one in Finder, choose File › Get Info, pick Local Writer under Open with, then click Change All."))
                 .small()
                 .weak(),
         );
@@ -836,7 +836,7 @@ fn default_app_button(app: &mut WordApp, ui: &mut Ui) {
 /// File ▸ Options ▸ Numerals: how digits look on screen (display only, like Word's
 /// File › Options › Advanced › Numeral).
 fn numeral_picker(app: &mut WordApp, ui: &mut Ui) {
-    use localoffice_layout::NumeralMode;
+    use localwriter_layout::NumeralMode;
     ui.horizontal(|ui| {
         let label = ui.label(tl!("Numerals:"));
         let mut sel = app.session.view.numeral;
@@ -855,7 +855,7 @@ fn numeral_picker(app: &mut WordApp, ui: &mut Ui) {
 #[cfg(test)]
 mod tests {
     use egui_kittest::kittest::{NodeT, Queryable};
-    use localoffice_geom::Unit;
+    use localwriter_geom::Unit;
     use serde_json::json;
 
     use super::{decimal, length, parse_length, unit};
@@ -876,7 +876,7 @@ mod tests {
     }
 
     fn app() -> WordApp {
-        WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), Services::default())
+        WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), Services::default())
     }
 
     fn nav_harness(language: &str, percent: u16) -> egui_kittest::Harness<'static, WordApp> {
@@ -900,7 +900,7 @@ mod tests {
     #[test]
     fn user_name_field_disables_when_protection_starts() {
         let mut h = nav_harness("en", 100);
-        let user_name = || egui_kittest::kittest::By::new().role(egui::accesskit::Role::TextInput).value("Local Word User");
+        let user_name = || egui_kittest::kittest::By::new().role(egui::accesskit::Role::TextInput).value("Local Writer User");
         assert!(!h.get(user_name()).accesskit_node().is_disabled());
         h.state_mut().run("review.restrict", json!({"mode": "readOnly"})).unwrap();
         h.run_steps(4);
@@ -923,7 +923,7 @@ mod tests {
                 for selected in ["general", "accessibility"] {
                     h.state_mut().run("file.options", json!({"pane": selected})).unwrap();
                     h.run_steps(4);
-                    for id in localoffice_engine::cmd::options::PANES {
+                    for id in localwriter_engine::cmd::options::PANES {
                         let label = crate::i18n::tr(crate::i18n::Lang::from_pref(language), super::pane_label(id));
                         let node =
                             h.query_all_by_label(label).find(|n| n.accesskit_node().toggled().is_some()).expect("pane has its full accessible name");
@@ -1020,7 +1020,7 @@ mod tests {
         assert_eq!(b.session.prefs.units, Some(Unit::Centimeters));
         assert_eq!(b.session.initials, "VK");
         assert_eq!((b.ui.recent_count, b.ui.print_backgrounds), (30, true));
-        assert!(localoffice_engine::proof::user_dictionary().contains(&"zqxoptionsword".to_string()));
+        assert!(localwriter_engine::proof::user_dictionary().contains(&"zqxoptionsword".to_string()));
 
         let junk = br#"{"theme": "dark", "recentCount": "lots", "printBackgrounds": 7, "optionsPane": ["x"], "dark": true,
             "editing": {"measurementUnits": "furlongs", "typingReplacesSelection": false, "marks": {"tabs": "yes", "spaces": true}}}"#;
@@ -1043,11 +1043,11 @@ mod tests {
         let mut a = app();
         a.run("file.options", json!({"dictionariesFolder": dir.to_string_lossy()})).unwrap();
         let saved = serde_json::to_vec(&a.prefs()).unwrap();
-        localoffice_engine::proof::hunspell::set_dictionary_dir(None);
+        localwriter_engine::proof::hunspell::set_dictionary_dir(None);
         let mut b = app();
         b.apply_prefs(UiState::from_json(&saved).unwrap());
         assert_eq!(b.session.prefs.dictionaries_folder.as_deref(), Some(dir.to_string_lossy().as_ref()));
-        assert_eq!(localoffice_engine::proof::hunspell::search_dirs(None).first(), Some(&dir), "searched first");
+        assert_eq!(localwriter_engine::proof::hunspell::search_dirs(None).first(), Some(&dir), "searched first");
     }
 
     /// #1792: Check spelling as you type is saved with the other proofing choices, so after a
@@ -1163,7 +1163,7 @@ mod tests {
     fn animation_effects_is_an_accessibility_option() {
         use crate::theme::Animations;
         let services = Services { animations_enabled: Some(Box::new(|| Some(false))), ..Default::default() };
-        let mut a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), services);
+        let mut a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), services);
         a.run("file.options", json!({"pane": "accessibility"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -1202,10 +1202,10 @@ mod tests {
         );
         h.run_steps(4);
         assert!(h.query_by_label("Start-up").is_some(), "the section is there");
-        h.get_by_label("Show the Start screen when Local Word starts").click();
+        h.get_by_label("Show the Start screen when Local Writer starts").click();
         h.run_steps(4);
         assert!(!h.state().ui.start_screen, "the checkbox turns it off");
-        h.get_by_label("Show the Start screen when Local Word starts").click();
+        h.get_by_label("Show the Start screen when Local Writer starts").click();
         h.run_steps(4);
         assert!(h.state().ui.start_screen, "and on again");
     }
@@ -1272,7 +1272,7 @@ mod tests {
         let mut a = app();
         a.run("file.options", json!({"region": "pl-PL"})).unwrap();
         a.run("file.new", json!({})).unwrap();
-        assert_eq!(localoffice_geom::paper_name(a.session.doc.last_section.page_w, a.session.doc.last_section.page_h), Some("A4"));
+        assert_eq!(localwriter_geom::paper_name(a.session.doc.last_section.page_w, a.session.doc.last_section.page_h), Some("A4"));
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
                 let ctx = ui.ctx().clone();

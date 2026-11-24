@@ -1,10 +1,10 @@
 //! Paragraph formatting, lists and styles (Home › Paragraph, Home › Styles).
 
-use localoffice_doc::collate::{SortKey, sort_key};
-use localoffice_doc::numbering::ListKind;
-use localoffice_doc::props::{Align, Border, BorderStyle, Borders, LineSpacing, NumRef, ParaProps, Rgb, TabAlign, TabLeader, TabStop};
-use localoffice_doc::styles::{Style, StyleKind};
-use localoffice_doc::{Block, CharProps, Pos};
+use localwriter_doc::collate::{SortKey, sort_key};
+use localwriter_doc::numbering::ListKind;
+use localwriter_doc::props::{Align, Border, BorderStyle, Borders, LineSpacing, NumRef, ParaProps, Rgb, TabAlign, TabLeader, TabStop};
+use localwriter_doc::styles::{Style, StyleKind};
+use localwriter_doc::{Block, CharProps, Pos};
 use serde_json::{Value, json};
 
 use super::sel_result;
@@ -249,7 +249,7 @@ pub fn specs() -> Vec<CommandSpec> {
 }
 
 /// Resolved paragraph props at the caret.
-fn cur(s: &Session) -> localoffice_doc::resolve::ResolvedPara {
+fn cur(s: &Session) -> localwriter_doc::resolve::ResolvedPara {
     // A selection ending at the next paragraph's start doesn't format that paragraph (#418), so
     // its state comes from the last paragraph it does cover.
     let (a, b) = s.sel.ordered();
@@ -522,9 +522,9 @@ fn list(s: &mut Session, v: &Value, default: ListKind) -> CmdResult {
         .collect();
     let same_kind = |n: &NumRef| {
         s.doc.numbering.level(n.num, n.level).is_some_and(|l| {
-            let want = localoffice_doc::numbering::levels_for(kind);
+            let want = localwriter_doc::numbering::levels_for(kind);
             want.get(usize::from(n.level)).is_some_and(|w| {
-                (w.format == localoffice_doc::section::NumFormat::Bullet) == (l.format == localoffice_doc::section::NumFormat::Bullet)
+                (w.format == localwriter_doc::section::NumFormat::Bullet) == (l.format == localwriter_doc::section::NumFormat::Bullet)
                     && (p::str(v, "kind").is_none() || w.text == l.text)
             })
         })
@@ -634,7 +634,7 @@ fn tabs(s: &mut Session, v: &Value) -> CmdResult {
         return sel_result(s);
     }
     let styles = s.doc.styles.clone();
-    let near = |a: f32, b: f32| (a - b).abs() < localoffice_doc::props::TAB_POS_EPS;
+    let near = |a: f32, b: f32| (a - b).abs() < localwriter_doc::props::TAB_POS_EPS;
     fmt(s, &|p| {
         // The stops the paragraph inherits from its style.
         let inherited = styles.resolve_para(&ParaProps { tabs: None, ..p.clone() }).tabs;
@@ -761,8 +761,8 @@ fn heading_level(s: &Session, props: &ParaProps) -> Option<u8> {
 /// paragraph style); its own outline level goes, so the style's counts.
 pub(crate) fn set_heading(
     s: &mut Session,
-    story: localoffice_doc::StoryRef,
-    path: &localoffice_doc::Path,
+    story: localwriter_doc::StoryRef,
+    path: &localwriter_doc::Path,
     level: Option<u8>,
 ) -> Result<(), CmdError> {
     let style = level.map(|n| ensure_heading_style(s, n.clamp(1, 9)));
@@ -778,7 +778,7 @@ pub(crate) fn set_heading(
 pub(crate) fn ensure_heading_style(s: &mut Session, n: u8) -> String {
     let id = format!("Heading{n}");
     if s.doc.styles.get(&id).is_none() {
-        let builtin = localoffice_doc::styles::StyleSheet::builtin();
+        let builtin = localwriter_doc::styles::StyleSheet::builtin();
         for sid in [id.clone(), format!("{id}Char")] {
             if s.doc.styles.get(&sid).is_none()
                 && let Some(st) = builtin.get(&sid).cloned()
@@ -843,7 +843,7 @@ fn outline_step(s: &mut Session, promote: bool) -> CmdResult {
     for (j, h) in carried {
         let n = if promote { h.saturating_sub(1).max(1) } else { (h + 1).min(9) };
         if n != h {
-            set_heading(s, localoffice_doc::StoryRef::Body, &localoffice_doc::Path::top(j), Some(n))?;
+            set_heading(s, localwriter_doc::StoryRef::Body, &localwriter_doc::Path::top(j), Some(n))?;
         }
     }
     sel_result(s)
@@ -1227,7 +1227,7 @@ fn own_format(st: &Style) -> Value {
             f.insert(k.into(), json!(b));
         }
     }
-    if let Some(localoffice_doc::TextColor::Rgb(rgb)) = c.color {
+    if let Some(localwriter_doc::TextColor::Rgb(rgb)) = c.color {
         f.insert("color".into(), json!(rgb.hex()));
     }
     let pp = &st.para;
@@ -1267,10 +1267,10 @@ pub struct ListButtons {
 /// props it already resolved). The paragraph's own level decides Bullets (a bulleted level) or
 /// Numbering (a numbered one); Multilevel is on too when the list numbers its levels together:
 /// some level's label shows another level's number (`1.1.`) or uses legal numbering.
-pub fn list_buttons(doc: &localoffice_doc::Document, numbering: Option<NumRef>) -> ListButtons {
+pub fn list_buttons(doc: &localwriter_doc::Document, numbering: Option<NumRef>) -> ListButtons {
     let Some(n) = numbering.filter(|n| n.num != 0) else { return ListButtons::default() };
     let Some(level) = doc.numbering.level(n.num, n.level) else { return ListButtons::default() };
-    let bullets = level.format == localoffice_doc::section::NumFormat::Bullet;
+    let bullets = level.format == localwriter_doc::section::NumFormat::Bullet;
     let joined = |i: u8| {
         doc.numbering.level(n.num, i).is_some_and(|l| {
             let own = u32::from(i) + 1;

@@ -8,10 +8,10 @@ use std::collections::BTreeMap;
 
 use craft_ui::panes::{Edge, PaneContent, PaneHost, PaneLabels, PaneRequest, PaneState, Place, SidePolicy};
 use egui::{Stroke, Ui, vec2};
-use localoffice_doc::numbering::{Counters, LevelSuffix};
-use localoffice_doc::section::NumFormat;
-use localoffice_doc::{Document, Path, Pos, StoryRef};
-use localoffice_engine::StylesPaneDock;
+use localwriter_doc::numbering::{Counters, LevelSuffix};
+use localwriter_doc::section::NumFormat;
+use localwriter_doc::{Document, Path, Pos, StoryRef};
+use localwriter_engine::StylesPaneDock;
 use serde_json::{Value, json};
 
 use crate::WordApp;
@@ -20,7 +20,7 @@ use crate::theme::{Tokens, regular, semibold};
 /// The task panes, in their default order: each edge's first pane is outermost.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Pane {
-    /// SmartArt Design › Text Pane, while a SmartArt graphic LocalOffice can edit is selected.
+    /// SmartArt Design › Text Pane, while a SmartArt graphic LocalWriter can edit is selected.
     SmartArtText,
     Navigation,
     Clipboard,
@@ -152,7 +152,7 @@ pub(crate) fn lenient_order<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Ve
 /// The panes open now, from the session's view flags, in the user's order.
 pub fn open(app: &WordApp) -> Vec<Pane> {
     let v = &app.session.view;
-    let smart_art = v.smart_art_pane && localoffice_engine::cmd::smart_art::selected_smart_art(&app.session).is_some();
+    let smart_art = v.smart_art_pane && localwriter_engine::cmd::smart_art::selected_smart_art(&app.session).is_some();
     let mut open = [
         (Pane::SmartArtText, smart_art),
         (Pane::Navigation, v.nav_pane),
@@ -716,8 +716,8 @@ fn styles(app: &mut WordApp, ui: &mut Ui) {
         .styles
         .styles
         .iter()
-        .filter(|s| !s.hidden && s.kind != localoffice_doc::StyleKind::Table)
-        .map(|s| (s.id.clone(), crate::i18n::style_name(s), s.kind == localoffice_doc::StyleKind::Character, s.builtin))
+        .filter(|s| !s.hidden && s.kind != localwriter_doc::StyleKind::Table)
+        .map(|s| (s.id.clone(), crate::i18n::style_name(s), s.kind == localwriter_doc::StyleKind::Character, s.builtin))
         .collect();
     list.sort_by_key(|s| s.1.to_lowercase());
     egui::ScrollArea::vertical().show(ui, |ui| {
@@ -816,7 +816,7 @@ fn comments(app: &mut WordApp, ui: &mut Ui) {
 }
 
 /// What has been typed in comment and reply fields but not yet written to the document (#1348).
-/// Drafts belong to one document ([`Session::document_id`](localoffice_engine::Session::document_id)):
+/// Drafts belong to one document ([`Session::document_id`](localwriter_engine::Session::document_id)):
 /// when another document replaces it they are dropped, so a comment there with the same id never
 /// shows them. A draft is removed only once its command succeeds; a refused edit keeps it.
 #[derive(Default)]
@@ -996,7 +996,7 @@ pub(crate) fn flush_comment_drafts(app: &mut WordApp) -> Result<(), String> {
 fn inspector(app: &mut WordApp, ui: &mut Ui) {
     // Read-only, so call it directly: running the command every frame would pay for the command
     // machinery and consume per-command state (a pending `join_next_undo`) just to draw the pane.
-    let r = localoffice_engine::cmd::inspector::inspect(&app.session);
+    let r = localwriter_engine::cmd::inspector::inspect(&app.session);
     let t = Tokens::get(ui.ctx());
     let none = tl!("None").to_string();
     let para = &r["paragraph"];
@@ -1237,7 +1237,7 @@ mod tests {
         use egui_kittest::kittest::Queryable;
 
         let mut app =
-            crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("Hello")), crate::Services::default());
+            crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("Hello")), crate::Services::default());
         app.run("select.all", serde_json::json!({})).unwrap();
         app.run("edit.copy", serde_json::json!({})).unwrap();
         assert_eq!(app.session.clip_history.items().len(), 1);
@@ -1265,7 +1265,7 @@ mod tests {
     /// F6 past the last pane gives the document the keyboard, and typing reaches it (#1756).
     #[test]
     fn f6_past_the_last_pane_types_into_the_document() {
-        let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
+        let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("")), crate::Services::default());
         app.run("view.navigationPane", serde_json::json!({"value": true})).unwrap();
         app.run("edit.clipboardPane", serde_json::json!({"value": true})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
@@ -1289,7 +1289,7 @@ mod tests {
         assert!(h.state().canvas.focused, "F6 past the last pane returns to the document");
         h.input_mut().events.push(egui::Event::Text("typed".into()));
         h.run_steps(2);
-        assert_eq!(h.state().session.doc.plain_text(localoffice_doc::StoryRef::Body).trim(), "typed");
+        assert_eq!(h.state().session.doc.plain_text(localwriter_doc::StoryRef::Body).trim(), "typed");
     }
 
     fn pane_harness(app: crate::WordApp) -> egui_kittest::Harness<'static, crate::WordApp> {
@@ -1315,7 +1315,7 @@ mod tests {
     #[test]
     fn f6_in_an_open_dialog_keeps_focus_there() {
         for panes in [true, false] {
-            let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
+            let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("")), crate::Services::default());
             app.run("view.navigationPane", serde_json::json!({"value": panes})).unwrap();
             app.run("ui.dialog", serde_json::json!({"name": "replace"})).unwrap();
             let mut h = pane_harness(app);
@@ -1332,7 +1332,7 @@ mod tests {
     /// text field keeps Ctrl+H for itself.
     #[test]
     fn shortcuts_run_while_a_pane_title_bar_has_focus() {
-        let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
+        let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("")), crate::Services::default());
         app.run("view.navigationPane", serde_json::json!({"value": true})).unwrap();
         let mut h = pane_harness(app);
         press(&mut h, egui::Key::F6, egui::Modifiers::NONE);
@@ -1354,7 +1354,7 @@ mod tests {
     fn shortcuts_stay_out_of_the_document_while_a_dialog_button_has_focus() {
         use egui_kittest::kittest::Queryable;
 
-        let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
+        let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("")), crate::Services::default());
         app.run("text.insert", serde_json::json!({"text": "kept"})).unwrap();
         app.run("ui.dialog", serde_json::json!({"name": "wordCount"})).unwrap();
         let mut h = pane_harness(app);
@@ -1366,7 +1366,7 @@ mod tests {
         assert!(!h.state().canvas.focused, "the document gave up the keyboard");
         assert!(!h.ctx.text_edit_focused() && h.ctx.memory(|m| m.focused()).is_some(), "Close has the keyboard");
         press(&mut h, egui::Key::Z, egui::Modifiers::COMMAND);
-        assert_eq!(h.state().session.doc.plain_text(localoffice_doc::StoryRef::Body).trim(), "kept", "Ctrl+Z left the document alone");
+        assert_eq!(h.state().session.doc.plain_text(localwriter_doc::StoryRef::Body).trim(), "kept", "Ctrl+Z left the document alone");
         assert_eq!(h.state().dialog.as_ref().map(|d| d.name()), Some("wordCount"));
     }
 
@@ -1375,7 +1375,7 @@ mod tests {
     fn escape_during_a_pane_drag_keeps_full_screen() {
         use egui_kittest::kittest::Queryable;
 
-        let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
+        let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("")), crate::Services::default());
         app.run("view.navigationPane", serde_json::json!({"value": true})).unwrap();
         app.run("view.fullScreen", serde_json::json!({"value": true})).unwrap();
         let mut h = pane_harness(app);
@@ -1404,7 +1404,7 @@ mod tests {
     fn comments_dropped_over_navigations_outer_third_docks_left_of_it() {
         use egui_kittest::kittest::Queryable;
 
-        let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
+        let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("")), crate::Services::default());
         app.run("view.navigationPane", serde_json::json!({"value": true})).unwrap();
         app.run("view.commentsPane", serde_json::json!({"value": true})).unwrap();
         let mut h = pane_harness(app);
@@ -1431,7 +1431,7 @@ mod tests {
         assert_eq!(super::open(h.state()), vec![Pane::Comments, Pane::Navigation]);
 
         let saved = serde_json::to_vec(&h.state().prefs()).unwrap();
-        let mut next = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut next = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         next.apply_prefs(serde_json::from_slice(&saved).unwrap());
         next.session.view.comments_pane = true;
         assert_eq!(super::open(&next), vec![Pane::Comments, Pane::Navigation], "the order is kept");
@@ -1442,7 +1442,7 @@ mod tests {
         assert_eq!(super::open(h.state()), vec![Pane::Navigation, Pane::Comments]);
         assert!(panel(&h, Pane::Comments).left() > panel(&h, Pane::Navigation).right(), "back inside Navigation");
 
-        let mut junk = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut junk = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         junk.apply_prefs(serde_json::from_str(r#"{"paneOrder": ["comments", 3, "nope", "comments", "navigation"], "navPane": true}"#).unwrap());
         assert_eq!(junk.ui.pane_order, vec!["comments", "navigation"], "unknown and repeated keys are dropped");
         for bad in [serde_json::json!({"pane": "comments", "before": "comments"}), serde_json::json!({"pane": "comments", "before": 7})] {
@@ -1457,9 +1457,9 @@ mod tests {
     #[test]
     fn a_user_bound_f6_runs_its_command() {
         for key in ["F6", "Shift+F6"] {
-            let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
+            let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("")), crate::Services::default());
             app.run("view.navigationPane", serde_json::json!({"value": true})).unwrap();
-            app.session.keymap = localoffice_engine::keymap::KeyMap::from_value(&serde_json::json!({"assigned": {key: "view.focus"}}));
+            app.session.keymap = localwriter_engine::keymap::KeyMap::from_value(&serde_json::json!({"assigned": {key: "view.focus"}}));
             let mut h = pane_harness(app);
             assert!(h.state().canvas.focused);
             let m = if key == "F6" { egui::Modifiers::NONE } else { egui::Modifiers::SHIFT };
@@ -1484,7 +1484,7 @@ mod tests {
         // 200 pt less the 10 pt body margins and the frame's 1 pt strokes.
         const BODY: f32 = 178.0;
         let mut app =
-            crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("Hello")), crate::Services::default());
+            crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("Hello")), crate::Services::default());
         app.run("select.all", serde_json::json!({})).unwrap();
         app.run("edit.copy", serde_json::json!({})).unwrap();
         app.restrict = crate::dialogs_review::RestrictPane {
@@ -1545,7 +1545,7 @@ mod tests {
     fn a_floated_pane_floats_again_after_a_restart() {
         use craft_ui::panes::Place;
         use egui_kittest::kittest::Queryable;
-        let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
+        let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("")), crate::Services::default());
         app.run("view.navigationPane", serde_json::json!({"value": true})).unwrap();
         let mut h = pane_harness(app);
         let bar = h.get_by_label_contains("Move Pane: ").rect();
@@ -1558,13 +1558,13 @@ mod tests {
         let rect = h.state().ui.pane_places.get("navigation").and_then(|p| p.float).expect("the float rect is kept");
 
         let saved = serde_json::to_vec(&h.state().prefs()).unwrap();
-        let mut next = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut next = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         next.apply_prefs(serde_json::from_slice(&saved).unwrap());
         let state = super::pane_state(&next, Pane::Navigation);
         assert_eq!((state.place, state.float_rect), (Place::Floating, Some(rect)));
         assert_eq!(super::pane_state(&next, Pane::Clipboard), Pane::Clipboard.default_state(), "other panes keep their defaults");
 
-        let mut junk = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut junk = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         junk.apply_prefs(
             serde_json::from_str(
                 r#"{"panePlaces": {"navigation": {"dock": "top", "float": [1, "x", 3, 4]}, "clipboard": 7, "nope": {}}, "navPane": true}"#,
@@ -1573,7 +1573,7 @@ mod tests {
         );
         assert_eq!(super::pane_state(&junk, Pane::Navigation), Pane::Navigation.default_state(), "junk reads as the default");
         assert!(junk.session.view.nav_pane, "the rest of the file still loads");
-        let mut odd = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut odd = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         odd.apply_prefs(serde_json::from_str(r#"{"panePlaces": [1, 2], "navPane": true}"#).unwrap());
         assert!(odd.ui.pane_places.is_empty() && odd.session.view.nav_pane);
     }
@@ -1584,7 +1584,7 @@ mod tests {
     fn pane_dock_command_docks_floats_and_reads_each_pane() {
         use craft_ui::panes::{Edge, Place};
         use serde_json::json;
-        let mut app = crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("")), crate::Services::default());
+        let mut app = crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("")), crate::Services::default());
         assert_eq!(app.run("ui.paneDock", json!({"pane": "navigation"})).unwrap(), json!({"pane": "navigation", "dock": "left"}));
         assert_eq!(app.run("ui.paneDock", json!({"pane": "comments"})).unwrap(), json!({"pane": "comments", "dock": "right"}));
         assert_eq!(app.run("ui.paneDock", json!({"pane": "navigation", "dock": "float"})).unwrap()["dock"], "float");
@@ -1592,7 +1592,7 @@ mod tests {
         app.run("ui.paneDock", json!({"pane": "comments", "dock": "left"})).unwrap();
         assert_eq!(super::pane_state(&app, Pane::Comments).place, Place::Docked(Edge::Start));
         assert_eq!(app.run("ui.paneDock", json!({"pane": "styles", "dock": "float"})).unwrap(), json!({"pane": "styles", "dock": "float"}));
-        assert_eq!(app.session.view.styles_pane_dock, localoffice_engine::StylesPaneDock::Floating);
+        assert_eq!(app.session.view.styles_pane_dock, localwriter_engine::StylesPaneDock::Floating);
         assert!(!app.ui.pane_places.contains_key("styles"), "Styles keeps its place in the view state");
         for junk in [
             json!({}),
@@ -1618,7 +1618,7 @@ mod tests {
         /// greyed out.
         fn delete_is_disabled(style: &str) -> bool {
             let mut app =
-                crate::WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::from_text("Hello")), crate::Services::default());
+                crate::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::from_text("Hello")), crate::Services::default());
             app.run("styles.create", serde_json::json!({"name": "Callout"})).unwrap();
             // The pane writes in the "semibold" family, which the app installs with the rest of the
             // interface fonts (`chrome::title_bar`). Fonts take effect the frame after they are set,
@@ -1653,8 +1653,8 @@ mod navigation_tests {
     /// the same list still count (#3418).
     #[test]
     fn headings_show_their_list_numbers() {
-        use localoffice_doc::props::NumRef;
-        use localoffice_doc::{CharProps, ListKind, Paragraph, para_block};
+        use localwriter_doc::props::NumRef;
+        use localwriter_doc::{CharProps, ListKind, Paragraph, para_block};
         let mut doc = Document::new();
         let num = doc.numbering.add_list(ListKind::Legal);
         let para = |text: &str, style: &str, level: Option<u8>| {

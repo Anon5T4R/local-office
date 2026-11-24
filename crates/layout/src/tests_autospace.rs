@@ -5,8 +5,8 @@
 
 use super::*;
 use crate::para::ClKind;
-use localoffice_doc::props::Align;
-use localoffice_doc::section::{DocGrid, DocGridType};
+use localwriter_doc::props::Align;
+use localwriter_doc::section::{DocGrid, DocGridType};
 
 fn lay(doc: &Document) -> DocLayout {
     layout(doc, &mut LayoutCache::new(), &LayoutOptions::default())

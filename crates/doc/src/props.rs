@@ -404,7 +404,7 @@ pub struct CharProps {
     /// Kerning for fonts at or above this size (points); 0 = off.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub kern: Option<f32>,
-    /// OpenType ligatures (`w14:ligatures`). `None` leaves LocalOffice's default: standard and
+    /// OpenType ligatures (`w14:ligatures`). `None` leaves LocalWriter's default: standard and
     /// contextual ligatures.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ligatures: Option<Ligatures>,

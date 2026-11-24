@@ -1,9 +1,9 @@
 //! Table Design and Table Layout tabs.
 
 use super::table_formula::parse_number;
-use localoffice_doc::collate::{SortKey, sort_key};
-use localoffice_doc::props::{Align, Border, BorderStyle, Borders, HeightRule, Rgb, TextDirection, VAlign};
-use localoffice_doc::{Block, Document, InlineObject, Paragraph, Path, Pos, RevisionKind, StoryRef, Table, para_block};
+use localwriter_doc::collate::{SortKey, sort_key};
+use localwriter_doc::props::{Align, Border, BorderStyle, Borders, HeightRule, Rgb, TextDirection, VAlign};
+use localwriter_doc::{Block, Document, InlineObject, Paragraph, Path, Pos, RevisionKind, StoryRef, Table, para_block};
 use serde_json::{Value, json};
 
 use super::sel_result;
@@ -160,7 +160,7 @@ pub fn specs() -> Vec<CommandSpec> {
             }
             let set = |x: Option<&str>, cur: &Option<String>| match x {
                 Some(x) if x.trim().is_empty() => None,
-                Some(x) => Some(localoffice_doc::para::cap_alt(x)),
+                Some(x) => Some(localwriter_doc::para::cap_alt(x)),
                 None => cur.clone(),
             };
             with_table(s, |t| {
@@ -220,7 +220,7 @@ fn autofit(s: &mut Session, v: &Value) -> CmdResult {
         "contents" => {
             let t = s.doc.table(story, &tp).ok_or_else(|| CmdError::Disabled("the cursor isn't in a table".into()))?;
             let avail = (tw - t.props.indent.filter(|i| i.is_finite()).unwrap_or(0.0).max(0.0)).max(72.0);
-            let widths = localoffice_layout::autofit_widths(&localoffice_layout::measure_table_columns(&s.doc, t), avail);
+            let widths = localwriter_layout::autofit_widths(&localwriter_layout::measure_table_columns(&s.doc, t), avail);
             with_table(s, |t| {
                 t.props.fixed = false;
                 t.props.width = None;
@@ -438,7 +438,7 @@ pub fn selected_cells(s: &Session) -> Vec<(usize, usize)> {
     v
 }
 
-fn with_cells(s: &mut Session, f: impl Fn(&mut localoffice_doc::Cell)) -> CmdResult {
+fn with_cells(s: &mut Session, f: impl Fn(&mut localwriter_doc::Cell)) -> CmdResult {
     let (tp, _, _) = cell(s)?;
     let cells = selected_cells(s);
     let t = s.doc.table_mut(s.sel.focus.story, &tp)?;
@@ -555,7 +555,7 @@ fn del_col(s: &mut Session, _: &Value) -> CmdResult {
     let mut cols = std::collections::BTreeSet::new();
     for (rr, cc) in cells {
         let g = t.grid_col(rr, cc);
-        let span = t.rows.get(rr).and_then(|x| x.cells.get(cc)).map_or(1, localoffice_doc::Cell::span);
+        let span = t.rows.get(rr).and_then(|x| x.cells.get(cc)).map_or(1, localwriter_doc::Cell::span);
         cols.extend(g..g.saturating_add(span).min(t.grid.len()));
     }
     if cols.is_empty() {
@@ -897,12 +897,12 @@ fn borders(s: &mut Session, v: &Value) -> CmdResult {
     })
 }
 
-pub(crate) fn cell_text(c: &localoffice_doc::Cell) -> String {
+pub(crate) fn cell_text(c: &localwriter_doc::Cell) -> String {
     c.blocks.iter().filter_map(|b| b.as_para().map(|p| p.plain_text())).collect::<Vec<_>>().join("\n")
 }
 
 /// The language of a cell's text: that of its first paragraph with text.
-fn cell_lang(doc: &localoffice_doc::Document, c: &localoffice_doc::Cell) -> Option<String> {
+fn cell_lang(doc: &localwriter_doc::Document, c: &localwriter_doc::Cell) -> Option<String> {
     c.blocks.iter().filter_map(|b| b.as_para()).find(|p| !p.plain_text().trim().is_empty()).and_then(|p| super::para_lang(doc, p))
 }
 
@@ -958,7 +958,7 @@ fn to_text(s: &mut Session, v: &Value) -> CmdResult {
         Some("paragraph") => None,
         Some("other") => match p::str(v, "char").and_then(|c| c.chars().next()) {
             // U+FFFC marks an object in the text, so it cannot set the cells apart.
-            Some(c) if c != '\n' && c != '\r' && c != localoffice_doc::para::OBJ => Some(c),
+            Some(c) if c != '\n' && c != '\r' && c != localwriter_doc::para::OBJ => Some(c),
             _ => return Err(CmdError::Params("`char` (the separating character) is required with `other`".into())),
         },
         Some(x) => return Err(CmdError::Params(format!("unknown separator `{x}`"))),
@@ -1012,7 +1012,7 @@ fn to_text(s: &mut Session, v: &Value) -> CmdResult {
             for (k, mut control) in open.into_iter().enumerate() {
                 control.block = true;
                 let start = InlineObject::ControlStart { control: Box::new(control) };
-                p.insert_object(k * localoffice_doc::para::OBJ.len_utf8(), start, &Default::default())?;
+                p.insert_object(k * localwriter_doc::para::OBJ.len_utf8(), start, &Default::default())?;
             }
         }
         Some(Block::Table(x)) => {
@@ -1042,7 +1042,7 @@ fn to_text(s: &mut Session, v: &Value) -> CmdResult {
 
 /// One row of Convert to Text as blocks: a paragraph per row (and per further paragraph in a
 /// cell) with the cells set apart by `sep`, or each cell's blocks as they are without one.
-fn row_to_text(row: localoffice_doc::Row, sep: Option<char>, out: &mut Vec<Block>) {
+fn row_to_text(row: localwriter_doc::Row, sep: Option<char>, out: &mut Vec<Block>) {
     let Some(sep) = sep else {
         for b in row.cells.into_iter().flat_map(|c| c.blocks) {
             out.push(match std::sync::Arc::unwrap_or_clone(b) {
@@ -1108,7 +1108,7 @@ fn formula(s: &mut Session, v: &Value) -> CmdResult {
     let at = s.sel.focus.clone();
     let end = s.doc.insert_object(
         &at,
-        localoffice_doc::InlineObject::Field {
+        localwriter_doc::InlineObject::Field {
             instr: instr.clone(),
             result: text.clone(),
             locked: false,
@@ -1202,7 +1202,7 @@ fn select_cells(s: &mut Session, tp: &Path, which: Option<(usize, Option<usize>)
 /// The grid columns cell `c` of row `r` covers (first, last).
 pub(super) fn grid_cols(t: &Table, r: usize, c: usize) -> (usize, usize) {
     let g = t.grid_col(r, c);
-    let span = t.rows.get(r).and_then(|row| row.cells.get(c)).map_or(1, localoffice_doc::Cell::span);
+    let span = t.rows.get(r).and_then(|row| row.cells.get(c)).map_or(1, localwriter_doc::Cell::span);
     (g, g + span - 1)
 }
 
@@ -1401,14 +1401,14 @@ pub fn text_table_lines(s: &Session) -> Result<Vec<String>, CmdError> {
 /// paragraph with more fields than that carries on over the next rows.
 pub fn text_table_cells(lines: &[String], sep: Option<char>, columns: Option<usize>) -> (Vec<Vec<&str>>, usize) {
     let Some(sep) = sep else {
-        let cols = columns.unwrap_or(1).clamp(1, localoffice_doc::table::MAX_COLS);
+        let cols = columns.unwrap_or(1).clamp(1, localwriter_doc::table::MAX_COLS);
         return (lines.chunks(cols).map(|ch| ch.iter().map(String::as_str).collect()).collect(), cols);
     };
     let cols = columns.unwrap_or_else(|| lines.iter().map(|l| l.split(sep).count()).max().unwrap_or(1)).max(1);
     let mut rows = Vec::new();
     for l in lines {
         let fields: Vec<&str> = l.split(sep).collect();
-        rows.extend(fields.chunks(cols.min(localoffice_doc::table::MAX_COLS)).map(<[&str]>::to_vec));
+        rows.extend(fields.chunks(cols.min(localwriter_doc::table::MAX_COLS)).map(<[&str]>::to_vec));
     }
     (rows, cols)
 }
@@ -1418,8 +1418,8 @@ pub fn text_table_cells(lines: &[String], sep: Option<char>, columns: Option<usi
 /// cut out of it, trimmed of surrounding white space, so its formatting, objects (pictures,
 /// fields, notes…) and tracked changes go with it.
 fn text_table_paras(paras: Vec<Paragraph>, sep: Option<char>, columns: Option<usize>) -> Result<(Vec<Vec<Paragraph>>, usize), CmdError> {
-    use localoffice_doc::para::OBJ;
-    use localoffice_doc::table::MAX_COLS;
+    use localwriter_doc::para::OBJ;
+    use localwriter_doc::table::MAX_COLS;
     // Each paragraph's fields as byte ranges; an object is never a separator.
     let fields: Vec<Vec<std::ops::Range<usize>>> = paras
         .iter()
@@ -1503,18 +1503,18 @@ fn from_text(s: &mut Session, v: &Value) -> CmdResult {
             _ => return Err(CmdError::Params("`width` must be between 0 and 1584 pt (22 in)".into())),
         },
     };
-    let columns = p::u64(v, "columns").map(|n| n.clamp(1, localoffice_doc::table::MAX_COLS as u64) as usize);
+    let columns = p::u64(v, "columns").map(|n| n.clamp(1, localwriter_doc::table::MAX_COLS as u64) as usize);
     let (a, b) = s.sel.ordered();
     // Checks the selection: only paragraphs, a table between them is refused.
     text_table_lines(s)?;
     let paras: Vec<Paragraph> = (a.path.last()..=b.path.last()).filter_map(|i| s.doc.para(a.story, &a.path.with_last(i)).cloned()).collect();
     let (cells, cols) = text_table_paras(paras, sep, columns)?;
     // A table has at most 63 columns; a longer row would lose its last fields.
-    if cols > localoffice_doc::table::MAX_COLS {
+    if cols > localwriter_doc::table::MAX_COLS {
         return Err(CmdError::Failed("a table can have at most 63 columns".into()));
     }
-    if cells.len() > localoffice_doc::table::MAX_ROWS {
-        return Err(CmdError::Failed(format!("a table can have at most {} rows", localoffice_doc::table::MAX_ROWS)));
+    if cells.len() > localwriter_doc::table::MAX_ROWS {
+        return Err(CmdError::Failed(format!("a table can have at most {} rows", localwriter_doc::table::MAX_ROWS)));
     }
     let width = super::page::sect(s).text_width();
     let mut t = Table::new(cells.len().max(1), cols, width);

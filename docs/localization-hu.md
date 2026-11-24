@@ -2,11 +2,11 @@
 
 Choose **File › Settings › Interface language › Magyar**, or follow a Hungarian system display
 language (`hu-HU`, `hu_HU.UTF-8`). The catalog code is `hu`; `ui.language` with `{"value":"hu"}`
-selects it explicitly, and `LOCALOFFICE_LANGUAGE=hu-HU` does the same for a headless screenshot or a
+selects it explicitly, and `LOCALWRITER_LANGUAGE=hu-HU` does the same for a headless screenshot or a
 launch while the preference is `auto`. The choice is saved with the other interface settings.
 Document text, command ids, CLI/MCP/control responses and file paths do not change.
 
-craft-i18n's `locales/hu/localoffice.tsv` (storytold/craft-i18n; it was `crates/ui-egui/src/i18n/hu.tsv`) has 2,419 entries: every key of the Russian catalog (built-in style
+craft-i18n's `locales/hu/localwriter.tsv` (storytold/craft-i18n; it was `crates/ui-egui/src/i18n/hu.tsv`) has 2,419 entries: every key of the Russian catalog (built-in style
 names, equation gallery labels, paper sizes, watermarks and greetings included) plus the citation
 style names. It is written from the meaning of the English labels; no proprietary translation resources were consulted. The catalog
 format has no plural forms, and Hungarian doesn't need them: a noun after a number stays singular
@@ -50,13 +50,13 @@ kept, and strings added later fall back to English until they are translated.
 | Ribbon / Pane / Quick Access Toolbar | Menüszalag / Panel / Gyorselérési eszköztár |
 | Proofing / Word Count | Nyelvi ellenőrzés / Szavak száma |
 
-Product and format names stay as they are (LocalOffice, PDF, DOCX, Markdown, MCP, Zotero). The Font
+Product and format names stay as they are (LocalWriter, PDF, DOCX, Markdown, MCP, Zotero). The Font
 dialog's preview sample is `AaBbYyZz ŐőŰű`, so the All Caps preview shows the Hungarian double
 acute capitals.
 
 ## Verification and remaining scope
 
-`cargo test -p localoffice-ui-egui --lib i18n::tests` covers Hungarian locale tags and preference
+`cargo test -p localwriter-ui-egui --lib i18n::tests` covers Hungarian locale tags and preference
 order, saving and restoring `hu`, unchanged document content and the glyphs `ÁáÉéÍíÓóÖöŐőÚúÜüŰű` in
 the bundled Inter (Regular, Medium, SemiBold) and JetBrains Mono. The shared checks (catalog validation and the missing-translation report, `cargo xtask i18n-report`)
 include Hungarian automatically.

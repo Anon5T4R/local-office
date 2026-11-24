@@ -1,4 +1,4 @@
-//! Equation layout: the [`localoffice_doc::math`] tree → positioned glyphs and rules.
+//! Equation layout: the [`localwriter_doc::math`] tree → positioned glyphs and rules.
 //!
 //! Follows the OpenType `MATH` model (the one Word's own math engine and Cambria Math were built
 //! around): font constants for script shifts, fraction and radical gaps, limits and rules; size
@@ -10,14 +10,14 @@
 
 use std::sync::Arc;
 
-use localoffice_doc::math::{
+use localwriter_doc::math::{
     Arg, BrkBin, BrkBinSub, ColJc, FracKind, LimLoc, MAX_DEPTH, MClass, MNode, MRun, MScr, MSty, MathProps, ScriptKind, is_integral, math_alnum,
     parse_linear,
 };
-use localoffice_doc::props::{Rgb, TextColor};
-use localoffice_doc::resolve::ResolvedChar;
-use localoffice_fonts::math::{C, Construction, MathTable, glyph_bounds};
-use localoffice_fonts::{FaceRef, FontDb};
+use localwriter_doc::props::{Rgb, TextColor};
+use localwriter_doc::resolve::ResolvedChar;
+use localwriter_fonts::math::{C, Construction, MathTable, glyph_bounds};
+use localwriter_fonts::{FaceRef, FontDb};
 
 /// Something to draw.
 #[derive(Clone, Debug)]
@@ -140,7 +140,7 @@ fn slot_dist(s: &Slot, x: f32, y: f32) -> f32 {
 }
 
 /// Numbered rows (`#`) in an equation: they advance the automatic numbering.
-pub fn auto_numbers(math: &localoffice_doc::math::Math, display: bool) -> u32 {
+pub fn auto_numbers(math: &localwriter_doc::math::Math, display: bool) -> u32 {
     if !display {
         return 0;
     }
@@ -189,7 +189,7 @@ fn split_number(row: &[MNode]) -> Option<(Arg, Arg, usize)> {
 /// wrap to it as `props` says); `counter` counts the document's automatic equation numbers so far
 /// and advances past this equation's.
 pub fn layout_equation(
-    math: &localoffice_doc::math::Math,
+    math: &localwriter_doc::math::Math,
     linear: &str,
     rc: &ResolvedChar,
     display: bool,
@@ -204,7 +204,7 @@ pub fn layout_equation(
     } else {
         &math.nodes
     };
-    let (face, table) = localoffice_fonts::math::resolve_math("Cambria Math");
+    let (face, table) = localwriter_fonts::math::resolve_math("Cambria Math");
     let color = match rc.color {
         TextColor::Rgb(c) => c,
         TextColor::Auto => Rgb::BLACK,
@@ -433,7 +433,7 @@ fn fallback(c: C) -> f32 {
 
 /// Characters drawn as operators with their own spacing class.
 fn class_of(c: char) -> Cls {
-    match localoffice_doc::math::math_class(c) {
+    match localwriter_doc::math::math_class(c) {
         MClass::Ord => Cls::Ord,
         MClass::Op => Cls::Op,
         MClass::Bin => Cls::Bin,
@@ -535,7 +535,7 @@ impl Ctx {
     /// An empty equation: a grey prompt (screen only).
     fn hint(&mut self, st: St) -> Bx {
         let size = self.size(st);
-        let rs = localoffice_fonts::word::resolve(&self.text_font, false, false);
+        let rs = localwriter_fonts::word::resolve(&self.text_font, false, false);
         let mut g = self.glyphs(rs.face, "Type an equation", size, 0, Rgb(0x80, 0x80, 0x80), (rs.synth_bold, rs.synth_italic));
         g.items = std::mem::take(&mut g.items).into_iter().map(|i| MItem::ScreenOnly(Box::new(i))).collect();
         g.glyph = None;
@@ -611,8 +611,8 @@ impl Ctx {
 
     /// Glyph run for `text` in `face` at `size`: a box with ink extents.
     fn glyphs(&self, face: FaceRef, text: &str, size: f32, level: u8, color: Rgb, synth: (bool, bool)) -> Bx {
-        let feats = if level > 0 { vec![localoffice_fonts::feature_value(b"ssty", level as u32)] } else { Vec::new() };
-        let shaped = localoffice_fonts::shape(&face, text, &feats, |c| c);
+        let feats = if level > 0 { vec![localwriter_fonts::feature_value(b"ssty", level as u32)] } else { Vec::new() };
+        let shaped = localwriter_fonts::shape(&face, text, &feats, |c| c);
         let k = size / face.upem.max(1.0) as f32;
         let mut x = 0.0f32;
         let mut b = Bx::default();
@@ -720,7 +720,7 @@ impl Ctx {
                 Some(MSty::BoldItalic) => (true, true),
                 _ => (false, false),
             };
-            let rs = localoffice_fonts::word::resolve(&fam, bold, italic);
+            let rs = localwriter_fonts::word::resolve(&fam, bold, italic);
             let mut b = self.text_atom(rs.face, &r.text, size, 0, color, (rs.synth_bold, rs.synth_italic), path, u0);
             b.glyph = None;
             out.push(RunPart::Atom(b.cls(Cls::Ord)));
@@ -1981,10 +1981,10 @@ fn hcat(parts: Vec<Bx>) -> Bx {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use localoffice_doc::math::Math;
+    use localwriter_doc::math::Math;
 
     fn rc() -> ResolvedChar {
-        localoffice_doc::styles::StyleSheet::default().resolve_char(None, &Default::default())
+        localwriter_doc::styles::StyleSheet::default().resolve_char(None, &Default::default())
     }
 
     fn lay(lin: &str, display: bool) -> MathLayout {
@@ -2019,7 +2019,7 @@ mod tests {
     fn eq_array_rows_without_ampersand_are_centred() {
         // Word centres a row with no `&` in the array (#2617: a case row "a, n odd" above
         // "|a|, &n even"), whether or not the other rows have one.
-        use localoffice_doc::math::*;
+        use localwriter_doc::math::*;
         let run = |s: &str| vec![MNode::Run(MRun::new(s))];
         let w_a = lay("a", true).width;
         for other in ["bbbbbb&c", "bbbbbbc"] {
@@ -2162,7 +2162,7 @@ mod tests {
 
     #[test]
     fn every_structure_lays_out() {
-        use localoffice_doc::math::*;
+        use localwriter_doc::math::*;
         let x = || vec![MNode::Run(MRun::new("x"))];
         let nodes = vec![
             MNode::Acc { chr: '\u{302}', e: x() },
@@ -2199,7 +2199,7 @@ mod tests {
     /// drawn from a fallback font, not as a missing-glyph box.
     #[test]
     fn characters_the_math_font_lacks_fall_back() {
-        let (face, _) = localoffice_fonts::math::resolve_math("Cambria Math");
+        let (face, _) = localwriter_fonts::math::resolve_math("Cambria Math");
         let Some(c) =
             ['⨌', '⫿', '⟅', 'ア', '中', '가'].into_iter().find(|c| !face.covers(*c) && FontDb::global().fallback_for(*c, face.id()).is_some())
         else {
@@ -2227,8 +2227,8 @@ mod tests {
 
     #[test]
     fn caret_slots_cover_every_position() {
-        use localoffice_doc::math_edit::{MathPos, move_right, units};
-        let math = Math { nodes: localoffice_doc::math::parse_linear("x=(-b±√(b^2-4ac))/2a+■(a&b@c&d)"), ..Default::default() };
+        use localwriter_doc::math_edit::{MathPos, move_right, units};
+        let math = Math { nodes: localwriter_doc::math::parse_linear("x=(-b±√(b^2-4ac))/2a+■(a&b@c&d)"), ..Default::default() };
         let m = layout_equation(&math, "", &rc(), true, 400.0, &MathProps::default(), &mut 0);
         // Walking the caret through the equation, every position has a slot.
         let mut p = MathPos::default();
@@ -2252,7 +2252,7 @@ mod tests {
 
     #[test]
     fn an_arguments_extent_spans_its_caret_positions() {
-        let math = Math { nodes: localoffice_doc::math::parse_linear("y=(a+b)/c"), ..Default::default() };
+        let math = Math { nodes: localwriter_doc::math::parse_linear("y=(a+b)/c"), ..Default::default() };
         let m = layout_equation(&math, "", &rc(), true, 400.0, &MathProps::default(), &mut 0);
         let (nx0, nx1, nup, ndown) = m.arg_extent(&[(1, 0)]).unwrap();
         let (dx0, dx1, dup, ddown) = m.arg_extent(&[(1, 1)]).unwrap();
@@ -2269,7 +2269,7 @@ mod tests {
 
     #[test]
     fn empty_slots_show_placeholders_on_screen_only() {
-        let math = Math { nodes: localoffice_doc::math::parse_linear("⬚/⬚"), ..Default::default() };
+        let math = Math { nodes: localwriter_doc::math::parse_linear("⬚/⬚"), ..Default::default() };
         let m = layout_equation(&math, "", &rc(), true, 400.0, &MathProps::default(), &mut 0);
         assert!(m.items.iter().all(|i| matches!(i, MItem::ScreenOnly(_) | MItem::Rect { .. })), "{:?}", m.items);
         assert!(m.slots.iter().any(|s| s.path == vec![(0, 0)] && s.off == 0));
@@ -2279,7 +2279,7 @@ mod tests {
 
     #[test]
     fn numbered_equations_fill_the_line_with_the_number_at_the_right() {
-        let math = Math { nodes: localoffice_doc::math::parse_linear("E=mc^2#(1)"), ..Default::default() };
+        let math = Math { nodes: localwriter_doc::math::parse_linear("E=mc^2#(1)"), ..Default::default() };
         let m = layout_equation(&math, "", &rc(), true, 400.0, &MathProps::default(), &mut 0);
         assert!((m.width - 400.0).abs() < 0.01, "{}", m.width);
         let xs: Vec<f32> =
@@ -2289,7 +2289,7 @@ mod tests {
         let min = xs.iter().cloned().fold(f32::MAX, f32::min);
         assert!(min > 120.0 && min < 220.0, "equation centred: {xs:?}");
         // Automatic numbers count.
-        let auto = Math { nodes: localoffice_doc::math::parse_linear("a=b#"), ..Default::default() };
+        let auto = Math { nodes: localwriter_doc::math::parse_linear("a=b#"), ..Default::default() };
         let mut n = 4;
         let _ = layout_equation(&auto, "", &rc(), true, 400.0, &MathProps::default(), &mut n);
         assert_eq!(n, 5);
@@ -2308,7 +2308,7 @@ mod tests {
 
     #[test]
     fn eqarr_rows_without_an_align_marker_are_centred() {
-        use localoffice_doc::math::*;
+        use localwriter_doc::math::*;
         // A row without `&` must not widen the alignment columns; it centres across the
         // array instead of right-aligning at the first column's edge.
         let rows: Vec<Vec<MNode>> = vec![vec![MNode::Run(MRun::new("mmm"))], vec![MNode::Run(MRun::new("x&yyyyyyyy"))]];
@@ -2323,7 +2323,7 @@ mod tests {
 
     #[test]
     fn eqarr_row_without_an_align_marker_wider_than_the_columns_widens_the_array() {
-        use localoffice_doc::math::*;
+        use localwriter_doc::math::*;
         // The `&`-less row is wider than the aligned columns: it must not hang left of the
         // origin, the array is as wide as it, and the aligned rows centre under it.
         let rows: Vec<Vec<MNode>> = vec![vec![MNode::Run(MRun::new("bbbbbbbbbb"))], vec![MNode::Run(MRun::new("a&c"))]];
@@ -2347,7 +2347,7 @@ mod tests {
 
     #[test]
     fn hostile_trees_never_panic() {
-        use localoffice_doc::math::*;
+        use localwriter_doc::math::*;
         // Deep nesting.
         let mut n = vec![MNode::Run(MRun::new("x"))];
         for _ in 0..500 {
@@ -2380,7 +2380,7 @@ mod tests {
     #[test]
     fn a_long_text_run_lays_out_in_linear_time() {
         use crate::tests_linear::assert_linear_steps;
-        use localoffice_doc::math::*;
+        use localwriter_doc::math::*;
         let eq = |n: usize| Math { nodes: vec![MNode::Run(MRun { nor: true, ..MRun::new("a".repeat(n)) })], ..Default::default() };
         let lay = |m: &Math| drop(std::hint::black_box(lay_in(m, "", false, 1e6, &MathProps::default())));
         assert_linear_steps("math text run", 400, eq, lay);

@@ -21,9 +21,9 @@ use std::collections::HashMap;
 use std::io::{Cursor, Read, Write};
 use std::sync::Arc;
 
-use localoffice_doc::props::VAlign;
-use localoffice_doc::section::{Columns, SectionStart};
-use localoffice_doc::{Align, Document, RevisionKind, Rgb, SectionProps};
+use localwriter_doc::props::VAlign;
+use localwriter_doc::section::{Columns, SectionStart};
+use localwriter_doc::{Align, Document, RevisionKind, Rgb, SectionProps};
 use quick_xml::XmlVersion;
 use quick_xml::events::{BytesStart, Event};
 
@@ -403,7 +403,7 @@ impl Writer {
                     }
                     // A script, `file:`, UNC or other non-web target is written as plain text, as
                     // the HTML and Markdown exporters do (LibreOffice follows `file:`/UNC hrefs).
-                    let link = f.link.as_deref().filter(|l| localoffice_doc::link::is_safe_href(l));
+                    let link = f.link.as_deref().filter(|l| localwriter_doc::link::is_safe_href(l));
                     if let Some(l) = link {
                         out.push_str(&format!("<text:a xlink:type=\"simple\" xlink:href=\"{}\">", x(l)));
                     }
@@ -832,7 +832,7 @@ fn columns_xml(c: &Columns) -> String {
 
 /// One master page per entry of `pages` (name, setup), each with its own page layout `pm1`, `pm2`…
 /// (§16.5, §16.9); the first is the default one, "Standard".
-fn styles_xml(pages: &[(String, localoffice_doc::SectionProps)], body_font: &str) -> String {
+fn styles_xml(pages: &[(String, localwriter_doc::SectionProps)], body_font: &str) -> String {
     let mut s = format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-styles {NS}><office:styles>");
     s.push_str(&format!(
         "<style:default-style style:family=\"paragraph\"><style:paragraph-properties fo:margin-bottom=\"8pt\"/><style:text-properties fo:font-family=\"'{}'\" fo:font-size=\"12pt\"/></style:default-style>",
@@ -877,7 +877,7 @@ fn styles_xml(pages: &[(String, localoffice_doc::SectionProps)], body_font: &str
 
 fn meta_xml(m: &Meta) -> String {
     let mut s =
-        format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-meta {NS}><office:meta><meta:generator>Local Word</meta:generator>");
+        format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-meta {NS}><office:meta><meta:generator>Local Writer</meta:generator>");
     if !m.title.is_empty() {
         s.push_str(&format!("<dc:title>{}</dc:title>", x(&m.title)));
     }
@@ -977,7 +977,7 @@ pub fn export(doc: &Document) -> Result<Vec<u8>, String> {
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-content {NS}>{}<office:body><office:text>\n{tracked}{body}</office:text></office:body></office:document-content>\n",
         w.automatic_styles()
     );
-    let body_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| localoffice_doc::styles::BODY_FONT.to_string());
+    let body_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| localwriter_doc::styles::BODY_FONT.to_string());
     let styles = styles_xml(&pages, &body_font);
     let meta = meta_xml(&flow.meta);
     let mut manifest = String::from(
@@ -1208,7 +1208,7 @@ fn read_formula(xml: &[u8]) -> Option<(String, bool)> {
                 if stack.is_empty() && local(&q) != "math" {
                     return;
                 }
-                if stack.len() < localoffice_doc::math::MAX_DEPTH {
+                if stack.len() < localwriter_doc::math::MAX_DEPTH {
                     stack.push(El { name: q, attrs: a, children: Vec::new() });
                 } else {
                     over += 1;
@@ -2101,7 +2101,7 @@ impl Body<'_> {
                 let w = get(a, "table:style-name").and_then(|n| self.styles.column_width(n)).unwrap_or(0.0);
                 let n = get(a, "table:number-columns-repeated").and_then(|v| v.trim().parse::<usize>().ok()).unwrap_or(1).max(1);
                 if let Some(t) = self.tables.last_mut() {
-                    let room = localoffice_doc::table::MAX_COLS.saturating_sub(t.widths.len());
+                    let room = localwriter_doc::table::MAX_COLS.saturating_sub(t.widths.len());
                     t.widths.extend(std::iter::repeat_n(w, n.min(room)));
                 }
             }
@@ -2394,7 +2394,7 @@ impl Body<'_> {
             "table-row" => {
                 if let Some(t) = self.tables.last_mut() {
                     let r = std::mem::take(&mut t.row);
-                    if !r.is_empty() && t.rows.len() < localoffice_doc::table::MAX_ROWS {
+                    if !r.is_empty() && t.rows.len() < localwriter_doc::table::MAX_ROWS {
                         t.rows.push(r);
                     }
                 }
@@ -2862,7 +2862,7 @@ mod tests {
     fn embedded_formula_object_reads_its_mathml() {
         // #3099: LibreOffice saves an equation as a `draw:object` (a formula sub-document whose
         // own `content.xml` is MathML) plus a `draw:image` replacement preview in LibreOffice's
-        // own metafile format, which LocalOffice can't decode as a picture. The object's MathML
+        // own metafile format, which LocalWriter can't decode as a picture. The object's MathML
         // must be read instead of silently dropping the frame (blank equation).
         let math = r#"<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>E</mi><mo stretchy="false">=</mo><msup><mi mathvariant="italic">mc</mi><mn>2</mn></msup></mrow><annotation encoding="StarMath 5.0">E=mc^2</annotation></semantics></math>"#;
         let frame = r#"<draw:frame svg:width="0.5in" svg:height="0.2in"><draw:object xlink:href="./Object 1"/><draw:image xlink:href="./ObjectReplacements/Object 1"/></draw:frame>"#;
@@ -3006,7 +3006,7 @@ mod tests {
             <style:master-page style:name="Standard" style:page-layout-name="pm2"/>
             <style:master-page style:name="Other" style:page-layout-name="pm1"/>
             </office:master-styles></office:document-styles>"#;
-        let mut sec = localoffice_doc::SectionProps::default();
+        let mut sec = localwriter_doc::SectionProps::default();
         apply_page_layout(xml, &mut sec);
         assert!(sec.landscape);
         assert_eq!((sec.page_w, sec.page_h, sec.margin_left, sec.margin_top), (720.0, 360.0, 72.0, 72.0));
@@ -3025,14 +3025,14 @@ mod tests {
             )
         };
         // Huge values: the page is capped at 22 inches and margins at the page's longer side.
-        let mut sec = localoffice_doc::SectionProps::default();
+        let mut sec = localwriter_doc::SectionProps::default();
         apply_page_layout(styles("1e30pt", "1e30in", "1e30pt").as_bytes(), &mut sec);
         assert_eq!((sec.page_w, sec.page_h), (1584.0, 1584.0));
         assert_eq!((sec.margin_top, sec.margin_left), (1584.0, 1584.0));
         // Negative, zero, tiny and non-numeric values leave the defaults alone.
-        let def = localoffice_doc::SectionProps::default();
+        let def = localwriter_doc::SectionProps::default();
         for (w, h, m) in [("-10in", "-5in", "-1in"), ("0pt", "0pt", "NaNpt"), ("1pt", "2pt", "infpt"), ("NaN", "inf", "x")] {
-            let mut sec = localoffice_doc::SectionProps::default();
+            let mut sec = localwriter_doc::SectionProps::default();
             apply_page_layout(styles(w, h, m).as_bytes(), &mut sec);
             assert_eq!((sec.page_w, sec.page_h), (def.page_w, def.page_h), "{w} {h}");
             assert_eq!((sec.margin_top, sec.margin_right), (def.margin_top, def.margin_right), "{m}");
@@ -3061,7 +3061,7 @@ mod tests {
         let grid = |doc: &Document| match doc
             .body
             .iter()
-            .find_map(|b| if let localoffice_doc::Block::Table(t) = &**b { Some(t.grid.clone()) } else { None })
+            .find_map(|b| if let localwriter_doc::Block::Table(t) = &**b { Some(t.grid.clone()) } else { None })
         {
             Some(g) => g,
             None => panic!("no table"),
@@ -3070,7 +3070,7 @@ mod tests {
         assert_eq!(grid(&doc), vec![72.0, 216.0]);
         let widths = vec![150.0, 100.0];
         for b in doc.body.iter_mut() {
-            if let localoffice_doc::Block::Table(t) = std::sync::Arc::make_mut(b) {
+            if let localwriter_doc::Block::Table(t) = std::sync::Arc::make_mut(b) {
                 t.grid = widths.clone();
             }
         }
@@ -3148,7 +3148,7 @@ mod tests {
     }
 
     fn part_text(d: &Document, id: Option<u32>) -> String {
-        d.plain_text(localoffice_doc::StoryRef::Part(id.expect("part")))
+        d.plain_text(localwriter_doc::StoryRef::Part(id.expect("part")))
     }
 
     #[test]
@@ -3194,7 +3194,7 @@ mod tests {
         assert_eq!(part_text(&d, wide.footers.default), "");
         assert_eq!(d.parts.len(), 6);
         let id = up.headers.default.unwrap();
-        let Some(localoffice_doc::Block::Para(p)) = d.parts[&id].blocks.first().map(|b| &**b) else { panic!("no header paragraph") };
+        let Some(localwriter_doc::Block::Para(p)) = d.parts[&id].blocks.first().map(|b| &**b) else { panic!("no header paragraph") };
         assert!(p.runs.iter().all(|r| r.props.bold == Some(true)), "{:?}", p.runs);
     }
 
@@ -3230,7 +3230,7 @@ mod tests {
 
     #[test]
     fn master_pages_and_column_sections_become_sections() {
-        use localoffice_doc::section::SectionStart;
+        use localwriter_doc::section::SectionStart;
         let doc = import(&sections_package()).unwrap();
         let secs = doc.sections();
         let summary: Vec<_> =
@@ -3250,23 +3250,23 @@ mod tests {
         assert!((cols.space - 28.35).abs() < 0.01 && cols.separator, "{cols:?}");
         // Each section ends on its own last paragraph; the wide one ends after its table.
         let text = |i: usize| match doc.body.get(i).map(|b| &**b) {
-            Some(localoffice_doc::Block::Para(p)) => p.plain_text().to_string(),
+            Some(localwriter_doc::Block::Para(p)) => p.plain_text().to_string(),
             _ => String::from("<not a paragraph>"),
         };
         assert_eq!(text(secs[0].0), "More opening words");
-        assert!(matches!(doc.body.get(secs[1].0 - 1).map(|b| &**b), Some(localoffice_doc::Block::Table(_))));
+        assert!(matches!(doc.body.get(secs[1].0 - 1).map(|b| &**b), Some(localwriter_doc::Block::Table(_))));
         assert_eq!(text(secs[2].0), "Right column text");
         assert_eq!(text(secs[3].0), "Last line");
     }
 
     /// (start, landscape, width, height, columns, restart, margins) of each section, and the
     /// text of the paragraph ending it.
-    fn section_summary(doc: &Document) -> Vec<(localoffice_doc::section::SectionStart, bool, f32, f32, u32, bool, Option<u32>, [f32; 4], String)> {
+    fn section_summary(doc: &Document) -> Vec<(localwriter_doc::section::SectionStart, bool, f32, f32, u32, bool, Option<u32>, [f32; 4], String)> {
         doc.sections()
             .iter()
             .map(|(end, s)| {
                 let text = match doc.body.get(*end).map(|b| &**b) {
-                    Some(localoffice_doc::Block::Para(p)) => p.plain_text().to_string(),
+                    Some(localwriter_doc::Block::Para(p)) => p.plain_text().to_string(),
                     _ => String::new(),
                 };
                 (
@@ -3397,7 +3397,7 @@ mod tests {
         let one = import(&export(&doc).unwrap()).unwrap();
         let mut single = one.clone();
         for b in single.body.iter_mut() {
-            if let localoffice_doc::Block::Para(p) = std::sync::Arc::make_mut(b) {
+            if let localwriter_doc::Block::Para(p) = std::sync::Arc::make_mut(b) {
                 p.section = None;
             }
         }
@@ -3455,7 +3455,7 @@ mod tests {
         // Review of #1379: a table style can name a master page too (ODF 1.3 §19.509), with its
         // page-number restart on `style:table-properties`. An empty name on a child style means
         // "no page style here", and a page-number restart without a master page starts nothing.
-        use localoffice_doc::section::SectionStart;
+        use localwriter_doc::section::SectionStart;
         let styles = format!(
             r#"<office:document-styles {NS_T}><office:styles><style:style style:name="WideParent" style:family="paragraph" style:master-page-name="Wide"/></office:styles><office:automatic-styles>
             <style:page-layout style:name="pU"><style:page-layout-properties fo:page-width="21cm" fo:page-height="29.7cm"><style:columns fo:column-count="1" fo:column-gap="0cm"/></style:page-layout-properties></style:page-layout>
@@ -3479,9 +3479,9 @@ mod tests {
         let secs = doc.sections();
         let summary: Vec<_> = secs.iter().map(|(i, s)| (*i, s.start, s.landscape, s.page_num_start)).collect();
         assert_eq!(summary, [(2, SectionStart::NextPage, false, None), (4, SectionStart::NextPage, true, Some(1))]);
-        assert!(matches!(doc.body.get(3).map(|b| &**b), Some(localoffice_doc::Block::Table(_))));
+        assert!(matches!(doc.body.get(3).map(|b| &**b), Some(localwriter_doc::Block::Table(_))));
         // A one-column page layout keeps the default column gap.
-        assert_eq!(secs[0].1.columns, localoffice_doc::section::Columns::default());
+        assert_eq!(secs[0].1.columns, localwriter_doc::section::Columns::default());
     }
 
     #[test]
@@ -3520,13 +3520,13 @@ mod tests {
     }
 
     /// Each body paragraph as (text, revision kind) runs, plus its mark's revision kind.
-    type RevRuns = Vec<(Vec<(String, Option<localoffice_doc::RevisionKind>)>, Option<localoffice_doc::RevisionKind>)>;
+    type RevRuns = Vec<(Vec<(String, Option<localwriter_doc::RevisionKind>)>, Option<localwriter_doc::RevisionKind>)>;
 
     fn rev_runs(doc: &Document) -> RevRuns {
         let kind = |i: Option<u32>| i.and_then(|i| doc.revisions.get(i as usize)).map(|r| r.kind);
         doc.body
             .iter()
-            .filter_map(|b| if let localoffice_doc::Block::Para(p) = &**b { Some(p) } else { None })
+            .filter_map(|b| if let localwriter_doc::Block::Para(p) = &**b { Some(p) } else { None })
             .map(|p| {
                 let runs = p.run_ranges().map(|(r, cp)| (p.text[r].to_string(), kind(cp.del).or(kind(cp.ins)))).collect();
                 (runs, kind(p.mark.del).or(kind(p.mark.ins)))
@@ -3545,7 +3545,7 @@ mod tests {
 
     #[test]
     fn tracked_insertion_and_deletion_import_with_authors_and_dates() {
-        use localoffice_doc::RevisionKind::{Delete, Insert};
+        use localwriter_doc::RevisionKind::{Delete, Insert};
         let doc = import(&insertion_and_deletion()).unwrap();
         let s = |v: &str| v.to_string();
         assert_eq!(rev_runs(&doc), vec![(vec![(s("Keep "), None), (s("new "), Some(Insert)), (s("old "), Some(Delete)), (s("words."), None)], None)]);
@@ -3556,7 +3556,7 @@ mod tests {
 
     #[test]
     fn tracked_deletion_across_paragraphs_keeps_the_deleted_paragraph_mark() {
-        use localoffice_doc::RevisionKind::Delete;
+        use localwriter_doc::RevisionKind::Delete;
         // "First tail¶head rest." with "tail¶head " deleted: the body holds the merged paragraph.
         let regions = region("d1", "deletion", "Bob", "2024-03-02T11:30:00", "<text:p>tail</text:p><text:p>head<text:s/></text:p>");
         let doc = import(&tracked(&regions, r#"<text:p>First <text:change text:change-id="d1"/>rest.</text:p>"#)).unwrap();
@@ -3579,24 +3579,24 @@ mod tests {
         assert_eq!(revs(&back), revs(&doc));
         assert_eq!(back.settings.track_changes, doc.settings.track_changes);
         // The inserted paragraph mark survives: "added¶" is part of the insertion.
-        assert_eq!(rev_runs(&doc)[2].1, Some(localoffice_doc::RevisionKind::Insert));
+        assert_eq!(rev_runs(&doc)[2].1, Some(localwriter_doc::RevisionKind::Insert));
     }
 
     #[test]
     fn an_inserted_ruby_keeps_its_tracked_insertion() {
         // ODF has no ruby: its base text is written as text, and the insertion on the ruby must
         // still be a change range around that text, not plain untracked text.
-        use localoffice_doc::RevisionKind::Insert;
-        let props = localoffice_doc::props::CharProps::default();
-        let mut p = localoffice_doc::Paragraph::with_text("before ", props.clone());
+        use localwriter_doc::RevisionKind::Insert;
+        let props = localwriter_doc::props::CharProps::default();
+        let mut p = localwriter_doc::Paragraph::with_text("before ", props.clone());
         let n = p.len();
         let mut ins = props.clone();
         ins.ins = Some(0);
         p.insert_object(n, crate::model::ruby_object("漢字".into(), "かんじ".into(), 20.0), &ins).unwrap();
         let mut d = Document::new();
         d.settings.track_changes = true;
-        d.revisions.push(localoffice_doc::Revision::new(Insert, "Alice", "2024-03-01T10:00:00"));
-        d.body = vec![localoffice_doc::para_block(p)];
+        d.revisions.push(localwriter_doc::Revision::new(Insert, "Alice", "2024-03-01T10:00:00"));
+        d.body = vec![localwriter_doc::para_block(p)];
         let back = import(&export(&d).unwrap()).unwrap();
         assert_eq!(rev_runs(&back), vec![(vec![("before ".to_string(), None), ("漢字".to_string(), Some(Insert))], None)]);
     }
@@ -3628,14 +3628,14 @@ mod tests {
     type Marks = Vec<(Vec<(String, bool, bool)>, (bool, bool))>;
 
     fn marks(doc: &Document) -> Marks {
-        fn walk(bl: &localoffice_doc::Blocks, out: &mut Marks) {
+        fn walk(bl: &localwriter_doc::Blocks, out: &mut Marks) {
             for b in bl {
                 match &**b {
-                    localoffice_doc::Block::Para(p) => out.push((
+                    localwriter_doc::Block::Para(p) => out.push((
                         p.run_ranges().map(|(r, cp)| (p.text[r].to_string(), cp.ins.is_some(), cp.del.is_some())).collect(),
                         (p.mark.ins.is_some(), p.mark.del.is_some()),
                     )),
-                    localoffice_doc::Block::Table(t) => {
+                    localwriter_doc::Block::Table(t) => {
                         for r in &t.rows {
                             for c in &r.cells {
                                 walk(&c.blocks, out);
@@ -3731,7 +3731,7 @@ mod tests {
         for src in ["a\t b", "a\t  b", "a\t   éa", "é\t 😀a", "a\t\t b"] {
             let doc = Document::from_text(src);
             let back = import(&export(&doc).unwrap()).unwrap();
-            assert_eq!(back.plain_text(localoffice_doc::StoryRef::Body).trim_end(), src, "{src:?}");
+            assert_eq!(back.plain_text(localwriter_doc::StoryRef::Body).trim_end(), src, "{src:?}");
         }
     }
 
@@ -3782,11 +3782,11 @@ mod tests {
         assert_eq!(texts, vec!["    lead", "trail  ", "plain", " x  "]);
         let d = Document::from_text("    indented code  ");
         let back = import(&export(&d).unwrap()).unwrap();
-        assert_eq!(back.plain_text(localoffice_doc::StoryRef::Body).trim_end_matches('\n'), "    indented code  ");
+        assert_eq!(back.plain_text(localwriter_doc::StoryRef::Body).trim_end_matches('\n'), "    indented code  ");
         for t in ["trail ", "trail  "] {
             let d = Document::from_text(t);
             let back = import(&export(&d).unwrap()).unwrap();
-            assert_eq!(back.plain_text(localoffice_doc::StoryRef::Body).trim_end_matches('\n'), t);
+            assert_eq!(back.plain_text(localwriter_doc::StoryRef::Body).trim_end_matches('\n'), t);
         }
     }
 

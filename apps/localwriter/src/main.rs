@@ -1,0 +1,821 @@
+//! LocalWriter desktop app.
+//!
+//! Usage: `localwriter [--control <port>] [--sample] [files…]`; `--help` prints `USAGE`.
+//!
+//! `--control <port>` (or `LOCALWRITER_CONTROL_PORT`) starts a localhost JSON-lines control server:
+//! `{"id":1,"key":"…","method":"engine.execute","params":{"command":"text.insert","params":{"text":"Hi"}}}`.
+//! Every request needs the key the app writes to `<settings>/control-key.<instance>` (mode 0600,
+//! removed on exit). See `docs/control-protocol.md`.
+#![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
+#![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
+
+mod animations;
+#[cfg(target_os = "macos")]
+mod apple_events;
+mod clipboard;
+mod control_server;
+mod default_apps;
+mod file_dialogs;
+#[cfg(any(target_os = "windows", target_os = "macos", test))]
+mod graphics;
+mod legacy;
+mod logging;
+mod prefs_merge;
+mod print;
+mod region;
+#[cfg(target_os = "macos")]
+mod traffic_lights;
+
+use localwriter_engine::Session;
+use localwriter_ui_egui::{
+    Services, UiState, WordApp,
+    window_geometry::{RawWindowState, WindowGeometry, off_screen_rescue, take_rescue},
+};
+
+/// The app, the restored window geometry (or, with none, the default: no position) until the
+/// first frame that knows the monitor has checked it, the control server's key file (removed on
+/// exit), the file dialogs the app asked for, this frame's raw host window state and, on macOS,
+/// the documents opened from Finder.
+struct App(
+    WordApp,
+    Option<WindowGeometry>,
+    Option<control_server::KeyFile>,
+    file_dialogs::Launcher,
+    // The host's answer for this frame. `InputState` still describes the last painted frame on
+    // a hidden logic tick.
+    RawWindowState,
+    #[cfg(target_os = "macos")] fmv_macos_events::Inbox,
+);
+
+impl eframe::App for App {
+    /// Advances one desktop frame: polls Finder events on macOS, runs the app and its file dialogs,
+    /// fits or rescues the window and maximizes it after opening, then gates a close or quit request
+    /// on unsaved changes and active printing.
+    fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        #[cfg(target_os = "macos")]
+        apple_events::poll(&self.5, &mut self.0, ctx);
+        self.0.logic(ctx);
+        self.3.show(frame);
+        let window = self.4;
+        // A window whose position was saved on a monitor that no longer exists — a
+        // tablet-as-display driver (spacedesk), an unplugged TV or projector — restores into
+        // that dead area: the process lives, the window is nowhere. The size-comparison
+        // rescue can't notice when the dead and the living monitors are the same size, so
+        // winit's monitor list decides: on no monitor at all, the window comes back to the
+        // centre of the one the host reports for it, leaving full screen if it was on the
+        // dead one (a full-screen window cannot be moved).
+        if let Some(native) = frame.winit_window() {
+            // The window's rectangles arrive in egui points — the OS scale times the UI zoom
+            // (egui-winit's `pixels_per_point`), so the monitor rectangles must be divided by
+            // the same pair or a zoomed interface misreads where the window is.
+            let scale = native.scale_factor() as f32 * ctx.zoom_factor();
+            // winit reports monitors in physical pixels of the desktop space the window's outer
+            // rectangle (points) also lives in; the window's own scale converts the two.
+            let monitors: Vec<egui::Rect> = native
+                .available_monitors()
+                .map(|m| {
+                    let p = m.position();
+                    let s = m.size();
+                    egui::Rect::from_min_size(
+                        egui::pos2(p.x as f32 / scale, p.y as f32 / scale),
+                        egui::vec2(s.width as f32 / scale, s.height as f32 / scale),
+                    )
+                })
+                .collect();
+            let current = native.current_monitor().map(|m| {
+                let p = m.position();
+                let s = m.size();
+                egui::Rect::from_min_size(
+                    egui::pos2(p.x as f32 / scale, p.y as f32 / scale),
+                    egui::vec2(s.width as f32 / scale, s.height as f32 / scale),
+                )
+            });
+            if let Some(at) = off_screen_rescue(&window, &monitors, current) {
+                ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(at));
+                if window.fullscreen == Some(true) {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
+                }
+            }
+        }
+        // A window that doesn't fit on its screen (the default size on a laptop) shrinks to fit
+        // there, so all of the scroll bar can be dragged (#1215). Checked on the frame that first
+        // knows the monitor: the off-screen check below takes the pending geometry then.
+        if let Some((pos, size)) = self.1.and_then(|g| g.fit_on_monitor(&window)) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(size));
+            ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(pos));
+        }
+        // The geometry saved for the next start is the active window's.
+        let prev = self.0.ui.window;
+        // Another document window's state is the one it last painted with: the host reports only
+        // the root window's for this frame.
+        let active = self.0.active_viewport();
+        let tracked = if active == egui::ViewportId::ROOT {
+            window
+        } else {
+            ctx.input_for(active, |i| RawWindowState::from_viewport(Some(i.viewport()), Some(i.viewport_rect())))
+        };
+        self.0.ui.window = WindowGeometry::track(prev, &tracked);
+        // The first frame, once the monitor is known (as `take_rescue` waits for): maximize a
+        // window that opened at its normal size so it never flashed on screen half-opened.
+        let maximize = self.1.and_then(|g| g.maximize_after_open()).filter(|_| window.monitor_size.is_some());
+        if let Some(pos) = take_rescue(&mut self.1, &window) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(pos));
+        }
+        if let Some(command) = maximize {
+            ctx.send_viewport_cmd(command);
+        }
+        // The window's close button: with other windows open only this window closes (the app
+        // handles that while drawing it); the last one quits, asking first about unsaved changes
+        // (`WordApp::close_requested`).
+        let closing = ctx.input(|i| i.viewport().close_requested());
+        if closing && (self.0.closes_a_window() || !self.0.close_requested()) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+        } else if (closing || self.0.quit_requested) && !self.0.printing.busy() {
+            // On macOS, letting eframe drop the window inside `-[NSApplication run]` aborts in
+            // `-[_NSTouchBarFinderObservation invalidate]`. Command-Q calls `terminate:`. Once
+            // the close is allowed, take that path instead of dropping the window on this turn.
+            #[cfg(target_os = "macos")]
+            {
+                ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+                self.0.quit_requested = false;
+                schedule_macos_terminate(&mut self.0, self.2.as_ref());
+            }
+            #[cfg(not(target_os = "macos"))]
+            if self.0.quit_requested {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+        }
+    }
+    /// Records this frame's native window state before forwarding the hook, so logic never reads a
+    /// stale inner rectangle from a hidden tick.
+    fn raw_input_hook(&mut self, ctx: &egui::Context, raw: &mut egui::RawInput) {
+        // Keep this frame's native window state. `logic` must not read the last painted
+        // `InputState` when a hidden Wayland tick reports no fresh inner rect.
+        self.4 = RawWindowState::from_raw(raw);
+        self.0.raw_input_hook(ctx, raw);
+    }
+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
+        self.0.ui(ui);
+        self.3.show(frame);
+    }
+    fn on_exit(&mut self) {
+        print::finish_pending_jobs();
+        self.0.session.finish_recovery();
+        save_prefs(&self.0);
+        if let Some(key_file) = &self.2 {
+            key_file.remove();
+        }
+    }
+}
+
+/// Quit the way Command-Q does, on the next turn of the main queue.
+///
+/// Called when the window is closing. Doing it on the next turn lets the close
+/// button's display cycle finish while the window still exists; `terminate:`
+/// then ends the process. Preferences are written and the control key file is
+/// removed first, as `on_exit` does, because a fallback [`std::process::exit`]
+/// skips `on_exit`. A second close while a quit is already scheduled is ignored.
+#[cfg(target_os = "macos")]
+fn schedule_macos_terminate(app: &mut WordApp, key_file: Option<&control_server::KeyFile>) {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    if app.printing.busy() {
+        return;
+    }
+    static QUIT: AtomicBool = AtomicBool::new(false);
+    if QUIT.swap(true, Ordering::Relaxed) {
+        return;
+    }
+    log::info!("window close: quitting");
+    // This path can bypass on_exit. Join the owned workers before termination and cleanup.
+    print::finish_pending_jobs();
+    app.session.finish_recovery();
+    save_prefs(app);
+    if let Some(key_file) = key_file {
+        key_file.remove();
+    }
+    dispatch2::DispatchQueue::main().exec_async(|| {
+        if let Some(mtm) = objc2::MainThreadMarker::new() {
+            objc2_app_kit::NSApplication::sharedApplication(mtm).terminate(None);
+        }
+        // `terminate:` does not return when it succeeds. If it did, leave anyway:
+        // staying up after the close was cancelled would trap the user in the window.
+        std::process::exit(0);
+    });
+}
+
+/// `ui.json` in the settings folder, which the MCP bridge also uses to find the control key.
+fn prefs_path() -> Option<std::path::PathBuf> {
+    localwriter_control_key::settings_dir().map(|b| b.join("ui.json"))
+}
+
+/// Where the log files live: `logs` in the preferences folder (see `logging`).
+fn log_dir() -> Option<std::path::PathBuf> {
+    Some(prefs_path()?.parent()?.join("logs"))
+}
+
+/// `custom-dictionary.txt` in the settings folder: the words Add to Dictionary kept (#40).
+fn user_dict_path() -> Option<std::path::PathBuf> {
+    localwriter_control_key::settings_dir().map(|b| b.join(localwriter_engine::Session::USER_DICT_FILE))
+}
+
+/// Runs without preferences (`LOCALWRITER_NO_PREFS`, agents' test runs) neither read nor write them.
+fn prefs_enabled() -> bool {
+    legacy::env_var_os("NO_PREFS").is_none()
+}
+
+/// The preferences as this process last loaded or saved them, which `save_prefs` compares with
+/// to write only what this process changed since (#3773, see `prefs_merge`).
+static LOADED_PREFS: std::sync::Mutex<Option<serde_json::Value>> = std::sync::Mutex::new(None);
+
+/// Apply the saved preferences (`ui.json`) and the user dictionary to `app`, and remember the
+/// result for `save_prefs`. Runs without preferences neither read nor keep them.
+fn load_prefs(app: &mut WordApp) {
+    if !prefs_enabled() {
+        return;
+    }
+    let loaded = load_prefs_from(app, prefs_path().as_deref(), user_dict_path());
+    if let Ok(mut slot) = LOADED_PREFS.lock() {
+        *slot = loaded;
+    }
+}
+
+/// Apply the preferences saved at `prefs` to `app`, then load the user dictionary at `dict`
+/// (`custom-dictionary.txt`, #40), and give back the preferences as `prefs()` does after both:
+/// the words only the dictionary file has are part of what was loaded, so a word another process
+/// removes from `ui.json` isn't written back as one added here (#3773).
+fn load_prefs_from(app: &mut WordApp, prefs: Option<&std::path::Path>, dict: Option<std::path::PathBuf>) -> Option<serde_json::Value> {
+    if let Some(p) = prefs
+        && let Ok(bytes) = std::fs::read(p)
+        && let Some(ui) = UiState::from_json(&bytes)
+    {
+        app.apply_prefs(ui);
+    }
+    if let Some(p) = dict {
+        localwriter_proof::load_user_dictionary(&p);
+        app.session.user_dict_path = Some(p);
+    }
+    // As `prefs()` gives them back, so a setting nobody touched compares equal at exit.
+    serde_json::to_value(app.prefs()).ok()
+}
+
+/// Fonts the user added (#582) live in `fonts` in the settings folder: load them, and store fonts
+/// added later there. Runs without preferences neither read nor keep them.
+fn load_user_fonts() {
+    if !prefs_enabled() {
+        return;
+    }
+    let Some(dir) = localwriter_control_key::settings_dir().map(|d| d.join("fonts")) else { return };
+    let (loaded, skipped) = localwriter_fonts::FontDb::global().load_user_fonts(&dir);
+    if !loaded.is_empty() || !skipped.is_empty() {
+        log::info!("user fonts: {} loaded, {} skipped from {}", loaded.len(), skipped.len(), dir.display());
+    }
+}
+
+/// The saved window geometry, read before the window opens (`load_prefs` runs after).
+fn saved_window() -> Option<WindowGeometry> {
+    if !prefs_enabled() {
+        return None;
+    }
+    let bytes = std::fs::read(prefs_path()?).ok()?;
+    UiState::from_json(&bytes)?.window?.sanitized()
+}
+
+/// Write `app`'s preferences to `ui.json`, merged with what other processes saved since this one
+/// loaded it (`merged_prefs`).
+fn save_prefs(app: &WordApp) {
+    if let Err(e) = try_save_prefs(app) {
+        log::warn!("preferences: {e}");
+    }
+}
+
+/// Saves the preferences and says why when it could not. `Ok(false)`: nothing was written
+/// because preferences are switched off or there is no settings folder.
+fn try_save_prefs(app: &WordApp) -> Result<bool, String> {
+    if !prefs_enabled() {
+        return Ok(false);
+    }
+    let Some(p) = prefs_path() else { return Ok(false) };
+    if let Some(dir) = p.parent() {
+        std::fs::create_dir_all(dir).map_err(|e| format!("cannot create {}: {e}", dir.display()))?;
+    }
+    let ours = serde_json::to_value(app.prefs()).map_err(|e| format!("cannot serialize: {e}"))?;
+    let mut base = LOADED_PREFS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    save_merged(&p, &mut base, ours)?;
+    Ok(true)
+}
+
+/// Writes `ours` to `path`, merged with what other LocalWriter processes saved there since this one
+/// loaded or saved `base` (`merged_prefs`), and makes `ours` the new `base`: a setting changed here
+/// before this save and by another process after it then takes the other's value at the next save.
+/// Holds `lock_prefs` from the read to the rename.
+fn save_merged(path: &std::path::Path, base: &mut Option<serde_json::Value>, ours: serde_json::Value) -> Result<(), String> {
+    let _lock = lock_prefs(path);
+    let merged = merged_prefs(path, base.as_ref(), ours.clone());
+    let bytes = serde_json::to_vec_pretty(&merged).map_err(|e| format!("cannot serialize: {e}"))?;
+    write_prefs(path, &bytes).map_err(|e| format!("cannot save {}: {e}", path.display()))?;
+    *base = Some(ours);
+    Ok(())
+}
+
+/// `ours` with what other LocalWriter processes saved to `path` since this one loaded or saved
+/// `base`, for the settings this one left alone (#3773, see `prefs_merge`). `ours` as it is when
+/// there's no `base`, or the file is missing or isn't preferences now.
+fn merged_prefs(path: &std::path::Path, base: Option<&serde_json::Value>, ours: serde_json::Value) -> serde_json::Value {
+    let Some(base) = base else { return ours };
+    let disk = match std::fs::read(path) {
+        Ok(bytes) => prefs_merge::as_read(&bytes),
+        Err(e) => {
+            if e.kind() != std::io::ErrorKind::NotFound {
+                log::debug!("preferences: cannot read {} to merge, saving this process's: {e}", path.display());
+            }
+            return ours;
+        }
+    };
+    match disk {
+        Some(disk) => prefs_merge::merge(base, ours, &disk),
+        None => {
+            log::debug!("preferences: {} isn't preferences, saving this process's", path.display());
+            ours
+        }
+    }
+}
+
+/// How long a save waits for another process's save to finish before going ahead anyway: a save
+/// takes milliseconds, and a process stuck holding the lock mustn't stop this one from saving.
+const PREFS_LOCK_WAIT: std::time::Duration = std::time::Duration::from_secs(2);
+
+/// An advisory lock beside `path` (`.ui.json.lock`), held while it is returned, so that two
+/// processes saving at once (logging out closes every window together) take turns at reading,
+/// merging and replacing `ui.json` instead of one losing the other's changes. `None` (save
+/// unlocked) when the lock file can't be opened or the lock isn't free within [`PREFS_LOCK_WAIT`].
+fn lock_prefs(path: &std::path::Path) -> Option<std::fs::File> {
+    let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "ui.json".into());
+    let lock = path.with_file_name(format!(".{name}.lock"));
+    let file = match std::fs::OpenOptions::new().create(true).truncate(false).write(true).open(&lock) {
+        Ok(f) => f,
+        Err(e) => {
+            log::debug!("preferences: cannot open {}, saving without it: {e}", lock.display());
+            return None;
+        }
+    };
+    let start = std::time::Instant::now();
+    loop {
+        match file.try_lock() {
+            Ok(()) => return Some(file),
+            Err(std::fs::TryLockError::WouldBlock) if start.elapsed() < PREFS_LOCK_WAIT => std::thread::sleep(std::time::Duration::from_millis(10)),
+            Err(e) => {
+                log::warn!("preferences: {} is held, saving without it: {e}", lock.display());
+                return None;
+            }
+        }
+    }
+}
+
+/// Writes `bytes` to a sibling temporary file and renames it over `path`, so a failed or
+/// interrupted write leaves the previous preferences in place.
+fn write_prefs(path: &std::path::Path, bytes: &[u8]) -> std::io::Result<()> {
+    let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "ui.json".into());
+    let tmp = path.with_file_name(format!(".{name}.{}.tmp", std::process::id()));
+    let written = std::fs::write(&tmp, bytes).and_then(|()| std::fs::rename(&tmp, path));
+    if written.is_err() {
+        let _ = std::fs::remove_file(&tmp);
+    }
+    written
+}
+
+/// Native file dialogs, shown without blocking the window (`file_dialogs`, #94), File › Print
+/// through the system spooler (`print`), the system clipboard's text, formatted copies,
+/// pictures and format names (`clipboard`, #45, #584, #687, #833), the system's animation setting
+/// (`animations`), and making LocalWriter the default app for Word documents (`default_apps`, #295).
+fn services(file_dialog: file_dialogs::Hook, ctx: &egui::Context) -> Services {
+    Services {
+        file_dialog: Some(file_dialog),
+        printers: Some(print::discover()),
+        print_native: Some(print::submit()),
+        clipboard_picture: Some(Box::new(clipboard::picture)),
+        make_default_app: default_apps::hook(),
+        // Personal templates live in `Templates` in the settings folder (#2852), made on first save.
+        templates_dir: localwriter_control_key::settings_dir().map(|d| d.join("Templates")),
+        animations_enabled: Some(animations::hook(ctx)),
+        clipboard_text: Some(Box::new(clipboard::text)),
+        clipboard_html: Some(Box::new(clipboard::html)),
+        set_clipboard_html: Some(Box::new(clipboard::set_html)),
+        clipboard_rtf: Some(Box::new(clipboard::rtf)),
+        clipboard_formats: Some(Box::new(clipboard::formats)),
+        ..Default::default()
+    }
+}
+
+/// Window, Dock and taskbar icon.
+fn app_icon() -> Option<egui::IconData> {
+    #[cfg(target_os = "macos")]
+    let png: &[u8] = include_bytes!("../../../assets/app-icon/localwriter-macos-512.png");
+    #[cfg(not(target_os = "macos"))]
+    let png: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/com.local.localwriter.png");
+    eframe::icon_data::from_png_bytes(png).map_err(|e| log::warn!("app icon: {e}")).ok()
+}
+
+const USAGE: &str = "\
+localwriter — the Local Writer desktop app
+
+USAGE:
+  localwriter [--sample] [--control PORT] [FILE…]
+
+OPTIONS:
+  --sample            open the sample document
+  --control PORT      start the localhost control server on PORT, for agents and scripts
+                      (or set LOCALWRITER_CONTROL_PORT); see docs/control-protocol.md
+  --version           print the version
+  -h, --help          print this help
+";
+
+/// The commit the build came from (short), or `dev`.
+fn build_sha() -> &'static str {
+    option_env!("LOCALWRITER_BUILD_SHA").or(option_env!("LOCALOFFICE_BUILD_SHA")).map(|s| s.get(..8).unwrap_or(s)).unwrap_or("dev")
+}
+
+/// The arguments as text, and apart the files whose names aren't valid Unicode, such as a Latin-1
+/// one (#1440). A `--control` port that isn't is an error.
+fn text_args() -> (Vec<String>, Vec<std::path::PathBuf>) {
+    let (mut args, mut files) = (Vec::new(), Vec::new());
+    for (i, a) in std::env::args_os().skip(1).enumerate() {
+        match a.into_string() {
+            Ok(a) => args.push(a),
+            Err(a) if args.last().is_some_and(|p| p == "--control") => {
+                // Unlike `eprintln!`, never panics.
+                let (n, lossy) = (i + 1, a.to_string_lossy());
+                let _ = std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("localwriter: argument {n} is not valid Unicode: {lossy}\n"));
+                std::process::exit(2);
+            }
+            Err(a) => files.push(a.into()),
+        }
+    }
+    (args, files)
+}
+
+/// Open a file whose name isn't valid Unicode (#1440). `file.open` takes its path as text, so it
+/// gets the file's bytes under the lossy name, and the document then keeps the real path to save to.
+/// The bytes are read as `file.open` reads a path: only a regular file, and at most 2 GB.
+fn open_non_unicode(app: &mut WordApp, path: &std::path::Path) {
+    let name = path.to_string_lossy();
+    let opened = localwriter_engine::io::read_document(path)
+        .and_then(|bytes| app.run("file.open", serde_json::json!({"path": name, "data": localwriter_engine::cmd::insert::base64_encode(&bytes)})));
+    match opened {
+        // Not when it waits for a password: that open names the document itself.
+        Ok(r) if r.get("pending").is_none() => app.session.path = Some(path.into()),
+        Ok(_) => {}
+        Err(e) => log::warn!("{name}: {e}"),
+    }
+}
+
+/// Parses the command line, installs logging and the panic hook, restores preferences and window
+/// geometry, opens requested documents or the Start screen, starts the control server when
+/// asked, and runs the eframe event loop.
+fn main() -> eframe::Result {
+    // Windows: the update helper is a copy of this program started with `--finish-update`.
+    #[cfg(windows)]
+    if let Some(result) = craft_update::self_update::finish(&craft_update::suite::LOCALWRITER, &std::env::args_os().skip(1).collect::<Vec<_>>()) {
+        std::process::exit(i32::from(result.is_err()));
+    }
+    // The product was renamed (Local Word -> Local Writer): move the old-named folders over once,
+    // before anything reads them (the logger included).
+    legacy::migrate_all();
+    // First, so the panic hook and every start-up warning are recorded (`logging`).
+    let logger = logging::install();
+    logging::install_panic_hook();
+    // The suite's bundled spelling dictionaries (Brazilian Portuguese and Spanish) extract into
+    // the directory the dictionary search already visits; anything already there wins. A failure
+    // only leaves those languages without spelling, so a warning is all it gets.
+    if let Err(e) = localwriter_proof::hunspell::ensure_bundled() {
+        log::warn!("bundled dictionaries: {e}");
+    }
+    let mut control_port: Option<u16> = legacy::env_var("CONTROL_PORT").and_then(|p| p.parse().ok());
+    let mut files = Vec::new();
+    let mut sample = false;
+    let (args, other_files) = text_args();
+    let mut bad_control: Option<Option<String>> = None;
+    let mut args = args.into_iter().peekable();
+    while let Some(a) = args.next() {
+        match a.as_str() {
+            // A flag after `--control` stays a flag; a bad or missing port is an error (#1426).
+            "--control" => {
+                let port = args.next_if(|p| p.strip_prefix('-').is_none_or(|n| n.starts_with(|c: char| c.is_ascii_digit())));
+                match port.as_deref().and_then(|p| p.parse::<std::num::NonZeroU16>().ok()) {
+                    Some(p) => control_port = Some(p.get()),
+                    None => bad_control = Some(port),
+                }
+            }
+            "--sample" => sample = true,
+            "--version" => {
+                println!("localwriter {} ({})", env!("CARGO_PKG_VERSION"), build_sha());
+                return Ok(());
+            }
+            // Before the window opens (#968). Unlike `print!`, a closed stdout can't panic.
+            "--help" | "-h" => {
+                let _ = std::io::Write::write_all(&mut std::io::stdout(), USAGE.as_bytes());
+                return Ok(());
+            }
+            _ => files.push(a),
+        }
+    }
+    // After the loop, so `--version` later on the line still wins. Unlike `eprintln!`, never panics.
+    if let Some(port) = bad_control {
+        let got = port.map(|p| format!(", got {p:?}")).unwrap_or_default();
+        let _ = std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("localwriter: --control needs a port number from 1 to 65535{got}\n"));
+        std::process::exit(2);
+    }
+    // The log file lives in the settings directory, next to the preferences; opened after the
+    // arguments, so `--version` leaves no file behind. Records logged until now are written to it
+    // first. Runs without preferences (agents' test runs) log to standard error only, so they
+    // don't rotate away the user's own logs.
+    if let Some(logger) = logger {
+        match log_dir().filter(|_| prefs_enabled()) {
+            Some(dir) => match logger.attach_dir(&dir) {
+                Ok(path) => log::info!("Local Writer {} ({}), log file {}", env!("CARGO_PKG_VERSION"), build_sha(), path.display()),
+                // Standard error only by now (`attach_dir` gave up on the file); unlike `eprintln!`, never panics.
+                Err(e) => log::warn!("no log file: {e}"),
+            },
+            None => logger.no_file(),
+        }
+    }
+    let mut options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_title("Local Writer")
+            .with_app_id("com.local.localwriter")
+            .with_inner_size([1440.0, 920.0])
+            .with_min_inner_size([760.0, 480.0])
+            .with_drag_and_drop(true)
+            .with_fullsize_content_view(true)
+            .with_titlebar_shown(false)
+            .with_title_shown(false),
+        ..Default::default()
+    };
+    if let Some(icon) = app_icon() {
+        options.viewport = options.viewport.with_icon(icon);
+    }
+    // Before eframe creates the wgpu instance: default Windows to DirectX 12 only, or OpenGL when
+    // DirectX 12 has no GPU driver or this is a 32-bit build, and compile DirectX 12 shaders with
+    // FXC, which needs no DLL of ours (#603; see graphics.rs).
+    #[cfg(target_os = "windows")]
+    graphics::configure(&mut options, eframe::wgpu::Backends::from_env());
+    // Intel Macs: Metal's compiler aborts on wgpu's indirect-validation shaders (#2652).
+    #[cfg(target_os = "macos")]
+    graphics::configure_indirect_validation(&mut options, graphics::skips_indirect_validation(true, cfg!(target_arch = "x86_64")));
+    load_user_fonts();
+    // Windows opened for further documents start like the first one, before its saved place.
+    let window_builder = options.viewport.clone();
+    let restored = saved_window();
+    if let Some(window) = restored {
+        options.viewport = window.apply(options.viewport);
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
+    // winit has no file drag-and-drop on Wayland (only on X11), so dropping files from the file
+    // manager showed a "no" cursor. Run through XWayland when it's there; LOCALWRITER_WAYLAND=1
+    // keeps the native Wayland backend.
+    if std::env::var_os("DISPLAY").is_some() && legacy::env_var_os("WAYLAND").is_none() {
+        options.event_loop_builder = Some(Box::new(|b| {
+            use winit::platform::x11::EventLoopBuilderExtX11;
+            b.with_x11();
+        }));
+    }
+    // Registered before the event loop starts, so it catches the Finder event that launched us as
+    // well as later ones. Lives until the event loop returns; the app creator only borrows it.
+    #[cfg(target_os = "macos")]
+    let apple_events = apple_events::AppleEvents::install();
+    #[cfg(target_os = "macos")]
+    let apple_events = &apple_events;
+    eframe::run_native(
+        "Local Writer",
+        options,
+        Box::new(move |cc| {
+            // The system region picks the new document's paper, the units and the decimal
+            // separator (#838).
+            let region = region::system();
+            let doc = if sample { localwriter_engine::sample::sample_document() } else { localwriter_engine::blank_document(&region) };
+            let (file_dialog, dialogs) = file_dialogs::hook(&cc.egui_ctx);
+            let mut session = Session::new(doc);
+            session.system_region = region;
+            let mut app = WordApp::new(session, services(file_dialog, &cc.egui_ctx));
+            app.set_startup_update_check(true);
+            load_prefs(&mut app);
+            // A region chosen in File › Options replaces the system's for the first blank
+            // document too (#838).
+            if !sample && app.session.prefs.region.is_some() {
+                let doc = app.session.blank_document();
+                app.session.set_document(doc);
+            }
+            // Linux: the desktop's light/dark choice, which winit does not report.
+            craft_desktop_theme::follow(&cc.egui_ctx);
+            if prefs_enabled()
+                && let Some(dir) = localwriter_control_key::settings_dir()
+            {
+                let ctx = cc.egui_ctx.clone();
+                if let Err(e) = app.session.enable_recovery(dir.join("recovery"), std::sync::Arc::new(move || ctx.request_repaint())) {
+                    log::warn!("local recovery unavailable: {e}");
+                }
+            }
+            app.ui.window = restored;
+            app.set_window_builder(window_builder);
+            app.integrated_titlebar = cfg!(target_os = "macos");
+            #[cfg(target_os = "macos")]
+            if let Some(bar) = traffic_lights::title_bar() {
+                log::info!("title bar: {bar:?}");
+                app.mac_titlebar = bar;
+            }
+            let mut key_file = None;
+            if let Some(port) = control_port
+                && let Some((rx, file)) = control_server::start(port, cc.egui_ctx.clone(), localwriter_control_key::settings_dir().as_deref())
+            {
+                app = app.with_control(rx);
+                key_file = file;
+            }
+            // Nothing to open (no files, no sample, no control channel driving the editor): start
+            // on File › Home, as Word does (#766), unless the Start screen option is off. Files
+            // macOS hands over later open on top of it and close it (`apple_events`).
+            if files.is_empty() && other_files.is_empty() && !sample && control_port.is_none() {
+                app.start_screen();
+            }
+            for f in files {
+                if let Err(e) = app.run("file.open", serde_json::json!({"path": f})) {
+                    log::warn!("{f}: {e}");
+                }
+            }
+            for f in other_files {
+                open_non_unicode(&mut app, &f);
+            }
+            Ok(Box::new(App(
+                app,
+                // With nothing restored, the window the system placed is checked all the same.
+                Some(restored.unwrap_or_default()),
+                key_file,
+                dialogs,
+                RawWindowState::default(),
+                #[cfg(target_os = "macos")]
+                apple_events.connect(&cc.egui_ctx),
+            )))
+        }),
+    )
+}
+
+// Not on macOS: APFS refuses file names that aren't valid UTF-8, so no such file can exist there.
+#[cfg(all(test, unix, not(target_os = "macos")))]
+mod tests {
+    use super::*;
+    use std::os::unix::ffi::OsStringExt;
+
+    #[test]
+    fn a_file_whose_name_isnt_unicode_opens_and_saves_back_to_itself() {
+        let dir = std::env::temp_dir().join(format!("wc-app-non-utf8-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join(std::ffi::OsString::from_vec(b"caf\xe9.txt".to_vec()));
+        std::fs::write(&path, "Bonjour").unwrap();
+
+        let mut app = WordApp::new(Session::new(localwriter_doc::Document::new()), Services::default());
+        open_non_unicode(&mut app, &path);
+        assert_eq!(app.session.doc.plain_text(localwriter_doc::StoryRef::Body).trim(), "Bonjour");
+        assert_eq!(app.session.path.as_deref(), Some(path.as_path()));
+
+        app.run("caret.docEnd", serde_json::json!({})).unwrap();
+        app.run("text.insert", serde_json::json!({"text": " encore"})).unwrap();
+        app.run("file.save", serde_json::json!({})).unwrap();
+        assert!(std::fs::read_to_string(&path).unwrap().contains("Bonjour encore"));
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 1, "a second file was written");
+
+        // A file that can't be read is a warning, as one that fails to open by name is.
+        open_non_unicode(&mut app, &dir.join(std::ffi::OsString::from_vec(b"gon\xe9.txt".to_vec())));
+        assert_eq!(app.session.path.as_deref(), Some(path.as_path()));
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    /// A named pipe or a device under such a name is a warning, not a read: the pipe blocked
+    /// start-up until something wrote to it, and `/dev/zero` read until memory ran out.
+    #[test]
+    fn a_pipe_or_device_whose_name_isnt_unicode_is_not_read() {
+        let dir = std::env::temp_dir().join(format!("wc-app-non-utf8-dev-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let fifo = dir.join(std::ffi::OsString::from_vec(b"fif\xe9.txt".to_vec()));
+        if !std::process::Command::new("mkfifo").arg(&fifo).status().is_ok_and(|s| s.success()) {
+            let _ = std::fs::remove_dir_all(&dir);
+            eprintln!("mkfifo unavailable; skipping");
+            return;
+        }
+        let zero = dir.join(std::ffi::OsString::from_vec(b"z\xe9ro.txt".to_vec()));
+        std::os::unix::fs::symlink("/dev/zero", &zero).unwrap();
+        // If the open blocks on the pipe, a writer comes after 10 s, so the test fails rather than hangs.
+        let unblock = fifo.clone();
+        std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_secs(10));
+            let _ = std::fs::OpenOptions::new().write(true).open(unblock);
+        });
+
+        let mut app = WordApp::new(Session::new(localwriter_doc::Document::new()), Services::default());
+        app.run("text.insert", serde_json::json!({"text": "kept"})).unwrap();
+        for p in [&fifo, &zero] {
+            let started = std::time::Instant::now();
+            open_non_unicode(&mut app, p);
+            assert!(started.elapsed() < std::time::Duration::from_secs(5), "{p:?} took {:?}", started.elapsed());
+            assert_eq!(app.session.path, None, "{p:?}");
+            assert!(app.session.doc.plain_text(localwriter_doc::StoryRef::Body).contains("kept"), "{p:?}");
+        }
+        let _ = std::fs::remove_dir_all(dir);
+    }
+}
+
+#[cfg(test)]
+mod prefs_tests {
+    use localwriter_ui_egui::UiState;
+    use localwriter_ui_egui::theme::Appearance;
+    use serde_json::{Value, json};
+
+    use super::{load_prefs_from, lock_prefs, prefs_merge, save_merged, write_prefs};
+
+    /// A fresh settings folder for one test (this app has no `tempfile` dependency).
+    fn temp_dir(name: &str) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!("localwriter-prefs-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    /// The preferences saved with `theme` (every other setting at its default).
+    fn with_theme(theme: &str) -> Value {
+        prefs_merge::as_read(&serde_json::to_vec(&json!({"theme": theme})).unwrap()).unwrap()
+    }
+
+    /// The theme the next process loads from `path`.
+    fn saved_theme(path: &std::path::Path) -> Appearance {
+        UiState::from_json(&std::fs::read(path).unwrap()).unwrap().theme
+    }
+
+    #[test]
+    fn a_setting_changed_by_another_process_after_a_save_here_keeps_its_value() {
+        let dir = temp_dir("other-process");
+        let path = dir.join("ui.json");
+        std::fs::write(&path, serde_json::to_vec(&with_theme("light")).unwrap()).unwrap();
+        // A loads Light, switches to Dark and saves before exiting (taking a document off the
+        // recent list does).
+        let mut a = Some(with_theme("light"));
+        save_merged(&path, &mut a, with_theme("dark")).unwrap();
+        assert_eq!(saved_theme(&path), Appearance::Dark);
+        // B starts, loads Dark, switches to Light and exits.
+        save_merged(&path, &mut Some(with_theme("dark")), with_theme("light")).unwrap();
+        // A exits without touching the theme since its save: B's choice, made later, stays.
+        save_merged(&path, &mut a, with_theme("dark")).unwrap();
+        assert_eq!(saved_theme(&path), Appearance::Light);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn the_loaded_preferences_include_the_words_of_the_dictionary_file() {
+        // A word only `custom-dictionary.txt` has is loaded, not added here: if another process
+        // removes it from `ui.json`, this one mustn't write it back.
+        let dir = temp_dir("dictionary");
+        let (prefs, dict) = (dir.join("ui.json"), dir.join("custom-dictionary.txt"));
+        std::fs::write(&prefs, br#"{"dictionary": ["zqxinjson"]}"#).unwrap();
+        std::fs::write(&dict, "zqxinfile\n").unwrap();
+        let mut app = localwriter_ui_egui::WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), Default::default());
+        let loaded = load_prefs_from(&mut app, Some(&prefs), Some(dict)).unwrap();
+        let words = loaded["dictionary"].as_array().unwrap();
+        for word in ["zqxinjson", "zqxinfile"] {
+            assert!(words.contains(&json!(word)), "{word}: {words:?}");
+        }
+        localwriter_engine::proof::remove_word("zqxinjson");
+        localwriter_engine::proof::remove_word("zqxinfile");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_save_waits_for_another_process_saving_at_the_same_moment() {
+        let dir = temp_dir("lock");
+        let path = dir.join("ui.json");
+        // Another process is between reading and replacing `ui.json`.
+        let held = lock_prefs(&path).expect("the lock is free");
+        let saver = {
+            let path = path.clone();
+            std::thread::spawn(move || save_merged(&path, &mut None, with_theme("dark")))
+        };
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        assert!(!path.exists(), "saved while another process held the lock");
+        drop(held);
+        saver.join().unwrap().unwrap();
+        assert_eq!(saved_theme(&path), Appearance::Dark);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn failed_preferences_write_keeps_the_old_file_and_reports_the_error() {
+        let dir = std::env::temp_dir().join(format!("localwriter-prefs-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("ui.json");
+        std::fs::write(&path, b"old").unwrap();
+        write_prefs(&path, b"new").unwrap();
+        assert_eq!(std::fs::read(&path).unwrap(), b"new");
+        // A directory squatting on the temporary name makes the preparation step fail.
+        std::fs::create_dir(dir.join(format!(".ui.json.{}.tmp", std::process::id()))).unwrap();
+        assert!(write_prefs(&path, b"newer").is_err());
+        assert_eq!(std::fs::read(&path).unwrap(), b"new");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+}

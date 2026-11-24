@@ -51,8 +51,8 @@ pub mod user_templates;
 pub mod view;
 pub mod wordart;
 
-use localoffice_doc::props::CharProps;
-use localoffice_doc::{Pos, Revision, RevisionKind, StoryRef};
+use localwriter_doc::props::CharProps;
+use localwriter_doc::{Pos, Revision, RevisionKind, StoryRef};
 use serde_json::{Value, json};
 
 use crate::{CmdError, CmdResult, Registry, Session};
@@ -140,7 +140,7 @@ pub fn sel_result(s: &Session) -> CmdResult {
 /// The paragraphs the selection covers: those between its ends (not the next one when it ends at
 /// that one's start, #418) or, for whole table cells that aren't one run of the text (part of a
 /// column), just the cells' own.
-pub fn selected_paths(s: &Session) -> Vec<localoffice_doc::Path> {
+pub fn selected_paths(s: &Session) -> Vec<localwriter_doc::Path> {
     if s.cell_range().is_some()
         && let Some(segs) = s.column_segments()
     {
@@ -210,15 +210,15 @@ pub fn new_revision(s: &mut Session, kind: RevisionKind) -> u32 {
 
 /// Whether the paragraph at `path` is followed by another paragraph in the same container (so
 /// its paragraph mark can be removed by joining the two).
-pub fn has_next_para(s: &Session, story: StoryRef, path: &localoffice_doc::Path) -> bool {
-    matches!(s.doc.block(story, &path.with_last(path.last().saturating_add(1))), Some(localoffice_doc::Block::Para(_)))
+pub fn has_next_para(s: &Session, story: StoryRef, path: &localwriter_doc::Path) -> bool {
+    matches!(s.doc.block(story, &path.with_last(path.last().saturating_add(1))), Some(localwriter_doc::Block::Para(_)))
 }
 
 /// Remove the paragraph mark of the paragraph at `path`: the next paragraph in the same container
 /// joins it. The joined paragraph keeps this paragraph's properties and ends with the next one's
 /// mark (and that mark's revisions). Returns `false`, changing nothing, when no paragraph follows
 /// in the container (a story's or cell's last mark can't be removed).
-pub fn join_next_para(s: &mut Session, story: StoryRef, path: &localoffice_doc::Path) -> Result<bool, CmdError> {
+pub fn join_next_para(s: &mut Session, story: StoryRef, path: &localwriter_doc::Path) -> Result<bool, CmdError> {
     if !has_next_para(s, story, path) {
         return Ok(false);
     }
@@ -235,7 +235,7 @@ pub fn join_next_para(s: &mut Session, story: StoryRef, path: &localoffice_doc::
 /// Remove the paragraph at `path` when it is empty, carries no section break and another
 /// paragraph follows in the same container: the next paragraph keeps its own properties. Returns
 /// `false`, changing nothing, otherwise.
-pub fn remove_empty_para(s: &mut Session, story: StoryRef, path: &localoffice_doc::Path) -> Result<bool, CmdError> {
+pub fn remove_empty_para(s: &mut Session, story: StoryRef, path: &localwriter_doc::Path) -> Result<bool, CmdError> {
     let empty = s.doc.para(story, path).is_some_and(|p| p.is_empty() && p.section.is_none());
     if !empty || !has_next_para(s, story, path) {
         return Ok(false);
@@ -413,7 +413,7 @@ fn insert_text(s: &mut Session, text: &str, enter: bool) -> Result<InsertEffect,
             // margin. Paragraphs that already have letters, or a direction, keep theirs.
             if starts_para
                 && let Ok(p) = s.doc.para_mut(at.story, &at.path)
-                && localoffice_doc::bidi::first_strong_is_rtl(&p.text)
+                && localwriter_doc::bidi::first_strong_is_rtl(&p.text)
             {
                 p.props.bidi = Some(true);
                 p.touch();
@@ -439,13 +439,13 @@ fn direction_unset(s: &Session, at: &Pos) -> bool {
 
 /// Take a paragraph out of its list like Word does when Enter or Backspace ends a list: a
 /// "List Paragraph" goes back to Normal; any other style keeps itself with numbering switched off.
-pub fn leave_list(para: &mut localoffice_doc::Paragraph) {
+pub fn leave_list(para: &mut localwriter_doc::Paragraph) {
     if para.props.style.as_deref() == Some("ListParagraph") {
         para.props.style = None;
         para.props.numbering = None;
     } else {
         // `num: 0` overrides numbering a style may carry.
-        para.props.numbering = Some(localoffice_doc::props::NumRef { num: 0, level: 0 });
+        para.props.numbering = Some(localwriter_doc::props::NumRef { num: 0, level: 0 });
     }
     para.props.indent_left = None;
     para.props.indent_first = None;
@@ -477,7 +477,7 @@ fn split_para_as(s: &mut Session, at: &Pos, enter: bool) -> Result<Pos, CmdError
         // the list (Word behaviour).
         let para = s.doc.para_mut(at.story, &at.path)?;
         if n.level > 0 {
-            para.props.numbering = Some(localoffice_doc::props::NumRef { num: n.num, level: n.level - 1 });
+            para.props.numbering = Some(localwriter_doc::props::NumRef { num: n.num, level: n.level - 1 });
             para.touch();
         } else {
             leave_list(para);
@@ -564,14 +564,14 @@ pub fn story_param(s: &Session, v: &Value) -> StoryRef {
 
 /// The language (`w:lang`) of a paragraph's text: that of its first run with text (else of the
 /// paragraph mark), through styles and the document defaults. Sorting and number parsing follow it.
-pub fn para_lang(doc: &localoffice_doc::Document, p: &localoffice_doc::Paragraph) -> Option<String> {
+pub fn para_lang(doc: &localwriter_doc::Document, p: &localwriter_doc::Paragraph) -> Option<String> {
     let run = p.runs.iter().find(|r| r.len > 0).map(|r| &r.props).unwrap_or(&p.mark);
     doc.styles.resolve_char(p.props.style.as_deref(), run).lang
 }
 
 /// The document's default text language (`w:docDefaults`, the Normal style).
-pub fn doc_lang(doc: &localoffice_doc::Document) -> Option<String> {
-    doc.styles.resolve_char(None, &localoffice_doc::CharProps::default()).lang
+pub fn doc_lang(doc: &localwriter_doc::Document) -> Option<String> {
+    doc.styles.resolve_char(None, &localwriter_doc::CharProps::default()).lang
 }
 
 /// The language of text that names none: the document's default, else the editing language (a

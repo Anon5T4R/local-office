@@ -7,11 +7,11 @@
 
 use std::time::Instant;
 
-use localoffice_doc::control::{ContentControl, ControlKind};
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::props::CharProps;
-use localoffice_doc::{Document, Paragraph, para_block};
-use localoffice_docx::write;
+use localwriter_doc::control::{ContentControl, ControlKind};
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::props::CharProps;
+use localwriter_doc::{Document, Paragraph, para_block};
+use localwriter_docx::write;
 
 /// One paragraph per control, the control inline in it.
 fn inline_controls(n: usize) -> Document {
@@ -117,8 +117,8 @@ fn a_document_with_many_block_content_controls_saves_in_linear_time() {
 fn the_controls_are_written_where_they_were() {
     // Inline controls: both markers in the same paragraph, so the control is written in it.
     let bytes = write(&inline_controls(50)).expect("write");
-    let back = localoffice_docx::read(&bytes).expect("read back");
-    let ranges = back.control_ranges(localoffice_doc::StoryRef::Body);
+    let back = localwriter_docx::read(&bytes).expect("read back");
+    let ranges = back.control_ranges(localwriter_doc::StoryRef::Body);
     assert_eq!(ranges.len(), 50, "every control survives the round trip");
     for r in &ranges {
         assert_eq!(r.start.path, r.end.path, "the control is written inline: {:?}", r.start.path);
@@ -126,8 +126,8 @@ fn the_controls_are_written_where_they_were() {
 
     // Block controls: the markers in different paragraphs, so the control is written around them.
     let bytes = write(&block_controls(50)).expect("write");
-    let back = localoffice_docx::read(&bytes).expect("read back");
-    let ranges = back.control_ranges(localoffice_doc::StoryRef::Body);
+    let back = localwriter_docx::read(&bytes).expect("read back");
+    let ranges = back.control_ranges(localwriter_doc::StoryRef::Body);
     assert_eq!(ranges.len(), 50, "every control survives the round trip");
     for r in &ranges {
         assert_ne!(r.start.path, r.end.path, "the control is written around the paragraphs");

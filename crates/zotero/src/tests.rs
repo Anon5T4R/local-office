@@ -1,8 +1,8 @@
 use std::net::TcpListener;
 
-use localoffice_doc::para::OBJ;
-use localoffice_doc::{Document, InlineObject, Path, Pos, StoryRef};
-use localoffice_engine::{Selection, Session};
+use localwriter_doc::para::OBJ;
+use localwriter_doc::{Document, InlineObject, Path, Pos, StoryRef};
+use localwriter_engine::{Selection, Session};
 use serde_json::{Value, json};
 
 use crate::client::{self, Options};
@@ -104,8 +104,8 @@ fn citations_survive_docx_and_zotero_finds_them_again() {
     z.begin();
     let id = z.cite(0, r"{\rtf (Doe, {\i 2020})}");
     z.ok("Document_complete", json!([1]));
-    let bytes = localoffice_docx::write(&z.s.doc).unwrap();
-    let mut z2 = Z { b: Bridge::new(), s: Session::new(localoffice_docx::read(&bytes).unwrap()), h: Headless::default() };
+    let bytes = localwriter_docx::write(&z.s.doc).unwrap();
+    let mut z2 = Z { b: Bridge::new(), s: Session::new(localwriter_docx::read(&bytes).unwrap()), h: Headless::default() };
     z2.begin();
     let f = z2.ok("Document_getFields", json!([1, "ReferenceMark"]));
     assert_eq!(f[1], json!([CITE]));
@@ -235,7 +235,7 @@ fn alerts_activate_and_unknown_calls() {
 #[test]
 fn citations_only_in_text_and_notes() {
     let mut z = Z::new("x", 0);
-    let hid = z.s.doc.add_part(localoffice_doc::PartKind::Header, vec![localoffice_doc::para_block(localoffice_doc::Paragraph::new())]);
+    let hid = z.s.doc.add_part(localwriter_doc::PartKind::Header, vec![localwriter_doc::para_block(localwriter_doc::Paragraph::new())]);
     z.s.sel = Selection::caret(z.s.doc.start_of(StoryRef::Part(hid)));
     z.begin();
     assert_eq!(z.ok("Document_canInsertField", json!([1, "ReferenceMark"])), false);
@@ -289,7 +289,7 @@ fn hostile_calls_never_panic() {
     }
     // The document is still sound.
     z.s.clamp_selection();
-    let _ = localoffice_docx::write(&z.s.doc).unwrap();
+    let _ = localwriter_docx::write(&z.s.doc).unwrap();
 }
 
 // ---- wire ----
@@ -433,13 +433,13 @@ mod props {
     }
 }
 
-fn note_count(d: &Document, kind: localoffice_doc::PartKind) -> usize {
+fn note_count(d: &Document, kind: localwriter_doc::PartKind) -> usize {
     d.parts.values().filter(|p| p.kind == kind).count()
 }
 
 #[test]
 fn switching_to_a_note_style_moves_citations_into_footnotes_and_back() {
-    use localoffice_doc::PartKind;
+    use localwriter_doc::PartKind;
     let mut z = Z::new("One. Two.", 4);
     z.begin();
     let a = z.cite(0, r"{\rtf (Doe, {\i 2020})}");
@@ -582,7 +582,7 @@ fn citation_at_document_end_stays_closed() {
     let f = z.ok("Document_getFields", json!([1, "ReferenceMark"]));
     assert_eq!(f, json!([[id], [CITE], [0]]));
     // Save and reload: the end marker must survive the round trip.
-    let bytes = localoffice_engine::io::save_bytes("probe.docx", &z.s.doc).unwrap();
-    let back = localoffice_engine::io::open_bytes("probe.docx", &bytes).unwrap();
+    let bytes = localwriter_engine::io::save_bytes("probe.docx", &z.s.doc).unwrap();
+    let back = localwriter_engine::io::open_bytes("probe.docx", &bytes).unwrap();
     assert_eq!(back.field_ranges(StoryRef::Body).len(), 1);
 }

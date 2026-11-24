@@ -1,6 +1,6 @@
 # Zotero
 
-Local Word works with the [Zotero](https://www.zotero.org) desktop app the way Word does: Zotero's
+Local Writer works with the [Zotero](https://www.zotero.org) desktop app the way Word does: Zotero's
 own citation dialog, all of its citation styles, automatic bibliography and refresh. Nothing to
 install in Zotero; it only has to be running. The **Zotero** tab in the ribbon has the buttons:
 Add/Edit Citation, Add Note, Add/Edit Bibliography, Refresh, Document Preferences and Unlink
@@ -20,7 +20,7 @@ Citations (each runs one of the commands below).
 | `ui.zotero.answer` | `{"button": n}`: answer a question Zotero is asking (OK/Yes 1, No/Cancel 0; with Yes/No/Cancel: Yes 2, No 1, Cancel 0) |
 
 They run in the app (and through the control channel and MCP bridged to the app). A command
-returns at once with `{"started": …}`; Zotero then works in its own window and Local Word answers
+returns at once with `{"started": …}`; Zotero then works in its own window and Local Writer answers
 it in the background. All changes from one command are one undo step. If New or Open replaces
 the document while a command is running, Zotero's remaining calls for it get an error and the
 new document is left as it is.
@@ -28,7 +28,7 @@ new document is left as it is.
 From a terminal, against a file:
 
 ```
-localoffice-cli zotero refresh paper.docx --save paper.docx [--trace]
+localwriter-cli zotero refresh paper.docx --save paper.docx [--trace]
 ```
 
 Two engine commands work with Zotero's fields without Zotero running:
@@ -40,7 +40,7 @@ Two engine commands work with Zotero's fields without Zotero running:
   bibliography by default. This covers Zotero, Mendeley, EndNote and Word's own citation
   fields. The player window has previous/next sentence, pause, stop and speed (0.5–3×).
   Its commands are `readAloud.playPause`, `.next`, `.previous`, `.stop`, `.speed {"value"}`,
-  `.skipCitations {"value"}` and `.status`. Set `LOCALOFFICE_SPEECH=off` to keep it silent.
+  `.skipCitations {"value"}` and `.status`. Set `LOCALWRITER_SPEECH=off` to keep it silent.
 
 Switching between an in-text style and a note style in Document Preferences moves the citations:
 into new footnotes (or endnotes) at the same place, and back into the text where the note marks
@@ -51,8 +51,8 @@ were; a note that held only the citation is removed.
 Citations are stored as Word's Zotero plugin stores them — fields with the code
 `ADDIN ZOTERO_ITEM CSL_CITATION {…}`, the bibliography as `ADDIN ZOTERO_BIBL … CSL_BIBLIOGRAPHY`,
 document preferences in the custom properties `ZOTERO_PREF_1…n` — so one document can be edited
-in Word and Local Word in turn, with Zotero working in both. (Zotero talks to Local Word over the
-protocol it uses for LibreOffice and calls the field type "Reference Mark" there; Local Word keeps
+in Word and Local Writer in turn, with Zotero working in both. (Zotero talks to Local Writer over the
+protocol it uses for LibreOffice and calls the field type "Reference Mark" there; Local Writer keeps
 Word's "Field" in the file.)
 
 ## Limits
@@ -63,28 +63,28 @@ Word's "Field" in the file.)
 ## Who can drive the document
 
 Zotero's protocol has no handshake that proves the program on port 23116 is Zotero, and that
-program can read the citations and edit the open document. Local Word limits who that can be.
+program can read the citations and edit the open document. Local Writer limits who that can be.
 In short: **every system** gets the loopback rule; **only Linux** also checks that the listener
 isn't another user's. On Windows and macOS (and the BSDs) the loopback rule is the only check.
 
 - Every system: it only connects to this computer (a loopback address such as `127.0.0.1`);
   any other address is refused before connecting.
 - Linux only: it checks, in the kernel's socket table (`/proc/net/tcp`, `/proc/net/tcp6`), that the
-  program listening on the port runs as the same user as Local Word, before sending anything. If
-  another account on a shared machine took the port while Zotero wasn't running, Local Word
+  program listening on the port runs as the same user as Local Writer, before sending anything. If
+  another account on a shared machine took the port while Zotero wasn't running, Local Writer
   refuses with an error and the document isn't touched. When the table doesn't show the
   listener (WSL2 mirrored networking with Zotero running on Windows, a local proxy), its owner
   is unknown and only the loopback rule applies, as below. That holds only when the tables were
   read in full: a read error, or an open error other than "not found", **refuses**. Sandboxes
   that deny `/proc/net/tcp` (some AppArmor or Snap profiles, for example) are therefore refused.
 - Windows, macOS and the BSDs: **no same-user check.** They have no such table to read
-  without OS calls Local Word doesn't make (it uses no `unsafe` code), so only the loopback rule
+  without OS calls Local Writer doesn't make (it uses no `unsafe` code), so only the loopback rule
   applies there (and on Linux when the listener isn't in the table). Remaining risk: on a
   computer shared with other accounts, a program another user leaves on port 23116 while
   Zotero is closed would be taken for Zotero. An owner check for these systems is tracked in
   #3831. A program running as you is trusted on every system; it could change your documents
   anyway.
-- `localoffice-cli zotero` prints Zotero's messages (and `--trace` lines) with control
+- `localwriter-cli zotero` prints Zotero's messages (and `--trace` lines) with control
   characters, line breaks and backslashes shown as escapes (`\n`, `\u{1b}`, `\\`), so a peer
   can't forge other output or drive the terminal.
 

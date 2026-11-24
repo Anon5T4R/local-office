@@ -5,8 +5,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use egui::{Rect, Response, Sense, Stroke, TextureHandle, Ui, pos2, vec2};
-use localoffice_doc::props::CharProps;
-use localoffice_doc::{Block, Document, Paragraph, Table, para_block};
+use localwriter_doc::props::CharProps;
+use localwriter_doc::{Block, Document, Paragraph, Table, para_block};
 use serde_json::{Value, json};
 
 use crate::WordApp;
@@ -157,12 +157,12 @@ impl Previews {
     /// one (宋体 for SimSun in Chinese, #505), like Word's.
     pub fn families(&mut self) -> Vec<String> {
         let lang = crate::i18n::current().code();
-        let generation = localoffice_fonts::FontDb::global().generation();
+        let generation = localwriter_fonts::FontDb::global().generation();
         if self.families.as_ref().is_none_or(|(l, _)| *l != lang) || self.font_gen != generation {
             self.font_gen = generation;
-            let db = localoffice_fonts::FontDb::global();
+            let db = localwriter_fonts::FontDb::global();
             let mut f: Vec<String> = db.families_in(lang).into_iter().filter(|f| !f.starts_with('.')).collect();
-            for w in [localoffice_doc::styles::BODY_FONT, localoffice_doc::styles::HEADING_FONT] {
+            for w in [localwriter_doc::styles::BODY_FONT, localwriter_doc::styles::HEADING_FONT] {
                 if !f.iter().any(|x| x == w) {
                     f.push(w.to_string());
                 }
@@ -183,7 +183,7 @@ impl Previews {
     pub fn east_asian_families(&mut self) -> Vec<String> {
         self.families();
         if self.east_asian.is_none() {
-            let mut f: Vec<String> = localoffice_fonts::FontDb::global()
+            let mut f: Vec<String> = localwriter_fonts::FontDb::global()
                 .east_asian_families()
                 .into_iter()
                 .filter(|f| !f.starts_with('.'))
@@ -322,7 +322,7 @@ pub fn math_texture(
     app: &mut WordApp,
     ctx: &egui::Context,
     key: &str,
-    nodes: &localoffice_doc::math::Arg,
+    nodes: &localwriter_doc::math::Arg,
     display: bool,
     pt: f32,
     size: egui::Vec2,
@@ -347,15 +347,15 @@ pub fn math_texture(
     p.math.add(ctx, frame, &k, img)
 }
 
-fn math_image(nodes: &localoffice_doc::math::Arg, display: bool, pt: f32, w: f32, h: f32, ppp: f32) -> Option<egui::ColorImage> {
-    use localoffice_doc::math::{Math, to_linear};
+fn math_image(nodes: &localwriter_doc::math::Arg, display: bool, pt: f32, w: f32, h: f32, ppp: f32) -> Option<egui::ColorImage> {
+    use localwriter_doc::math::{Math, to_linear};
     let props = CharProps { size: Some(pt), ..Default::default() };
     let mut p = Paragraph::with_text("", props.clone());
-    p.props.align = Some(localoffice_doc::props::Align::Center);
+    p.props.align = Some(localwriter_doc::props::Align::Center);
     p.props.space_before = Some(0.0);
     p.props.space_after = Some(0.0);
-    p.props.line_spacing = Some(localoffice_doc::props::LineSpacing::Multiple(1.0));
-    let eq = localoffice_doc::InlineObject::Equation { linear: to_linear(nodes), display, math: Math { nodes: nodes.clone(), ..Default::default() } };
+    p.props.line_spacing = Some(localwriter_doc::props::LineSpacing::Multiple(1.0));
+    let eq = localwriter_doc::InlineObject::Equation { linear: to_linear(nodes), display, math: Math { nodes: nodes.clone(), ..Default::default() } };
     p.insert_object(0, eq, &props).ok()?;
     let mut d = Document::new();
     d.body = vec![para_block(p)];
@@ -365,20 +365,20 @@ fn math_image(nodes: &localoffice_doc::math::Arg, display: bool, pt: f32, w: f32
     d.last_section.margin_right = 0.0;
     d.last_section.margin_top = 0.0;
     d.last_section.margin_bottom = 0.0;
-    let l = localoffice_layout::layout(&d, &mut localoffice_layout::LayoutCache::new(), &Default::default());
+    let l = localwriter_layout::layout(&d, &mut localwriter_layout::LayoutCache::new(), &Default::default());
     let page = l.pages.first()?;
     // Centre the equation's line in the tile.
     let mid = page
         .items
         .iter()
         .find_map(|it| match it {
-            localoffice_layout::Placed::Lines { para, y, .. } => Some(y + para.height / 2.0),
+            localwriter_layout::Placed::Lines { para, y, .. } => Some(y + para.height / 2.0),
             _ => None,
         })
         .unwrap_or(h / 2.0);
-    let mut opts = localoffice_render::RenderOptions::default();
+    let mut opts = localwriter_render::RenderOptions::default();
     opts.display.placeholders = true;
-    let img = localoffice_render::render_area(&d, page, 0.0, mid - h / 2.0, w, h, ppp, &opts);
+    let img = localwriter_render::render_area(&d, page, 0.0, mid - h / 2.0, w, h, ppp, &opts);
     let px = img.to_straight();
     let mut out = egui::ColorImage::from_rgba_unmultiplied([img.width as usize, img.height as usize], &px);
     // An ink mask, tinted with the theme's text colour when drawn, so the pictures read on dark tiles (#817).
@@ -404,12 +404,12 @@ pub fn ink_mask(img: &mut egui::ColorImage) {
 /// through the Font box grew memory by tens of megabytes. A name the font has no glyphs for (a
 /// symbol font's), or a font that can't be read, shows in the default face.
 pub fn font_entry_image(name: &str, ppp: f32) -> egui::ColorImage {
-    let db = localoffice_fonts::FontDb::global();
+    let db = localwriter_fonts::FontDb::global();
     let face = db
         .preview_face(name)
         .filter(|f| name.chars().filter(|c| !c.is_whitespace()).all(|c| f.covers(c)))
-        .unwrap_or_else(|| db.face(localoffice_fonts::FALLBACK_FAMILY, "Regular"));
-    let img = localoffice_render::render_text_line(&face, name, 13.0, 244.0, 22.0, 2.0, ppp);
+        .unwrap_or_else(|| db.face(localwriter_fonts::FALLBACK_FAMILY, "Regular"));
+    let img = localwriter_render::render_text_line(&face, name, 13.0, 244.0, 22.0, 2.0, ppp);
     egui::ColorImage::from_rgba_unmultiplied([img.width as usize, img.height as usize], &img.to_straight())
 }
 
@@ -436,7 +436,7 @@ fn snippet_blocks(
     h: f32,
     ppp: f32,
     margin: f32,
-    paper: Option<localoffice_doc::Rgb>,
+    paper: Option<localwriter_doc::Rgb>,
     dark: bool,
 ) -> Option<egui::ColorImage> {
     let mut d = Document::new();
@@ -449,14 +449,14 @@ fn snippet_blocks(
     d.last_section.margin_right = margin;
     d.last_section.margin_top = margin;
     d.last_section.margin_bottom = 0.0;
-    let l = localoffice_layout::layout(&d, &mut localoffice_layout::LayoutCache::new(), &Default::default());
+    let l = localwriter_layout::layout(&d, &mut localwriter_layout::LayoutCache::new(), &Default::default());
     let page = l.pages.first()?;
     let mut opts = crate::canvas::screen_render_options();
     if let Some(p) = paper {
         opts.paper = p;
     }
     opts.dark = dark;
-    let img = localoffice_render::render_area(&d, page, 0.0, 0.0, w + 2.0 * margin, h + margin, ppp, &opts);
+    let img = localwriter_render::render_area(&d, page, 0.0, 0.0, w + 2.0 * margin, h + margin, ppp, &opts);
     let px = img.to_straight();
     Some(egui::ColorImage::from_rgba_unmultiplied([img.width as usize, img.height as usize], &px))
 }
@@ -547,7 +547,7 @@ pub fn style_gallery(app: &mut WordApp, ui: &mut Ui, state: &Value) {
             // Sample letters in the interface's script (`АаБбВвГг` in Russian).
             let mut p = Paragraph::with_text(tl!("AaBbCcDd"), CharProps::default()).styled(id);
             p.props.space_before = Some(0.0);
-            p.props.align = Some(localoffice_doc::Align::Left);
+            p.props.align = Some(localwriter_doc::Align::Left);
             // Keep hanging indents (bullets) but start the first line at the tile's left edge.
             let first = doc.styles.resolve_para(&p.props).indent_first;
             p.props.indent_left = Some(if first.is_finite() { (-first).max(0.0) } else { 0.0 });
@@ -620,7 +620,7 @@ pub fn style_set_gallery(app: &mut WordApp, ui: &mut Ui) {
         }
         let key = format!("set:{name}:{ppp}:{}", crate::i18n::current().code());
         let tex = app.previews.get_or(ui.ctx(), &key, || {
-            let mut s = localoffice_engine::Session::new(Document::new());
+            let mut s = localwriter_engine::Session::new(Document::new());
             let _ = s.run("design.styleSet", &json!({"name": name}));
             let blocks = vec![
                 Block::Para(Paragraph::with_text(crate::i18n::tc("preview", "Title"), CharProps::default()).styled("Title")),
@@ -681,14 +681,14 @@ mod tests {
     /// now drawn with a face read for the preview alone: installed families stay unloaded.
     #[test]
     fn font_menu_entries_leave_installed_families_unloaded() {
-        let db = localoffice_fonts::FontDb::global();
+        let db = localwriter_fonts::FontDb::global();
         let ink = |img: &egui::ColorImage| img.pixels.iter().filter(|p| p.r() < 128).count();
         assert!(ink(&font_entry_image("Source Sans 3", 1.0)) > 20, "the bundled face draws");
         assert!(ink(&font_entry_image("No Such Font 848", 1.0)) > 20, "an unknown font shows in the default face");
         // Tests running alongside share this database and may load a fallback (a math font for
         // an equation, a font for a script) at any time: leave the math fonts out, and allow a
         // stray load or two. Before #848 every family previewed was loaded.
-        let shared = |f: &str| localoffice_fonts::math::MATH_SUBSTITUTES.iter().any(|n| f.eq_ignore_ascii_case(n));
+        let shared = |f: &str| localwriter_fonts::math::MATH_SUBSTITUTES.iter().any(|n| f.eq_ignore_ascii_case(n));
         let unloaded: Vec<String> = db.families().into_iter().filter(|f| !db.is_loaded(f) && !shared(f)).take(25).collect();
         let mut loaded = Vec::new();
         for f in &unloaded {
@@ -703,13 +703,13 @@ mod tests {
 
     /// A window whose Styles gallery lists `style` first: runs the gallery for a few frames and
     /// returns the painted shapes of the last one and every texture picture uploaded on the way.
-    fn run_gallery(mut doc: Document, style: localoffice_doc::styles::Style) -> (Vec<egui::epaint::ClippedShape>, Vec<egui::ColorImage>) {
+    fn run_gallery(mut doc: Document, style: localwriter_doc::styles::Style) -> (Vec<egui::epaint::ClippedShape>, Vec<egui::ColorImage>) {
         // Only the style under test is in the gallery.
         for other in &mut doc.styles.styles {
             other.quick = false;
         }
         doc.styles.upsert(style);
-        let mut app = WordApp::new(localoffice_engine::Session::new(doc), Default::default());
+        let mut app = WordApp::new(localwriter_engine::Session::new(doc), Default::default());
         app.ui.language = "en".into();
         let ctx = egui::Context::default();
         let mut shapes = Vec::new();
@@ -737,8 +737,8 @@ mod tests {
         (shapes, images)
     }
 
-    fn gallery_style(name: &str) -> localoffice_doc::styles::Style {
-        localoffice_doc::styles::Style { id: "Backfill".into(), name: name.into(), quick: true, priority: Some(0), ..Default::default() }
+    fn gallery_style(name: &str) -> localwriter_doc::styles::Style {
+        localwriter_doc::styles::Style { id: "Backfill".into(), name: name.into(), quick: true, priority: Some(0), ..Default::default() }
     }
 
     /// Regression test for #2: a style gallery label longer than its tile was painted at full width
@@ -831,7 +831,7 @@ mod tests {
     /// #817: equation pictures were black on white; they are now an ink mask (white, transparent paper).
     #[test]
     fn math_pictures_are_ink_masks() {
-        use localoffice_doc::math::parse_linear;
+        use localwriter_doc::math::parse_linear;
         let img = math_image(&parse_linear("x/y"), false, 12.0, 40.0, 34.0, 1.0).expect("renders");
         assert!(img.pixels.iter().any(|p| p.a() == 0), "paper is transparent");
         assert!(img.pixels.iter().any(|p| p.a() > 0), "ink is kept");
@@ -839,9 +839,9 @@ mod tests {
     }
 
     /// Every picture the Equation tab and Insert › Equation draw: (key, nodes, display, pt, tile size).
-    fn equation_pictures() -> Vec<(String, localoffice_doc::math::Arg, bool, f32, egui::Vec2)> {
-        use localoffice_doc::math::{MNode, MRun, parse_linear};
-        use localoffice_engine::math_gallery::{BUILT_INS, STRUCTURES, SYMBOL_SETS};
+    fn equation_pictures() -> Vec<(String, localwriter_doc::math::Arg, bool, f32, egui::Vec2)> {
+        use localwriter_doc::math::{MNode, MRun, parse_linear};
+        use localwriter_engine::math_gallery::{BUILT_INS, STRUCTURES, SYMBOL_SETS};
         let mut out = Vec::new();
         for g in STRUCTURES {
             let pic = crate::equation_tab::button_picture(g.id);
@@ -896,7 +896,7 @@ mod tests {
     #[test]
     fn equation_pictures_share_one_texture() {
         let ctx = egui::Context::default();
-        let mut app = WordApp::new(localoffice_engine::Session::new(Document::new()), crate::Services::default());
+        let mut app = WordApp::new(localwriter_engine::Session::new(Document::new()), crate::Services::default());
         let pictures = equation_pictures();
         // Symbols repeat across sets (∀, ≠…): each is drawn once.
         let unique = pictures.iter().map(|(key, _, _, pt, size)| format!("{key}:{pt}:{size:?}")).collect::<std::collections::HashSet<_>>().len();
@@ -983,11 +983,11 @@ mod tests {
     /// (a single page used to start over every frame: flicker and constant re-rendering).
     #[test]
     fn builtin_menu_at_scale_3_fits_without_wiping() {
-        use localoffice_doc::math::parse_linear;
-        use localoffice_engine::math_gallery::BUILT_INS;
+        use localwriter_doc::math::parse_linear;
+        use localwriter_engine::math_gallery::BUILT_INS;
         let ctx = egui::Context::default();
         ctx.set_pixels_per_point(3.0);
-        let mut app = WordApp::new(localoffice_engine::Session::new(Document::new()), crate::Services::default());
+        let mut app = WordApp::new(localwriter_engine::Session::new(Document::new()), crate::Services::default());
         let builtins: Vec<_> = BUILT_INS.iter().map(|(id, _, lin)| (format!("builtin:{id}"), parse_linear(lin))).collect();
         let draw = |app: &mut WordApp| {
             let mut got = Vec::new();

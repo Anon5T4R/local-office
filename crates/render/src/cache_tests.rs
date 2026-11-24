@@ -3,9 +3,9 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use localoffice_doc::Document;
-use localoffice_doc::props::Rgb;
-use localoffice_layout::display::{Draw, Stroke};
+use localwriter_doc::Document;
+use localwriter_doc::props::Rgb;
+use localwriter_layout::display::{Draw, Stroke};
 
 use super::{CACHE_BYTES, MediaCache, RenderOptions, render_items, wave_path};
 

@@ -1,11 +1,11 @@
 //! Shape Format › Shape Fill (#1500): a solid colour with its transparency, or a gradient, for
 //! every selected shape, text box and drawing canvas.
 
-use localoffice_doc::Pos;
-use localoffice_doc::fill::{Fill, Gradient, GradientFlip, GradientKind, PathShape};
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::props::Rgb;
-use localoffice_doc::wordart::GradStop;
+use localwriter_doc::Pos;
+use localwriter_doc::fill::{Fill, Gradient, GradientFlip, GradientKind, PathShape};
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::props::Rgb;
+use localwriter_doc::wordart::GradStop;
 use serde_json::Value;
 use std::sync::Arc;
 
@@ -305,8 +305,8 @@ pub fn path_direction_name(focus: [f32; 4]) -> String {
 /// Stop editing for the Format Shape pane's gradient stops bar. Stops stay in position order; a
 /// gradient keeps 2 to `MAX_STOPS` of them.
 pub mod stops {
-    use localoffice_doc::props::Rgb;
-    use localoffice_doc::wordart::{GradStop, MAX_STOPS};
+    use localwriter_doc::props::Rgb;
+    use localwriter_doc::wordart::{GradStop, MAX_STOPS};
 
     /// The gradient's colour and transparency at `pos` (percent).
     pub fn at(stops: &[GradStop], pos: f32) -> (Rgb, f32) {
@@ -360,7 +360,7 @@ pub mod stops {
 #[cfg(test)]
 mod tests {
     use super::{Change, params, parse, stops};
-    use localoffice_doc::fill::{Fill, Gradient, GradientFlip, GradientKind, PathShape};
+    use localwriter_doc::fill::{Fill, Gradient, GradientFlip, GradientKind, PathShape};
     use std::sync::Arc;
 
     /// The variations Word writes for accent 1 (`tint`/`shade` with `satMod`, observed in Word 365).
@@ -420,8 +420,8 @@ mod tests {
         }
         assert!(matches!(parse(&params(None)), Ok(Change::None)));
     }
-    use localoffice_doc::props::Rgb;
-    use localoffice_doc::wordart::{GradStop, MAX_STOPS};
+    use localwriter_doc::props::Rgb;
+    use localwriter_doc::wordart::{GradStop, MAX_STOPS};
 
     fn st(pos: f32, c: u8, transparency: f32) -> GradStop {
         GradStop { pos, color: Rgb(c, c, c), transparency }

@@ -877,7 +877,7 @@ mod tests {
     use super::*;
 
     fn app() -> WordApp {
-        WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default())
+        WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default())
     }
 
     fn key_event(key: egui::Key, pressed: bool, modifiers: egui::Modifiers) -> egui::Event {
@@ -986,7 +986,7 @@ mod tests {
         // when the Word feature catalog lists them (the ribbon shows them too); `ui.*` commands are
         // the app's own (`WordApp::run`).
         let a = app();
-        let catalog: Vec<&str> = localoffice_engine::catalog::entries().into_iter().map(|e| e.3).collect();
+        let catalog: Vec<&str> = localwriter_engine::catalog::entries().into_iter().map(|e| e.3).collect();
         let mut missing = Vec::new();
         for (tab, _) in TAB_LETTERS.iter().chain(&TABLE_TAB_LETTERS) {
             for ctrl in controls(tab) {
@@ -1321,11 +1321,11 @@ mod tests {
         h.step();
         assert_eq!(h.state().ui.keytips, Phase::Off);
         assert_eq!(h.state_mut().session.run("format.state", &serde_json::json!({})).unwrap()["bold"], true);
-        assert!(h.state().session.doc.plain_text(localoffice_doc::StoryRef::Body).is_empty());
+        assert!(h.state().session.doc.plain_text(localwriter_doc::StoryRef::Body).is_empty());
         // Normal typing resumes immediately after the command.
         h.input_mut().events.push(egui::Event::Text("hello".into()));
         h.step();
-        assert_eq!(h.state().session.doc.plain_text(localoffice_doc::StoryRef::Body).trim(), "hello");
+        assert_eq!(h.state().session.doc.plain_text(localwriter_doc::StoryRef::Body).trim(), "hello");
         if !cfg!(target_os = "macos") {
             let alt = egui::Modifiers { alt: true, ..Default::default() };
             h.input_mut().events.extend([key_event(egui::Key::AltLeft, true, egui::Modifiers::NONE), egui::Event::ModifiersChanged(alt)]);
@@ -1336,7 +1336,7 @@ mod tests {
             h.input_mut().events.extend([key(egui::Key::Num2), egui::Event::Text("2".into())]);
             h.step();
             assert_eq!(h.state_mut().session.run("format.state", &serde_json::json!({})).unwrap()["bold"], false);
-            assert_eq!(h.state().session.doc.plain_text(localoffice_doc::StoryRef::Body).trim(), "hello");
+            assert_eq!(h.state().session.doc.plain_text(localwriter_doc::StoryRef::Body).trim(), "hello");
         }
     }
 
@@ -1373,7 +1373,7 @@ mod tests {
         h.run_steps(3);
         assert_eq!(h.state().ui.keytips, Phase::Off);
         assert!(h.state().session.view.full_screen_view, "Alt, V, U: Full Screen View");
-        assert!(h.state().session.doc.plain_text(localoffice_doc::StoryRef::Body).is_empty(), "no letter typed");
+        assert!(h.state().session.doc.plain_text(localwriter_doc::StoryRef::Body).is_empty(), "no letter typed");
     }
 
     #[test]

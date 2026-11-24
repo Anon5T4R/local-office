@@ -1,9 +1,9 @@
-//! [`localoffice_doc::math`] tree → Office Math (OMML).
+//! [`localwriter_doc::math`] tree → Office Math (OMML).
 
-use localoffice_doc::math::{
+use localwriter_doc::math::{
     Arg, BrkBin, BrkBinSub, ColJc, FracKind, LimLoc, MAX_DEPTH, MNode, MRun, MScr, MSty, Math, MathJc, MathProps, ScriptKind, parse_linear,
 };
-use localoffice_doc::props::Rgb;
+use localwriter_doc::props::Rgb;
 
 use crate::xml::W;
 
@@ -21,7 +21,7 @@ pub fn write_equation(w: &mut W, linear: &str, display: bool, math: &Math, color
             m.nodes = parse_linear(linear);
         }
         if let Some(c) = color {
-            localoffice_doc::math_edit::each_run_mut(&mut m.nodes, &mut |r| {
+            localwriter_doc::math_edit::each_run_mut(&mut m.nodes, &mut |r| {
                 r.color.get_or_insert(c);
             });
         }
@@ -72,7 +72,7 @@ pub fn resolve_numbers(math: &Math, display: bool, counter: &mut u32) -> Option<
     let mut out = rows.clone();
     let mut changed = false;
     for row in out.iter_mut() {
-        if !localoffice_doc::math::has_number_mark(row) {
+        if !localwriter_doc::math::has_number_mark(row) {
             continue;
         }
         *counter = counter.saturating_add(1);
@@ -136,7 +136,7 @@ pub fn math_pr(w: &mut W, m: &MathProps) {
     if m.wrap_right {
         w.empty("m:wrapRight", &[]);
     } else {
-        let indent = if m.wrap_indent.is_finite() { m.wrap_indent.clamp(0.0, 1584.0) } else { localoffice_doc::math::DEFAULT_WRAP_INDENT };
+        let indent = if m.wrap_indent.is_finite() { m.wrap_indent.clamp(0.0, 1584.0) } else { localwriter_doc::math::DEFAULT_WRAP_INDENT };
         val(w, "m:wrapIndent", &crate::units::twips(indent));
     }
     w.close("m:mathPr");
@@ -365,7 +365,7 @@ fn node(w: &mut W, n: &MNode, depth: usize) {
             w.open("m:eqArr", &[]);
             w.open("m:eqArrPr", &[]);
             // Numbered rows (`#`) stretch across the line so the number reaches the margin.
-            if rows.iter().any(|r| localoffice_doc::math::has_number_mark(r)) {
+            if rows.iter().any(|r| localwriter_doc::math::has_number_mark(r)) {
                 val(w, "m:maxDist", "1");
             }
             ctrl(w);

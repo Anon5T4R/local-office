@@ -7,12 +7,12 @@
 
 use std::collections::HashMap;
 
-use localoffice_doc::edit::Fragment;
-use localoffice_doc::para::OBJ;
-use localoffice_doc::props::{LineSpacing, TabAlign, TabLeader, TabStop};
-use localoffice_doc::styles::{Style, StyleKind};
-use localoffice_doc::{CharProps, InlineObject, ParaProps, PartKind, Pos, StoryRef};
-use localoffice_engine::{Selection, Session};
+use localwriter_doc::edit::Fragment;
+use localwriter_doc::para::OBJ;
+use localwriter_doc::props::{LineSpacing, TabAlign, TabLeader, TabStop};
+use localwriter_doc::styles::{Style, StyleKind};
+use localwriter_doc::{CharProps, InlineObject, ParaProps, PartKind, Pos, StoryRef};
+use localwriter_engine::{Selection, Session};
 use serde_json::{Value, json};
 
 use crate::fields::{self, ZField};
@@ -273,7 +273,7 @@ impl Bridge {
                 Self::end_edit(s);
                 Ok(Value::Null)
             }
-            // Zotero's field kinds are one kind in LocalOffice; only the note type matters: a
+            // Zotero's field kinds are one kind in LocalWriter; only the note type matters: a
             // citation moves between the text, footnotes and endnotes (switching styles).
             "Document_convert" => {
                 let Value::Array(ids) = arg(c, 1)? else { return Err("field ids must be an array".into()) };
@@ -352,9 +352,9 @@ impl Bridge {
                 Ok(Value::Null)
             }
             "Document_importDocument" | "Document_exportDocument" => {
-                Err("Local Word doesn't support Zotero's document transfer; the citations are already stored the way Word keeps them".into())
+                Err("Local Writer doesn't support Zotero's document transfer; the citations are already stored the way Word keeps them".into())
             }
-            m => Err(format!("Local Word doesn't support {m}")),
+            m => Err(format!("Local Writer doesn't support {m}")),
         }
     }
 
@@ -530,7 +530,7 @@ impl Bridge {
             let text = s.doc.copy_range(&a, &b);
             let mut text = text;
             for blk in &mut text.blocks {
-                if let localoffice_doc::Block::Para(p) = blk {
+                if let localwriter_doc::Block::Para(p) = blk {
                     let n = p.len();
                     let _ = p.format(0, n, &|c| c.link = None);
                 }

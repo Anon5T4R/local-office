@@ -5,8 +5,8 @@
 
 use std::collections::BTreeSet;
 
-use localoffice_doc::edit::Fragment;
-use localoffice_doc::{Pos, Revision, RevisionKind, StoryRef};
+use localwriter_doc::edit::Fragment;
+use localwriter_doc::{Pos, Revision, RevisionKind, StoryRef};
 
 use super::{now_iso, track_delete_as};
 use crate::{CmdError, Selection, Session};
@@ -87,7 +87,7 @@ pub fn take_paste(s: &mut Session, frag: &Fragment) -> Option<u32> {
 
 /// The move names of the insertions and deletions in `a..b` (and of the paragraph marks it
 /// covers; `caret_mark` = the mark of the paragraph at that path, for a caret before it).
-pub fn names_in(s: &Session, a: &Pos, b: &Pos, caret_mark: Option<&localoffice_doc::Path>) -> BTreeSet<String> {
+pub fn names_in(s: &Session, a: &Pos, b: &Pos, caret_mark: Option<&localwriter_doc::Path>) -> BTreeSet<String> {
     let mut out = BTreeSet::new();
     let mut add = |r: Option<u32>| {
         if let Some(n) = s.doc.move_name(r) {
@@ -164,7 +164,7 @@ pub fn resolve(s: &mut Session, names: &BTreeSet<String>, accept: bool) -> Resul
 }
 
 /// Whether the body has moved text (cheap: stops at the first).
-pub fn has_moves(doc: &localoffice_doc::Document) -> bool {
+pub fn has_moves(doc: &localwriter_doc::Document) -> bool {
     if !doc.revisions.iter().any(|r| r.move_name.is_some()) {
         return false;
     }
@@ -179,7 +179,7 @@ pub fn has_moves(doc: &localoffice_doc::Document) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use localoffice_doc::{Document, Pos};
+    use localwriter_doc::{Document, Pos};
     use serde_json::{Value, json};
 
     use crate::Session;
@@ -222,7 +222,7 @@ mod tests {
         let k = kinds(&mut s);
         assert!(k.iter().all(|(k, m)| k.starts_with("move") && m == "move1"), "{k:?}");
         // Saved and opened again, it is still a move.
-        let back = localoffice_docx::read(&localoffice_docx::write(&s.doc).unwrap()).unwrap();
+        let back = localwriter_docx::read(&localwriter_docx::write(&s.doc).unwrap()).unwrap();
         let b0 = back.body[0].as_para().unwrap();
         assert!(back.move_name(b0.runs[0].props.ins).is_some() && back.move_name(b0.mark.ins).is_some());
         let b2 = back.body[2].as_para().unwrap();

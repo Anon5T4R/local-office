@@ -3,7 +3,7 @@
 # exports VERSION and NFPM_ARCH.
 #
 #   nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/release/
-name: localoffice
+name: localwriter
 arch: ${NFPM_ARCH}
 platform: linux
 version: ${VERSION}
@@ -12,15 +12,22 @@ version_schema: semver
 release: 1
 section: graphics
 priority: optional
-maintainer: ${LOCALOFFICE_MAINTAINER}
-vendor: Local Word contributors
-homepage: https://github.com/Anon5T4R/local-office
+maintainer: ${LOCALWRITER_MAINTAINER}
+vendor: Local Writer contributors
+# The product was called Local Word (package `localoffice`): this one takes its place on upgrade.
+replaces:
+  - localoffice
+conflicts:
+  - localoffice
+provides:
+  - localoffice
+homepage: https://github.com/Styx-Studios/Local-Writer
 license: MIT OR Apache-2.0
 description: |-
   Open-source, native word processor that works the way Word users expect.
   The ribbon, styles, tables, track changes, references and mail merge; reads
   and writes .docx, opens .odt, .rtf, .html, .md and .txt, and exports PDF.
-  Includes localoffice-cli, a headless converter and command runner.
+  Includes localwriter-cli, a headless converter and command runner.
 
 # The binaries link only glibc and libgcc_s directly. Windowing (X11/Wayland, xkbcommon) and the
 # GPU (Vulkan, EGL/GL) are loaded at runtime, so they are dependencies/recommendations here
@@ -55,11 +62,11 @@ overrides:
       - xdg-desktop-portal
 
 contents:
-  - src: ${STAGE}/usr/bin/localoffice
-    dst: /usr/bin/localoffice
+  - src: ${STAGE}/usr/bin/localwriter
+    dst: /usr/bin/localwriter
     file_info: { mode: 0755 }
-  - src: ${STAGE}/usr/bin/localoffice-cli
-    dst: /usr/bin/localoffice-cli
+  - src: ${STAGE}/usr/bin/localwriter-cli
+    dst: /usr/bin/localwriter-cli
     file_info: { mode: 0755 }
   - src: ${STAGE}/usr/share/
     dst: /usr/share/

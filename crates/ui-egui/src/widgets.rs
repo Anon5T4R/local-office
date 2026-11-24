@@ -651,13 +651,13 @@ pub fn row(ui: &mut Ui, add: impl FnOnce(&mut Ui)) {
 }
 
 /// Word's standard colour grid (theme colours + tints, standard colours). Returns a picked hex.
-pub fn color_grid(ui: &mut Ui, theme: &[localoffice_doc::Rgb]) -> Option<String> {
+pub fn color_grid(ui: &mut Ui, theme: &[localwriter_doc::Rgb]) -> Option<String> {
     let mut picked = None;
     ui.label(egui::RichText::new(tl!("Theme Colors")).small().weak());
-    let base: Vec<localoffice_doc::Rgb> = theme.iter().take(10).copied().collect();
-    let tint = |c: localoffice_doc::Rgb, k: f32| {
+    let base: Vec<localwriter_doc::Rgb> = theme.iter().take(10).copied().collect();
+    let tint = |c: localwriter_doc::Rgb, k: f32| {
         let f = |v: u8| if k >= 0.0 { (v as f32 + (255.0 - v as f32) * k) as u8 } else { (v as f32 * (1.0 + k)) as u8 };
-        localoffice_doc::Rgb(f(c.0), f(c.1), f(c.2))
+        localwriter_doc::Rgb(f(c.0), f(c.1), f(c.2))
     };
     let order = [1usize, 0, 3, 2, 4, 5, 6, 7, 8, 9];
     for k in [0.0f32, 0.8, 0.6, 0.4, -0.25, -0.5] {
@@ -677,7 +677,7 @@ pub fn color_grid(ui: &mut Ui, theme: &[localoffice_doc::Rgb]) -> Option<String>
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing = vec2(3.0, 0.0);
         for hex in ["C00000", "FF0000", "FFC000", "FFFF00", "92D050", "00B050", "00B0F0", "0070C0", "002060", "7030A0"] {
-            if let Some(c) = localoffice_doc::Rgb::parse(hex)
+            if let Some(c) = localwriter_doc::Rgb::parse(hex)
                 && swatch(ui, c)
             {
                 picked = Some(hex.to_string());
@@ -687,7 +687,7 @@ pub fn color_grid(ui: &mut Ui, theme: &[localoffice_doc::Rgb]) -> Option<String>
     picked
 }
 
-pub(crate) fn swatch(ui: &mut Ui, c: localoffice_doc::Rgb) -> bool {
+pub(crate) fn swatch(ui: &mut Ui, c: localwriter_doc::Rgb) -> bool {
     let (r, resp) = ui.allocate_exact_size(vec2(15.0, 15.0), Sense::click());
     ui.painter().rect_filled(r, 0.0, Color32::from_rgb(c.0, c.1, c.2));
     let t = Tokens::get(ui.ctx());
@@ -1362,7 +1362,7 @@ mod tests {
     #[test]
     fn ribbon_menu_offers_show_quick_access_toolbar_only_while_hidden() {
         use egui_kittest::kittest::Queryable;
-        let a = WordApp::new(localoffice_engine::Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let a = WordApp::new(localwriter_engine::Session::new(localwriter_doc::Document::new()), crate::Services::default());
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
             |ui, app: &mut WordApp| {
                 let ctx = ui.ctx().clone();

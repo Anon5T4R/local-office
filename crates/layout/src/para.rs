@@ -4,16 +4,16 @@
 use std::collections::VecDeque;
 use std::sync::Arc;
 
-use localoffice_doc::math::MathJc;
-use localoffice_doc::numbering::{Level, LevelSuffix};
-use localoffice_doc::para::{
+use localwriter_doc::math::MathJc;
+use localwriter_doc::numbering::{Level, LevelSuffix};
+use localwriter_doc::para::{
     COLUMN_BREAK, InlineObject, LINE_BREAK, NoteKind, OBJ, PAGE_BREAK, PTabAlign, PTabBase, RubyAlign, SOFT_HYPHEN, WrapText,
 };
-use localoffice_doc::props::{Align, CharProps, LineSpacing, ParaProps, TabAlign, TabLeader, TabStop};
-use localoffice_doc::resolve::{ResolvedChar, ResolvedPara};
-use localoffice_doc::section::NumFormat;
-use localoffice_doc::{Document, Paragraph};
-use localoffice_fonts::FaceRef;
+use localwriter_doc::props::{Align, CharProps, LineSpacing, ParaProps, TabAlign, TabLeader, TabStop};
+use localwriter_doc::resolve::{ResolvedChar, ResolvedPara};
+use localwriter_doc::section::NumFormat;
+use localwriter_doc::{Document, Paragraph};
+use localwriter_fonts::FaceRef;
 
 use crate::NumeralMode;
 use crate::fields::{FIELD_SHADING, FieldCtx, field_code_text, field_text_on, reference_link};
@@ -21,7 +21,7 @@ use crate::fields::{FIELD_SHADING, FieldCtx, field_code_text, field_text_on, ref
 /// How a run set in one of Word's symbol fonts (Symbol, Wingdings, Wingdings 2/3, Webdings)
 /// shows its characters. Those fonts are proprietary and usually missing: a substitute has other
 /// glyphs, or none, at their codes, so each character is drawn as its Unicode equivalent
-/// ([`localoffice_doc::symbol_fonts`]) from a face that has it. The text itself is unchanged.
+/// ([`localwriter_doc::symbol_fonts`]) from a face that has it. The text itself is unchanged.
 #[derive(Clone, Copy)]
 struct SymbolRun<'a> {
     family: &'a str,
@@ -31,8 +31,8 @@ struct SymbolRun<'a> {
 }
 
 impl<'a> SymbolRun<'a> {
-    fn of(family: &'a str, r: &localoffice_fonts::word::Resolved) -> Option<Self> {
-        localoffice_doc::symbol_fonts::is_symbol_font(family).then_some(SymbolRun { family, installed: !r.substituted, face: r.face })
+    fn of(family: &'a str, r: &localwriter_fonts::word::Resolved) -> Option<Self> {
+        localwriter_doc::symbol_fonts::is_symbol_font(family).then_some(SymbolRun { family, installed: !r.substituted, face: r.face })
     }
 
     /// The character drawn for `c`.
@@ -48,7 +48,7 @@ impl<'a> SymbolRun<'a> {
                 return p;
             }
         }
-        let Some(u) = localoffice_doc::symbol_fonts::symbol_char(self.family, c) else { return c };
+        let Some(u) = localwriter_doc::symbol_fonts::symbol_char(self.family, c) else { return c };
         // A few list bullets have common look-alikes in far more fonts: use one when no face
         // has the exact character.
         let alt = match u {
@@ -57,7 +57,7 @@ impl<'a> SymbolRun<'a> {
             '\u{2B9A}' => Some('\u{27A2}'),
             _ => None,
         };
-        let has = |ch: char| self.face.covers(ch) || localoffice_fonts::FontDb::global().fallback_for(ch, self.face.id()).is_some();
+        let has = |ch: char| self.face.covers(ch) || localwriter_fonts::FontDb::global().fallback_for(ch, self.face.id()).is_some();
         match alt {
             Some(a) if !has(u) && has(a) => a,
             _ => u,
@@ -73,8 +73,8 @@ fn undrawable_bullet(text: &str, lvl: &Level, rc: &ResolvedChar) -> bool {
     let private = |c: char| matches!(u32::from(c), 0xE000..=0xF8FF | 0xF0000..=0x10FFFF);
     lvl.format == NumFormat::Bullet
         && text.chars().any(|c| {
-            private(c) && localoffice_doc::symbol_fonts::symbol_char(&rc.font, c).is_none() && {
-                let r = localoffice_fonts::word::resolve(&rc.font, rc.bold, rc.italic);
+            private(c) && localwriter_doc::symbol_fonts::symbol_char(&rc.font, c).is_none() && {
+                let r = localwriter_fonts::word::resolve(&rc.font, rc.bold, rc.italic);
                 r.substituted || !r.face.covers(c)
             }
         })
@@ -384,7 +384,7 @@ pub struct ParaLayout {
     /// Ruby (Phonetic Guide) text over base-text clusters, in cluster order.
     pub rubies: Vec<RubyLayout>,
     /// Display equations (on lines of their own): cluster index and justification.
-    pub displays: Vec<(usize, localoffice_doc::math::MathJc)>,
+    pub displays: Vec<(usize, localwriter_doc::math::MathJc)>,
     /// Positional tabs (laid out as tab clusters): cluster index, alignment, base and leader.
     pub ptabs: Vec<(usize, PTabAlign, PTabBase, TabLeader)>,
     /// Byte ranges of the text laid out as nothing ([`left_out`]): hidden text that is not shown,
@@ -405,7 +405,7 @@ pub struct ParaLayout {
 /// relative to the cluster's left edge and baseline, in the cluster's text colour.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Enclosed {
-    pub kind: localoffice_doc::para::ShapeKind,
+    pub kind: localwriter_doc::para::ShapeKind,
     /// Left edge from the cluster's x; top above the baseline (up is positive), points.
     pub x: f32,
     pub top: f32,
@@ -476,12 +476,12 @@ pub struct Grid {
 
 impl Grid {
     /// The grid of section `s` of `doc` (its default font size from the Normal style).
-    pub fn of(doc: &Document, s: &localoffice_doc::SectionProps) -> Grid {
+    pub fn of(doc: &Document, s: &localwriter_doc::SectionProps) -> Grid {
         let Some(line) = s.grid_line_pitch() else { return Grid::default() };
         let size = doc.styles.resolve_char(Some("Normal"), &CharProps::default()).size;
         let font_size = if size.is_finite() { size.clamp(1.0, 1584.0) } else { 10.5 };
         let chars = s.grid_char_pitch(font_size);
-        let snap_all = s.doc_grid.is_some_and(|g| g.kind == localoffice_doc::section::DocGridType::SnapToChars);
+        let snap_all = s.doc_grid.is_some_and(|g| g.kind == localwriter_doc::section::DocGridType::SnapToChars);
         Grid { line: Some(line), chars, font_size, snap_all }
     }
     /// A cache key for paragraph layouts.
@@ -657,8 +657,8 @@ pub(crate) fn push_caps(rc: &ResolvedChar, c: char, out: &mut String) {
 
 /// The OpenType ligature features a `w14:ligatures` value sets, each on or off. Required
 /// ligatures (`rlig`, Arabic lam-alef) are never turned off.
-pub(crate) fn ligature_features(l: localoffice_doc::props::Ligatures) -> [localoffice_fonts::Feature; 4] {
-    let f = |tag: &[u8; 4], on: bool| localoffice_fonts::feature_value(tag, on as u32);
+pub(crate) fn ligature_features(l: localwriter_doc::props::Ligatures) -> [localwriter_fonts::Feature; 4] {
+    let f = |tag: &[u8; 4], on: bool| localwriter_fonts::feature_value(tag, on as u32);
     [f(b"liga", l.standard), f(b"clig", l.contextual), f(b"hlig", l.historical), f(b"dlig", l.discretional)]
 }
 
@@ -762,7 +762,7 @@ fn strong_rtl(c: char) -> Option<bool> {
 /// Bidi embedding levels per byte of `text` (UAX #9 rules up to I2), or empty when the
 /// paragraph is left to right and has no right-to-left characters.
 pub fn bidi_levels(text: &str, rtl_para: bool) -> Vec<u8> {
-    if !rtl_para && !text.chars().any(localoffice_fonts::is_rtl) {
+    if !rtl_para && !text.chars().any(localwriter_fonts::is_rtl) {
         return Vec::new();
     }
     let level = if rtl_para { unicode_bidi::Level::rtl() } else { unicode_bidi::Level::ltr() };
@@ -817,14 +817,14 @@ const MISSING_ROMAN_FONT: &str = "Cambria";
 /// A font with substitutes of its own keeps them: Times New Roman is roman in every font table,
 /// and where it isn't installed Liberation Serif has its metrics; Word never meets it missing.
 fn lookup_family<'f>(doc: &Document, font: &'f str) -> &'f str {
-    let db = localoffice_fonts::FontDb::global();
+    let db = localwriter_fonts::FontDb::global();
     let roman = doc.settings.roman_fonts.iter().any(|f| f.eq_ignore_ascii_case(font));
     if roman
-        && !localoffice_fonts::word::is_thai_family(font)
-        && !localoffice_doc::symbol_fonts::is_symbol_font(font)
-        && !localoffice_fonts::word::has_named_substitutes(font)
+        && !localwriter_fonts::word::is_thai_family(font)
+        && !localwriter_doc::symbol_fonts::is_symbol_font(font)
+        && !localwriter_fonts::word::has_named_substitutes(font)
         && !db.has_family(font)
-        && !db.has_family(localoffice_fonts::word::charset_base_family(font))
+        && !db.has_family(localwriter_fonts::word::charset_base_family(font))
     {
         MISSING_ROMAN_FONT
     } else {
@@ -838,14 +838,14 @@ fn lookup_family<'f>(doc: &Document, font: &'f str) -> &'f str {
 /// `primary` lacks some of the run's Thai or Latin characters; then the first face covering all of
 /// them, if one does. Other families keep Latin text in their own substitute, as Word does.
 pub(crate) fn thai_run_face(font: &str, substituted: bool, primary: FaceRef, text: &str, bold: bool, italic: bool) -> Option<FaceRef> {
-    if !substituted || !localoffice_fonts::word::is_thai_family(font) {
+    if !substituted || !localwriter_fonts::word::is_thai_family(font) {
         return None;
     }
     let run: Vec<char> = text.chars().filter(|c| thai_or_latin(*c)).collect();
     if run.iter().all(|c| primary.covers(*c)) {
         return None;
     }
-    localoffice_fonts::FontDb::global().fallback_for_run(&run, primary.id(), bold, italic).map(|f| FaceRef::of(&f))
+    localwriter_fonts::FontDb::global().fallback_for_run(&run, primary.id(), bold, italic).map(|f| FaceRef::of(&f))
 }
 
 /// Text a Thai substitute draws: Thai letters, digits and signs (฿), and Latin letters, digits
@@ -866,7 +866,7 @@ impl<'a> Builder<'a> {
 
     /// Style index for a resolved char in `face` (caps-scaled `size` override for small caps).
     fn style(&mut self, rc: &Arc<ResolvedChar>, face_override: Option<FaceRef>, small: bool) -> u32 {
-        let r = localoffice_fonts::word::resolve(lookup_family(self.env.doc, &rc.font), rc.bold, rc.italic);
+        let r = localwriter_fonts::word::resolve(lookup_family(self.env.doc, &rc.font), rc.bold, rc.italic);
         let face = face_override.unwrap_or(r.face);
         // The display list reads every run's format (link target, strike kind, underline colour,
         // baseline shift…) from its StyleRun, so runs share one only when their formats are equal.
@@ -894,9 +894,9 @@ impl<'a> Builder<'a> {
         let size = rc.draw_size() * if small { 0.8 } else { 1.0 };
         // A symbol font that isn't installed, or is installed one em tall (Apple's Symbol), takes
         // the height Word gives it.
-        let (a, d) = match localoffice_fonts::word::symbol_line(&rc.font, &r) {
+        let (a, d) = match localwriter_fonts::word::symbol_line(&rc.font, &r) {
             Some((a, d)) => (a * face.upem, d * face.upem),
-            None => localoffice_fonts::word::line_metrics(&face),
+            None => localwriter_fonts::word::line_metrics(&face),
         };
         let k = size as f64 / face.upem.max(1.0);
         // A fallback face (letters the requested font lacks) is emboldened or slanted when it has
@@ -936,19 +936,19 @@ impl<'a> Builder<'a> {
         // Complex-script characters (Persian, Arabic…) use the run's complex-script font, size,
         // bold and italic.
         let rc_cs: Option<Arc<ResolvedChar>> = text.chars().any(|c| rc.uses_complex(c)).then(|| Arc::new(rc.complex()));
-        let resolved = localoffice_fonts::word::resolve(lookup_family(self.env.doc, &rc.font), rc.bold, rc.italic);
+        let resolved = localwriter_fonts::word::resolve(lookup_family(self.env.doc, &rc.font), rc.bold, rc.italic);
         let primary = resolved.face;
         // Symbol-font characters are laid out as their Unicode equivalents.
         let sym = SymbolRun::of(&rc.font, &resolved);
         let show = |c: char| sym.map_or(c, |m| m.show(c));
-        let primary_cs = rc_cs.as_ref().map(|r| localoffice_fonts::word::resolve(lookup_family(self.env.doc, &r.font), r.bold, r.italic).face);
+        let primary_cs = rc_cs.as_ref().map(|r| localwriter_fonts::word::resolve(lookup_family(self.env.doc, &r.font), r.bold, r.italic).face);
         // Chinese, Japanese and Korean characters use the run's East Asian font (`w:eastAsia`) when
         // it is installed and has them.
         let primary_ea = rc
             .font_ea
             .as_ref()
             .filter(|f| !f.eq_ignore_ascii_case(&rc.font) && text.chars().any(east_asian))
-            .map(|f| localoffice_fonts::word::resolve(f, rc.bold, rc.italic))
+            .map(|f| localwriter_fonts::word::resolve(f, rc.bold, rc.italic))
             .filter(|r| !r.substituted)
             .map(|r| r.face);
         // The levels by byte of `text`, from `lbase` on.
@@ -979,7 +979,7 @@ impl<'a> Builder<'a> {
             if ea.is_empty() {
                 None
             } else {
-                localoffice_fonts::FontDb::global().fallback_for_run(&ea, primary.id(), rc.bold, rc.italic).map(|f| FaceRef::of(&f))
+                localwriter_fonts::FontDb::global().fallback_for_run(&ea, primary.id(), rc.bold, rc.italic).map(|f| FaceRef::of(&f))
             }
         };
         // Split by font coverage (fallback faces), small caps case, script formatting and direction.
@@ -1012,7 +1012,7 @@ impl<'a> Builder<'a> {
                 _ if !complex && ea_face.is_some() && crate::kinsoku::is_east_asian(c) => ea_face,
                 _ => {
                     let (bold, italic) = if complex { (rc.bold_cs, rc.italic_cs) } else { (rc.bold, rc.italic) };
-                    localoffice_fonts::FontDb::global().fallback_styled(dc, prim.id(), bold, italic).map(|f| FaceRef::of(&f))
+                    localwriter_fonts::FontDb::global().fallback_styled(dc, prim.id(), bold, italic).map(|f| FaceRef::of(&f))
                 }
             };
             let small = rc.small_caps && !rc.caps && c.is_lowercase();
@@ -1030,7 +1030,7 @@ impl<'a> Builder<'a> {
         if let Some(p) = cur {
             segs.push((seg_start, text.len(), p));
         }
-        let no_kern = [localoffice_fonts::feature_value(b"kern", 0)];
+        let no_kern = [localwriter_fonts::feature_value(b"kern", 0)];
         for (a, b, key) in segs {
             let Some(sub) = text.get(a..b) else { continue };
             let rc = match (&rc_cs, key.complex) {
@@ -1097,18 +1097,18 @@ impl<'a> Builder<'a> {
             };
             let from = usize::from(rc.kerned());
             let to = if ligatures.is_some() { all.len() } else { 1 };
-            let features: &[localoffice_fonts::Feature] = all.get(from..to).unwrap_or_default();
+            let features: &[localwriter_fonts::Feature] = all.get(from..to).unwrap_or_default();
             let shaped = if use_levels {
-                localoffice_fonts::shape_run(&st.face, shape_text, features, map, key.rtl)
+                localwriter_fonts::shape_run(&st.face, shape_text, features, map, key.rtl)
             } else {
-                localoffice_fonts::shape(&st.face, shape_text, features, map)
+                localwriter_fonts::shape(&st.face, shape_text, features, map)
             };
             let k = st.size / st.face.upem.max(1.0) as f32;
             let hscale = rc.scale / 100.0;
             // Group glyphs by cluster byte offset; graphemes may span several shaper clusters.
             // Complex-script syllables the graphemes split (Myanmar vowel signs, stacked
             // consonants) stay one cluster: the caret never stops inside them.
-            let mut bounds: Vec<usize> = localoffice_doc::cluster::cluster_starts(shape_text);
+            let mut bounds: Vec<usize> = localwriter_doc::cluster::cluster_starts(shape_text);
             if expands {
                 // The capitals drawn for one character (the two S of ß) are one cluster: the
                 // caret, selection and line breaking never stop inside the character.
@@ -1270,11 +1270,11 @@ impl<'a> Builder<'a> {
         start: usize,
         end: usize,
         rc: &Arc<ResolvedChar>,
-        align: localoffice_doc::eq::OAlign,
+        align: localwriter_doc::eq::OAlign,
         width: f32,
         dy: f32,
     ) -> Option<usize> {
-        use localoffice_doc::eq::OAlign;
+        use localwriter_doc::eq::OAlign;
         let (c0, s0) = (self.clusters.len(), self.shown.len());
         for t in texts {
             self.shape_atomic(t, start, end, rc);
@@ -1318,20 +1318,20 @@ impl<'a> Builder<'a> {
 
 /// Lay out an `EQ \o` field (ECMA-376 Part 1 §17.16.5.20): its arguments drawn on top of one
 /// another, as one cluster. An enclosure symbol among them (○ □ △ ◇, see
-/// [`localoffice_doc::eq::EncloseShape`]) is drawn as a shape around the text rather than as a
+/// [`localwriter_doc::eq::EncloseShape`]) is drawn as a shape around the text rather than as a
 /// glyph, so it never depends on the font: "shrink text" scales the text to fit inside a shape
 /// one em high, "enlarge symbol" grows the shape around text at its own size.
 fn overstrike(
     b: &mut Builder,
-    o: &localoffice_doc::eq::Overstrike,
+    o: &localwriter_doc::eq::Overstrike,
     instr: &str,
     start: usize,
     end: usize,
     rc: &Arc<ResolvedChar>,
     enclosures: &mut Vec<(usize, Enclosed)>,
 ) {
-    use localoffice_doc::eq::{EncloseShape, EncloseStyle, Enclosure};
-    use localoffice_doc::para::ShapeKind;
+    use localwriter_doc::eq::{EncloseShape, EncloseStyle, Enclosure};
+    use localwriter_doc::para::ShapeKind;
     let shapes: Vec<EncloseShape> = o.args.iter().filter_map(|a| EncloseShape::from_symbol(a)).collect();
     let texts: Vec<&str> = o.args.iter().filter(|a| !a.is_empty() && EncloseShape::from_symbol(a).is_none()).map(String::as_str).collect();
     let Some(shape) = shapes.first().copied() else {
@@ -1471,7 +1471,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
     let doc = env.doc;
     let mut rp = doc.styles.resolve_para_in(&p.props, env.table.map(|t| &t.para));
     if let Some(spacing) = env.read_line_spacing.filter(|s| s.is_finite() && (1.0..=2.0).contains(s)) {
-        rp.line_spacing = localoffice_doc::props::LineSpacing::Multiple(spacing);
+        rp.line_spacing = localwriter_doc::props::LineSpacing::Multiple(spacing);
     }
     let para_style = p.props.style.as_deref();
     let table_chr = env.table.map(|t| &t.chr);
@@ -1634,7 +1634,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
                         Some(o) if o.is_drawing() => {
                             // A hidden one takes no room, and with no height its line doesn't draw it.
                             if let Some((w, saved_h, float)) = o.frame()
-                                && float.wrap == localoffice_doc::para::Wrap::Inline
+                                && float.wrap == localwriter_doc::para::Wrap::Inline
                                 && !float.hidden
                             {
                                 // A picture wider than the line keeps its size, as in Word: it runs past
@@ -1654,7 +1654,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
                         }
                         Some(o @ InlineObject::Field { instr, result, code, .. }) => {
                             let form = if env.field_codes != *code { None } else { o.legacy_form() };
-                            if let Some(localoffice_doc::legacy_form::LegacyForm::CheckBox { size, .. }) = form {
+                            if let Some(localwriter_doc::legacy_form::LegacyForm::CheckBox { size, .. }) = form {
                                 // Word draws a legacy check box as a square as tall as the text's
                                 // line (its ascent and descent), scaled to an explicit size, and
                                 // takes that much room on the line (see `display::check_box`).
@@ -1685,7 +1685,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
                                 }
                                 b.shape_atomic(&field_code_text(instr), start, end, &Arc::new(shaded));
                             } else {
-                                match localoffice_doc::eq::parse_overstrike(instr) {
+                                match localwriter_doc::eq::parse_overstrike(instr) {
                                     Some(o) => overstrike(&mut b, &o, instr, start, end, &rc, &mut enclosures),
                                     None => {
                                         let (t, page_dep) = field_text_on(instr, result, env.fields, env.fields.page_at(start));
@@ -1715,7 +1715,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
                                 custom.clone()
                             };
                             let mut sup = (*rc).clone();
-                            sup.vert_align = localoffice_doc::props::VertAlign::Superscript;
+                            sup.vert_align = localwriter_doc::props::VertAlign::Superscript;
                             b.shape_atomic(&num, start, end, &Arc::new(sup));
                             notes.push((b.clusters.len().saturating_sub(1), *id));
                         }
@@ -1753,7 +1753,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
                             let mut rr = (*resolve(&props.clone().overlaid(ruby_props))).clone();
                             let size = if size.is_finite() { size.clamp(1.0, 1584.0) } else { rc.size * 0.5 };
                             (rr.size, rr.size_cs, rr.position) = (size, size, 0.0);
-                            rr.vert_align = localoffice_doc::props::VertAlign::Baseline;
+                            rr.vert_align = localwriter_doc::props::VertAlign::Baseline;
                             let raise = if raise.is_finite() { raise.clamp(0.0, 1584.0) } else { rc.size };
                             if let Some(r) = b.ruby(base, ruby, *align, raise, start, end, &rc, &Arc::new(rr)) {
                                 rubies.push(r);
@@ -1853,7 +1853,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
     }
     // Myanmar has no spaces between words: it wraps between syllables.
     if text.chars().any(|c| matches!(u32::from(c), 0x1000..=0x109F | 0xA9E0..=0xA9FF | 0xAA60..=0xAA7F)) {
-        found.extend(localoffice_doc::cluster::myanmar_breaks(&text));
+        found.extend(localwriter_doc::cluster::myanmar_breaks(&text));
         found.sort_unstable();
         found.dedup();
     }
@@ -1875,11 +1875,11 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
         // private-use code (Font Awesome's Twitter logo at U+F081, #1683): it shows the level's
         // default bullet instead.
         let fixed = undrawable_bullet(text, lvl, &rc)
-            .then(|| localoffice_doc::numbering::default_bullet(usize::from(rp.numbering.map_or(0, |n| n.level))).to_string());
+            .then(|| localwriter_doc::numbering::default_bullet(usize::from(rp.numbering.map_or(0, |n| n.level))).to_string());
         let text: &str = fixed.as_deref().unwrap_or(text);
         // A Symbol/Wingdings bullet (U+F0B7…) is drawn as its Unicode equivalent when the font
         // isn't installed (shaping maps it); the label's text reads as that character too.
-        let shown = |t: &str| -> String { localoffice_doc::symbol_fonts::map_text(&rc.font, t) };
+        let shown = |t: &str| -> String { localwriter_doc::symbol_fonts::map_text(&rc.font, t) };
         // A right-to-left paragraph's label reads right to left too ("1." shows as ".1"), and its
         // brackets are mirrored (UAX #9 L4), which the shaper does for the runs the levels report
         // as right to left ("(" drawn as ")"), so "(1)" reads "(1)" and not ")1(".
@@ -1928,7 +1928,7 @@ pub fn layout_para(p: &Paragraph, env: &ParaEnv) -> ParaLayout {
     let joined_cluster_starts = if p.text.is_ascii() {
         Vec::new()
     } else {
-        let boundaries = localoffice_doc::cluster::cluster_starts(&p.text);
+        let boundaries = localwriter_doc::cluster::cluster_starts(&p.text);
         let mut joined: Vec<usize> =
             b.clusters.iter().filter_map(|c| (c.start < p.text.len() && boundaries.binary_search(&c.start).is_err()).then_some(c.start)).collect();
         joined.sort_unstable();
@@ -2086,7 +2086,7 @@ fn break_lines(pl: &mut ParaLayout, env: &ParaEnv, mark_style: u32, level: Optio
     let first_left = rp.indent_left + rp.indent_first;
     // Word 2013+ (compatibility mode 15) fits more text on a justified line by shrinking its
     // spaces (`space_room`); never on lines with tabs.
-    let shrink_spaces = rp.align == Align::Justify && env.doc.settings.compat_mode >= localoffice_doc::COMPAT_MODE_CURRENT;
+    let shrink_spaces = rp.align == Align::Justify && env.doc.settings.compat_mode >= localwriter_doc::COMPAT_MODE_CURRENT;
     // Word stretches a justified line ending in a manual line break unless the document says not to.
     let expand_break = !env.doc.settings.do_not_expand_shift_return;
     let hanging_at = if rp.indent_first < 0.0 { Some(rp.indent_left) } else { None };
@@ -2911,7 +2911,7 @@ fn row_spans(exclusions: &[Exclusion], top: f32, h: f32, table_h: f32, lo: f32, 
 }
 
 /// Word's default hyphenation zone (0.25"), points.
-const HYPHENATION_ZONE: f32 = localoffice_doc::DEFAULT_HYPHENATION_ZONE;
+const HYPHENATION_ZONE: f32 = localwriter_doc::DEFAULT_HYPHENATION_ZONE;
 
 /// How much of their width the spaces of a justified line may give up to fit more text (Word
 /// 2013+, compatibility mode 15).
@@ -2967,7 +2967,7 @@ fn hyphen_glyph(pl: &ParaLayout, style: u32, cache: &mut Vec<(u32, u32, f32)>) -
         .styles
         .get(style as usize)
         .and_then(|st| {
-            let g = localoffice_fonts::shape(&st.face, "-", &[], |c| c).into_iter().next()?;
+            let g = localwriter_fonts::shape(&st.face, "-", &[], |c| c).into_iter().next()?;
             let k = st.size / st.face.upem.max(1.0) as f32 * st.rc.scale / 100.0;
             Some((style, g.gid, g.x_advance as f32 * k))
         })
@@ -2985,8 +2985,8 @@ fn hyphenation_points(text: &str, to_para: impl Fn(usize) -> Option<usize>, pl: 
     let mut bytes: Vec<usize> = text.char_indices().filter(|(_, c)| *c == SOFT_HYPHEN).map(|(i, c)| i + c.len_utf8()).collect();
     // Vietnamese words are single syllables and never take a hyphen: no automatic hyphenation in
     // a Vietnamese paragraph, nor in a word written with a Vietnamese-only letter (`Nguyễn`).
-    if auto && !localoffice_proof::vi::looks_vietnamese(text) {
-        let lim = localoffice_proof::hyphen::Limits::default();
+    if auto && !localwriter_proof::vi::looks_vietnamese(text) {
+        let lim = localwriter_proof::hyphen::Limits::default();
         let mut start: Option<usize> = None;
         for (i, c) in text.char_indices().chain(std::iter::once((text.len(), ' '))) {
             let word_char = c.is_alphabetic() || c == '\'' || c == '\u{2019}';
@@ -2998,15 +2998,15 @@ fn hyphenation_points(text: &str, to_para: impl Fn(usize) -> Option<usize>, pl: 
                     let all_caps = |w: &str| w.chars().filter(|c| c.is_alphabetic()).all(char::is_uppercase);
                     if let Some(w) = text.get(a..i)
                         && w.chars().count() >= lim.min_word
-                        && !w.chars().any(localoffice_fonts::is_rtl)
-                        && !localoffice_proof::vi::is_vietnamese_word(w)
+                        && !w.chars().any(localwriter_fonts::is_rtl)
+                        && !localwriter_proof::vi::is_vietnamese_word(w)
                         && (caps || !all_caps(w))
                     {
                         // The word's language: its first letter's run, found by its place in `p.text`.
                         let first = w.chars().next().map_or(1, char::len_utf8);
                         let lang = to_para(a + first).map(|e| lang_at(runs, e.saturating_sub(first))).unwrap_or_default();
                         let offs: Vec<usize> = w.char_indices().map(|(o, _)| o).collect();
-                        for pt in localoffice_proof::hyphen::hyphen_points_in(w, &lim, lang) {
+                        for pt in localwriter_proof::hyphen::hyphen_points_in(w, &lim, lang) {
                             if let Some(o) = offs.get(pt) {
                                 bytes.push(a + o);
                             }
@@ -3280,13 +3280,13 @@ impl ParaLayout {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ProofRun {
     pub range: std::ops::Range<usize>,
-    pub lang: localoffice_proof::ProofLang,
+    pub lang: localwriter_proof::ProofLang,
     pub skip: bool,
 }
 
 impl ProofRun {
     fn of(range: std::ops::Range<usize>, rc: &ResolvedChar) -> ProofRun {
-        ProofRun { range, lang: localoffice_proof::ProofLang::from_tag(rc.lang.as_deref()), skip: rc.no_proof || rc.hidden || rc.link.is_some() }
+        ProofRun { range, lang: localwriter_proof::ProofLang::from_tag(rc.lang.as_deref()), skip: rc.no_proof || rc.hidden || rc.link.is_some() }
     }
 }
 
@@ -3298,30 +3298,30 @@ pub fn proof_runs(doc: &Document, p: &Paragraph, table: Option<&CharProps>) -> V
 }
 
 /// The language of the run holding byte `off` (English past the last run).
-fn lang_at(runs: &[ProofRun], off: usize) -> localoffice_proof::ProofLang {
+fn lang_at(runs: &[ProofRun], off: usize) -> localwriter_proof::ProofLang {
     let k = runs.partition_point(|r| r.range.end <= off);
     runs.get(k).filter(|r| r.range.start <= off).map(|r| r.lang).unwrap_or_default()
 }
 
 /// Spelling and grammar issues in a paragraph, in order: each word in its run's language
-/// ([`localoffice_proof::check_text_with`]: what spelling skips, and grammar only with `grammar`),
+/// ([`localwriter_proof::check_text_with`]: what spelling skips, and grammar only with `grammar`),
 /// and none touching a run left unchecked.
 ///
 /// `list_item` (see [`is_list_item`]) turns off the capital-first-word grammar rule.
 pub fn paragraph_issues(
     p: &Paragraph,
     runs: &[ProofRun],
-    spelling: &localoffice_proof::Options,
+    spelling: &localwriter_proof::Options,
     grammar: bool,
     list_item: bool,
-) -> Vec<localoffice_proof::Issue> {
+) -> Vec<localwriter_proof::Issue> {
     if p.text.trim().is_empty() || p.text.len() > 100_000 {
         return Vec::new();
     }
     let text = proof_text(p);
-    let spans: Vec<(std::ops::Range<usize>, localoffice_proof::ProofLang)> = runs.iter().map(|r| (r.range.clone(), r.lang)).collect();
+    let spans: Vec<(std::ops::Range<usize>, localwriter_proof::ProofLang)> = runs.iter().map(|r| (r.range.clone(), r.lang)).collect();
     let skip = |a: usize, b: usize| runs.iter().any(|r| r.skip && r.range.start < b && a < r.range.end);
-    localoffice_proof::check_text_with(&text, &spans, spelling, grammar, list_item).into_iter().filter(|i| !skip(i.start, i.end)).collect()
+    localwriter_proof::check_text_with(&text, &spans, spelling, grammar, list_item).into_iter().filter(|i| !skip(i.start, i.end)).collect()
 }
 
 /// Whether the paragraph is a list item: its own numbering, or its style's, names a list (not 0).
@@ -3339,14 +3339,14 @@ fn proof_issues(
 ) -> Vec<(usize, usize, bool)> {
     paragraph_issues(p, runs, &opts.spelling, opts.grammar, list_item)
         .into_iter()
-        .map(|i| (i.start, i.end, i.kind == localoffice_proof::IssueKind::Grammar))
+        .map(|i| (i.start, i.end, i.kind == localwriter_proof::IssueKind::Grammar))
         .filter(|&(a, b, grammar)| grammar || !typing.is_some_and(|(s, e)| a < e && s < b))
         .collect()
 }
 
 /// Text for proofing with the same byte offsets: inline objects and tracked deletions become
 /// U+0001 bytes (neither words nor spaces).
-pub fn proof_text(p: &localoffice_doc::Paragraph) -> String {
+pub fn proof_text(p: &localwriter_doc::Paragraph) -> String {
     let mut out = String::with_capacity(p.text.len());
     // The run holding each character ([`Paragraph::props_of_char`]), found by walking the runs
     // along with the text rather than from the first run for every character.
@@ -3359,7 +3359,7 @@ pub fn proof_text(p: &localoffice_doc::Paragraph) -> String {
             end = end.saturating_add(run.map_or(0, |r| r.len));
         }
         let props = run.map_or(&p.mark, |r| &r.props);
-        let deleted = c == localoffice_doc::para::OBJ || props.del.is_some();
+        let deleted = c == localwriter_doc::para::OBJ || props.del.is_some();
         if deleted {
             for _ in 0..c.len_utf8() {
                 out.push('\u{1}');

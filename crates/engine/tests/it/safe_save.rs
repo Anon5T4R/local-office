@@ -3,15 +3,15 @@
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use localoffice_doc::{Document, StoryRef};
-use localoffice_engine::{Session, io};
+use localwriter_doc::{Document, StoryRef};
+use localwriter_engine::{Session, io};
 use serde_json::json;
 
 struct Scratch(PathBuf);
 impl Scratch {
     fn new() -> Self {
         static NEXT: AtomicU64 = AtomicU64::new(0);
-        let path = std::env::temp_dir().join(format!("localoffice-safe-save-test-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
+        let path = std::env::temp_dir().join(format!("localwriter-safe-save-test-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
         std::fs::create_dir(&path).unwrap();
         Self(path)
     }

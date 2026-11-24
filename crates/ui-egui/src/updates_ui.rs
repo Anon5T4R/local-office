@@ -18,7 +18,7 @@ pub(crate) struct Runtime {
 impl Default for Runtime {
     fn default() -> Self {
         Self {
-            updater: Updater::new(&craft_update::suite::LOCALOFFICE, env!("CARGO_PKG_VERSION")),
+            updater: Updater::new(&craft_update::suite::LOCALWRITER, env!("CARGO_PKG_VERSION")),
             startup_check: false,
             check_requested: false,
             repaint: None,
@@ -67,7 +67,7 @@ pub(crate) fn show(app: &mut WordApp, ctx: &egui::Context) {
         Status::Idle => (false, None),
         Status::Checking => (true, None),
         Status::UpToDate => {
-            (true, Some(tl!("Local Word {version} is currently the newest version available.").replace("{version}", env!("CARGO_PKG_VERSION"))))
+            (true, Some(tl!("Local Writer {version} is currently the newest version available.").replace("{version}", env!("CARGO_PKG_VERSION"))))
         }
         Status::Failed(e) => (true, Some(tl!("Could not check for updates:\n{error}").replace("{error}", e))),
     };

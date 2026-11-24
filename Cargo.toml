@@ -2,7 +2,7 @@
 resolver = "3"
 members = ["crates/*", "apps/*", "xtask"]
 exclude = ["vendor", "libs"]
-default-members = ["crates/*", "apps/localoffice", "apps/localoffice-cli", "xtask"]
+default-members = ["crates/*", "apps/localwriter", "apps/localwriter-cli", "xtask"]
 
 [workspace.package]
 version = "0.11.44"
@@ -12,27 +12,27 @@ rust-version = "1.95"
 # Nada da suíte vai ao crates.io: dependência `path` sem versão numa crate publicável reprova o
 # `cargo-deny` (wildcards). Cada membro herda com `publish.workspace = true`.
 publish = false
-repository = "https://github.com/Anon5T4R/local-office"
+repository = "https://github.com/Styx-Studios/Local-Writer"
 
 [workspace.dependencies]
 # internal
-localoffice-geom = { path = "crates/geom" }
-localoffice-doc = { path = "crates/doc" }
-localoffice-fonts = { path = "crates/fonts" }
-localoffice-layout = { path = "crates/layout" }
-localoffice-docx = { path = "crates/docx" }
-localoffice-docbin = { path = "crates/docbin" }
-localoffice-formats = { path = "crates/formats" }
-localoffice-render = { path = "crates/render" }
-localoffice-pdf = { path = "crates/pdf" }
-localoffice-proof = { path = "crates/proof" }
-localoffice-engine = { path = "crates/engine" }
-localoffice-mcp = { path = "crates/mcp" }
-localoffice-zotero = { path = "crates/zotero" }
-localoffice-control-key = { path = "crates/control-key" }
-localoffice-ui-egui = { path = "crates/ui-egui" }
-localoffice-metafile = { path = "crates/metafile" }
-localoffice-ai = { path = "crates/ai" }
+localwriter-geom = { path = "crates/geom" }
+localwriter-doc = { path = "crates/doc" }
+localwriter-fonts = { path = "crates/fonts" }
+localwriter-layout = { path = "crates/layout" }
+localwriter-docx = { path = "crates/docx" }
+localwriter-docbin = { path = "crates/docbin" }
+localwriter-formats = { path = "crates/formats" }
+localwriter-render = { path = "crates/render" }
+localwriter-pdf = { path = "crates/pdf" }
+localwriter-proof = { path = "crates/proof" }
+localwriter-engine = { path = "crates/engine" }
+localwriter-mcp = { path = "crates/mcp" }
+localwriter-zotero = { path = "crates/zotero" }
+localwriter-control-key = { path = "crates/control-key" }
+localwriter-ui-egui = { path = "crates/ui-egui" }
+localwriter-metafile = { path = "crates/metafile" }
+localwriter-ai = { path = "crates/ai" }
 
 # foundation
 kurbo = { version = "0.13", features = ["serde"] }
@@ -81,7 +81,7 @@ craft-desktop-theme = { path = "libs/craft-libs/crates/desktop-theme/" }
 craft-mcp = { path = "libs/craft-libs/crates/mcp/" }
 # BYOK AI shared by the suite's apps (rev 7340a2ba7fc30952a4c2e8aa32210fde29a7a47c) under libs/:
 # one OpenAI-compatible client for every provider, keys in the OS keychain. `crates/ai` gives it
-# LocalOffice's identity (config folder, keychain service, OpenRouter headers).
+# LocalWriter's identity (config folder, keychain service, OpenRouter headers).
 local-ai = { path = "libs/local-ai" }
 quick-xml = "0.41"
 zip = { version = "3", default-features = false, features = ["deflate"] }

@@ -10,7 +10,7 @@ use std::io::Write;
 
 use image::ImageEncoder;
 
-use localoffice_doc::props::Rgb;
+use localwriter_doc::props::Rgb;
 
 /// Deepest container nesting walked (groups inside groups…).
 const MAX_DEPTH: usize = 12;

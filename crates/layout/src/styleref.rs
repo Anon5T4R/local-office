@@ -14,10 +14,10 @@
 
 use std::collections::HashMap;
 
-use localoffice_doc::numbering::Counters;
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::section::NumFormat;
-use localoffice_doc::{Document, Path, StoryRef, StyleKind};
+use localwriter_doc::numbering::Counters;
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::section::NumFormat;
+use localwriter_doc::{Document, Path, StoryRef, StyleKind};
 
 /// The result when no paragraph has the style (or the style doesn't exist).
 pub const NO_TEXT: &str = "Error: no paragraph in this style.";
@@ -198,7 +198,7 @@ impl StyleIndex {
                 if let Some(cs) = &r.props.style
                     && let Some(t) = p.text.get(off..end)
                 {
-                    let t: String = t.chars().filter(|c| *c != localoffice_doc::para::OBJ).collect();
+                    let t: String = t.chars().filter(|c| *c != localwriter_doc::para::OBJ).collect();
                     match runs.last_mut() {
                         Some((s, prev)) if s == cs => prev.push_str(&t),
                         _ => runs.push((cs.clone(), t)),
@@ -328,7 +328,7 @@ fn suppress(label: &str, levels: &[(String, bool)]) -> String {
 }
 
 /// Does `p` hold a STYLEREF field?
-pub fn has_styleref(p: &localoffice_doc::Paragraph) -> bool {
+pub fn has_styleref(p: &localwriter_doc::Paragraph) -> bool {
     p.objects.iter().any(is_styleref)
 }
 

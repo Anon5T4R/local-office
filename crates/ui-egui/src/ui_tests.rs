@@ -5,11 +5,11 @@
 use egui_kittest::Harness;
 use egui_kittest::kittest::NodeT;
 
-use localoffice_engine::Session;
+use localwriter_engine::Session;
 
 use crate::WordApp;
 
-/// The desktop shell's minimum inner size (apps/localoffice/src/main.rs).
+/// The desktop shell's minimum inner size (apps/localwriter/src/main.rs).
 const NARROW: f32 = 760.0;
 const NARROW_HEIGHT: f32 = 480.0;
 
@@ -17,7 +17,7 @@ const NARROW_HEIGHT: f32 = 480.0;
 const PIXEL_PNG: &str = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==";
 
 fn app(text: &str) -> WordApp {
-    let mut app = WordApp::new(Session::new(localoffice_doc::Document::from_text(text)), crate::Services::default());
+    let mut app = WordApp::new(Session::new(localwriter_doc::Document::from_text(text)), crate::Services::default());
     let _ = app.run("document.setText", serde_json::json!({ "text": text }));
     app
 }
@@ -299,7 +299,7 @@ fn the_shell_fits_the_narrow_window() {
 #[test]
 fn the_update_card_fits_the_narrow_window() {
     let release = craft_update::Release { version: craft_update::version::parse("0.99.0"), tag: "v0.99.0".into(), ..Default::default() };
-    let mut prompt = craft_update::StartupPrompt::new(&craft_update::suite::LOCALOFFICE, release, env!("CARGO_PKG_VERSION"));
+    let mut prompt = craft_update::StartupPrompt::new(&craft_update::suite::LOCALWRITER, release, env!("CARGO_PKG_VERSION"));
     let mut h = Harness::builder().with_size(egui::vec2(NARROW, NARROW_HEIGHT)).build_ui(|ui| {
         prompt.show(ui.ctx());
     });

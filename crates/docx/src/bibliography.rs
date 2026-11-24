@@ -3,7 +3,7 @@
 
 use std::collections::HashSet;
 
-use localoffice_doc::Source;
+use localwriter_doc::Source;
 
 use crate::DocxError;
 use crate::xml::El;

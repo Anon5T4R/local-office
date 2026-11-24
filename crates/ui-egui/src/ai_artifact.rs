@@ -1,6 +1,6 @@
 //! The artifact actions: one request, answered as a whole document, applied by the engine.
 //!
-//! Two actions share the contract in [`localoffice_ai::actions`]: a **new document** from a
+//! Two actions share the contract in [`localwriter_ai::actions`]: a **new document** from a
 //! description, and the open document **rewritten into a copy** beside itself. The original file is
 //! never written - `EditDoc` saves the answer as `<name> AI.docx` next to it - and an answer the
 //! engine refuses reopens the dialog with the reason instead of leaving half a document behind.
@@ -8,8 +8,8 @@
 use std::path::{Path, PathBuf};
 
 use craft_ai_ui as ui;
-use localoffice_ai::{Stream, actions};
-use localoffice_engine::Session;
+use localwriter_ai::{Stream, actions};
+use localwriter_engine::Session;
 use serde_json::json;
 
 use crate::i18n;
@@ -163,7 +163,7 @@ impl Artifact {
     }
 
     /// The dialog: what to write, how, and the reason the last answer was refused.
-    pub fn dialog(&mut self, session: &mut Session, connection: Result<localoffice_ai::Connection, String>, ctx: &egui::Context) {
+    pub fn dialog(&mut self, session: &mut Session, connection: Result<localwriter_ai::Connection, String>, ctx: &egui::Context) {
         if !self.dialog {
             return;
         }
@@ -251,7 +251,7 @@ impl Artifact {
     }
 
     /// Turns the dialog into a request and starts it on a worker thread.
-    fn start(&mut self, session: &Session, connection: Result<localoffice_ai::Connection, String>) {
+    fn start(&mut self, session: &Session, connection: Result<localwriter_ai::Connection, String>) {
         self.reason = None;
         let request = match self.request_for(session) {
             Ok(request) => request,
@@ -301,7 +301,7 @@ impl Artifact {
                 if session.path.is_none() {
                     return Err(tl!("Save the document first: the copy is written beside it.").into());
                 }
-                let document = session.doc.plain_text(localoffice_doc::StoryRef::Body);
+                let document = session.doc.plain_text(localwriter_doc::StoryRef::Body);
                 if document.trim().is_empty() {
                     return Err(tl!("The document has no text to rewrite.").into());
                 }
@@ -465,8 +465,8 @@ fn name_of(path: &Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use localoffice_ai::actions::{Block, Outcome};
-    use localoffice_engine::sample::sample_document;
+    use localwriter_ai::actions::{Block, Outcome};
+    use localwriter_engine::sample::sample_document;
 
     fn session() -> Session {
         Session::new(sample_document())
@@ -484,7 +484,7 @@ mod tests {
     }
 
     fn style_at(session: &Session, block: usize) -> Option<String> {
-        session.doc.para(localoffice_doc::StoryRef::Body, &localoffice_doc::Path::top(block)).and_then(|para| para.props.style.clone())
+        session.doc.para(localwriter_doc::StoryRef::Body, &localwriter_doc::Path::top(block)).and_then(|para| para.props.style.clone())
     }
 
     /// A new document is its own tab, with the answer's paragraphs and their styles.
@@ -496,18 +496,18 @@ mod tests {
         assert!(copy.is_none(), "a new document writes no copy");
         assert_ne!(s.document_id(), before, "the new document is the active one");
         assert!(s.is_open(before), "the document that was open stays open");
-        assert_eq!(s.doc.plain_text(localoffice_doc::StoryRef::Body).trim_end(), "Sepse\nDefinição.\nfebre\nleucocitose");
+        assert_eq!(s.doc.plain_text(localwriter_doc::StoryRef::Body).trim_end(), "Sepse\nDefinição.\nfebre\nleucocitose");
         assert_eq!(style_at(&s, 0).as_deref(), Some("Heading1"));
         assert_eq!(style_at(&s, 1), None, "a paragraph keeps the Normal style");
         let listed =
-            s.doc.para(localoffice_doc::StoryRef::Body, &localoffice_doc::Path::top(2)).and_then(|p| s.doc.styles.resolve_para(&p.props).numbering);
+            s.doc.para(localwriter_doc::StoryRef::Body, &localwriter_doc::Path::top(2)).and_then(|p| s.doc.styles.resolve_para(&p.props).numbering);
         assert!(listed.is_some_and(|numbering| numbering.num != 0), "list items carry bullets");
     }
 
     /// The rewrite is a copy beside the original, and the original file is byte-identical.
     #[test]
     fn the_rewrite_goes_to_a_copy_and_leaves_the_original_alone() {
-        let dir = std::env::temp_dir().join(format!("localoffice-ai-copy-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-ai-copy-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("temp dir");
         let original = dir.join("Protocolo.docx");
@@ -525,7 +525,7 @@ mod tests {
     /// A second rewrite of the same document takes the next name instead of overwriting the first.
     #[test]
     fn a_taken_copy_name_is_numbered() {
-        let dir = std::env::temp_dir().join(format!("localoffice-ai-number-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-ai-number-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("temp dir");
         let original = dir.join("Ata.docx");
@@ -538,21 +538,21 @@ mod tests {
     /// A failed copy is taken back whole: the open document and its path are as they were.
     #[test]
     fn a_failed_rewrite_is_taken_back_whole() {
-        let dir = std::env::temp_dir().join(format!("localoffice-ai-fail-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-ai-fail-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("temp dir");
         let original = dir.join("Ata.docx");
         std::fs::write(&original, b"x").expect("seed");
         let mut s = session();
         s.path = Some(original.clone());
-        let before = s.doc.plain_text(localoffice_doc::StoryRef::Body);
+        let before = s.doc.plain_text(localwriter_doc::StoryRef::Body);
         // The copy lands in a folder that does not exist: saving fails after the document was
         // rewritten, so the whole apply has to come back.
         let missing = dir.join("missing").join("Ata.docx");
         s.path = Some(missing);
         let reason = apply(&mut s, Kind::CopyEdit, &doc("Protocolo")).expect_err("the save fails");
         assert!(!reason.is_empty());
-        assert_eq!(s.doc.plain_text(localoffice_doc::StoryRef::Body), before, "the document came back");
+        assert_eq!(s.doc.plain_text(localwriter_doc::StoryRef::Body), before, "the document came back");
         assert_eq!(s.path.as_deref(), Some(dir.join("missing").join("Ata.docx").as_path()), "so did its path");
         let _ = std::fs::remove_dir_all(&dir);
     }
@@ -615,12 +615,12 @@ mod tests {
 
     /// The real-model end-to-end: network and a key, so `#[ignore]`. A free model works with the
     /// suite's zero-credit key. Run with
-    /// `AI_TEST_MODEL=nvidia/nemotron-3-ultra-550b-a55b:free cargo test -p localoffice-ui-egui --lib ai_artifact::tests::a_real_model_writes_a_document -- --ignored --nocapture`.
+    /// `AI_TEST_MODEL=nvidia/nemotron-3-ultra-550b-a55b:free cargo test -p localwriter-ui-egui --lib ai_artifact::tests::a_real_model_writes_a_document -- --ignored --nocapture`.
     #[test]
     #[ignore = "network + a real provider key"]
     fn a_real_model_writes_a_document() {
         let key = real_key();
-        let connection = localoffice_ai::Connection {
+        let connection = localwriter_ai::Connection {
             id: "real".into(),
             provider: "openrouter".into(),
             label: "OpenRouter".into(),
@@ -634,7 +634,7 @@ mod tests {
         };
         let messages = actions::messages(&request, "pt-br").expect("messages");
         let mut pieces = 0;
-        let answer = localoffice_ai::chat_stream_with_key(&connection, &key, &messages, &mut |_: &str| pieces += 1).expect("a real answer");
+        let answer = localwriter_ai::chat_stream_with_key(&connection, &key, &messages, &mut |_: &str| pieces += 1).expect("a real answer");
         println!("--- answer ({pieces} pieces) ---\n{answer}\n--------------");
         let outcome = actions::interpret(&request, &answer).expect("the answer fits the contract");
         let mut s = session();
@@ -642,7 +642,7 @@ mod tests {
         let copy = apply(&mut s, Kind::NewDoc, &outcome).expect("applied");
         assert!(copy.is_none(), "a new document writes no copy");
         assert_ne!(s.document_id(), before, "the document is the new one");
-        let text = s.doc.plain_text(localoffice_doc::StoryRef::Body);
+        let text = s.doc.plain_text(localwriter_doc::StoryRef::Body);
         println!("--- document ---\n{text}\n--------------");
         assert!(text.split_whitespace().count() > 40, "real content, not a stub: {text}");
         assert!(pieces > 1, "the answer streamed in pieces");

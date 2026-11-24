@@ -1,12 +1,12 @@
 //! Blocks, paragraphs, runs, objects and tables → WordprocessingML.
 
-use localoffice_doc::effects::ShapeEffects;
-use localoffice_doc::fill::{Fill, GradientFlip, GradientKind, PathShape};
-use localoffice_doc::para::{AltText, Anchor, Float, NoteKind, ShapeKind, Wrap};
-use localoffice_doc::props::{CharProps, PropChange, Rgb, TextColor};
-use localoffice_doc::section::{LineNumberRestart, NoteProps, SectionProps, SectionStart};
-use localoffice_doc::table::Table;
-use localoffice_doc::{Block, Blocks, InlineObject, Paragraph, RevisionKind};
+use localwriter_doc::effects::ShapeEffects;
+use localwriter_doc::fill::{Fill, GradientFlip, GradientKind, PathShape};
+use localwriter_doc::para::{AltText, Anchor, Float, NoteKind, ShapeKind, Wrap};
+use localwriter_doc::props::{CharProps, PropChange, Rgb, TextColor};
+use localwriter_doc::section::{LineNumberRestart, NoteProps, SectionProps, SectionStart};
+use localwriter_doc::table::Table;
+use localwriter_doc::{Block, Blocks, InlineObject, Paragraph, RevisionKind};
 
 use super::props::{ChangeAttrs, borders, open_change, ppr_inner, rpr, rpr_inner, tblpr, tcpr, trpr};
 use super::{PartRels, Writer};
@@ -144,7 +144,7 @@ impl Writer<'_> {
         let inline = std::mem::take(&mut self.inline_controls);
         // A drop cap is a separate framed paragraph holding the first character.
         if let Some(lines) = p.props.drop_cap.filter(|l| *l > 0)
-            && let Some(first) = p.text.chars().next().filter(|c| !matches!(*c, localoffice_doc::para::OBJ | '\t' | '\n' | '\u{c}' | '\u{e}'))
+            && let Some(first) = p.text.chars().next().filter(|c| !matches!(*c, localwriter_doc::para::OBJ | '\t' | '\n' | '\u{c}' | '\u{e}'))
             && p.text.len() > first.len_utf8()
         {
             let mut head = p.clone();
@@ -271,7 +271,7 @@ impl Writer<'_> {
         // Split into pieces with their props.
         let mut pieces: Vec<(Piece, &CharProps)> = Vec::new();
         let mut k = 0usize;
-        // Runs of mixed direction are split so Word orders them as LocalOffice does (#1543).
+        // Runs of mixed direction are split so Word orders them as LocalWriter does (#1543).
         let rtl_para = self.doc.styles.resolve_para(&p.props).bidi;
         let styles = &self.doc.styles;
         let para_style = p.props.style.as_deref();
@@ -293,7 +293,7 @@ impl Writer<'_> {
                     '\u{000E}' => Some(Piece::Br(Some("column"))),
                     '\u{2011}' => Some(Piece::NbHyphen),
                     '\u{00AD}' => Some(Piece::SoftHyphen),
-                    localoffice_doc::para::OBJ => {
+                    localwriter_doc::para::OBJ => {
                         let o = p.objects.get(k);
                         k += 1;
                         Some(match o {
@@ -553,7 +553,7 @@ impl Writer<'_> {
                     if let Some(mark) = self.pending_mark.take() {
                         let mut p = props.clone();
                         if p.style.is_none() && p.vert_align.is_none() {
-                            p.vert_align = Some(localoffice_doc::props::VertAlign::Superscript);
+                            p.vert_align = Some(localwriter_doc::props::VertAlign::Superscript);
                         }
                         self.rev_open(w, props);
                         w.open("w:r", &[]);
@@ -572,7 +572,7 @@ impl Writer<'_> {
                 let nid = self.note_id(*id, foot);
                 let mut p = props.clone();
                 if p.style.is_none() && p.vert_align.is_none() {
-                    p.vert_align = Some(localoffice_doc::props::VertAlign::Superscript);
+                    p.vert_align = Some(localwriter_doc::props::VertAlign::Superscript);
                 }
                 self.rev_open(w, props);
                 w.open("w:r", &[]);
@@ -590,7 +590,7 @@ impl Writer<'_> {
             // Editable charts and SmartArt keep main's model writer; opaque graphics and native
             // ink keep their original source and related parts.
             InlineObject::Graphic { w: gw, h: gh, alt, float, graphic } => {
-                let ink = graphic.kind == localoffice_doc::graphic::GraphicKind::Ink;
+                let ink = graphic.kind == localwriter_doc::graphic::GraphicKind::Ink;
                 let root = match (graphic.chart.as_deref(), graphic.smart_art.as_deref(), graphic.source.as_deref()) {
                     (Some(spec), _, _) => crate::xml::parse(self.chart_graphic(spec, rels).as_bytes()).ok(),
                     (None, Some(spec), _) => crate::xml::parse(self.smart_art_graphic(spec, *gw, *gh, rels).as_bytes()).ok(),
@@ -631,9 +631,9 @@ impl Writer<'_> {
                     }
                     let docpr = self.next_docpr();
                     let name = match graphic.kind {
-                        localoffice_doc::graphic::GraphicKind::Chart => format!("Chart {docpr}"),
-                        localoffice_doc::graphic::GraphicKind::Diagram => format!("Diagram {docpr}"),
-                        localoffice_doc::graphic::GraphicKind::Ink => format!("Ink {docpr}"),
+                        localwriter_doc::graphic::GraphicKind::Chart => format!("Chart {docpr}"),
+                        localwriter_doc::graphic::GraphicKind::Diagram => format!("Diagram {docpr}"),
+                        localwriter_doc::graphic::GraphicKind::Ink => format!("Ink {docpr}"),
                     };
                     let z = self.z;
                     self.graphic_frame(w, float, (*gw, *gh), &docpr, &name, alt, native.unwrap_or(&root));
@@ -698,12 +698,12 @@ impl Writer<'_> {
                 // The effect extent leaves room for the shadow and glow.
                 let mut float = float.clone();
                 for (e, fx) in float.effect.iter_mut().zip(effects.extent()) {
-                    *e = localoffice_geom::finite(*e).max(fx);
+                    *e = localwriter_geom::finite(*e).max(fx);
                 }
                 // Tight and Through wrapping need a polygon: the shape's outline unless it has one.
                 if matches!(float.wrap, Wrap::Tight | Wrap::Through) && float.wrap_polygon.is_none() {
-                    float.wrap_polygon = localoffice_doc::wrap::shape_outline(*kind, *sw, *sh, extra.corner)
-                        .and_then(|pts| localoffice_doc::wrap::WrapPolygon::from_unit(false, &pts))
+                    float.wrap_polygon = localwriter_doc::wrap::shape_outline(*kind, *sw, *sh, extra.corner)
+                        .and_then(|pts| localwriter_doc::wrap::WrapPolygon::from_unit(false, &pts))
                         .map(std::sync::Arc::new);
                 }
                 let float = &float;
@@ -765,7 +765,7 @@ impl Writer<'_> {
                         "wpg:wgp"
                     }
                 };
-                for c in children.iter().take(localoffice_doc::para::MAX_GROUP_CHILDREN) {
+                for c in children.iter().take(localwriter_doc::para::MAX_GROUP_CHILDREN) {
                     let at = (c.x, c.y);
                     match &c.obj {
                         InlineObject::Image { media, .. } => {
@@ -778,7 +778,7 @@ impl Writer<'_> {
                             self.wsp(w, &c.obj, Some(&id), at, rels, depth);
                         }
                         // Native ink kept from the file, with its fallback, at the member's place.
-                        InlineObject::Graphic { w: iw, h: ih, float, graphic, .. } if graphic.kind == localoffice_doc::graphic::GraphicKind::Ink => {
+                        InlineObject::Graphic { w: iw, h: ih, float, graphic, .. } if graphic.kind == localwriter_doc::graphic::GraphicKind::Ink => {
                             if let Some(src) = graphic.source.as_deref()
                                 && let Some(mut root) = self.embedded_tree(src, rels, None)
                             {
@@ -789,7 +789,7 @@ impl Writer<'_> {
                         _ => {}
                     }
                 }
-                if canvas.is_some() && float.spin() != localoffice_geom::Spin::default() {
+                if canvas.is_some() && float.spin() != localwriter_geom::Spin::default() {
                     // The canvas schema has no transform of its own: keep its turn in our
                     // extension (Word draws it unturned, as it can't turn a canvas).
                     w.open("wpc:extLst", &[]);
@@ -810,7 +810,7 @@ impl Writer<'_> {
                 // ECMA-376 §17.3.3.25: a run holding w:ruby (properties, ruby text, base text).
                 let t = if self.is_del(props) { "w:delText" } else { "w:t" };
                 let fin = |v: f32, d: f32| if v.is_finite() { v } else { d };
-                let hps = |v: f32, min: f32| n(localoffice_geom::to_half_points(v.clamp(min, 1584.0)));
+                let hps = |v: f32, min: f32| n(localwriter_geom::to_half_points(v.clamp(min, 1584.0)));
                 let size = fin(*size, 5.0).clamp(1.0, 1584.0);
                 let base_size = if base_size.is_finite() && *base_size > 0.0 { *base_size } else { props.size.unwrap_or(10.5) };
                 self.rev_open(w, props);
@@ -871,7 +871,7 @@ impl Writer<'_> {
             self.toc_field = Some((instr.to_string(), locked, dirty, props.clone()));
             return;
         }
-        if let Some(e) = localoffice_doc::eq::Enclosure::parse(instr) {
+        if let Some(e) = localwriter_doc::eq::Enclosure::parse(instr) {
             self.rev_open(w, props);
             self.enclosure(w, &e, locked, props);
             self.rev_close(w, props);
@@ -905,7 +905,7 @@ impl Writer<'_> {
                             flush(w, &mut buf);
                             w.empty("w:br", &[]);
                         }
-                        c if (c as u32) < 0x20 || c == localoffice_doc::para::OBJ => {}
+                        c if (c as u32) < 0x20 || c == localwriter_doc::para::OBJ => {}
                         c => buf.push(c),
                     }
                 }
@@ -919,8 +919,8 @@ impl Writer<'_> {
     /// Enclosed characters as Word stores them: an `eq \o\ac(○,字)` field with no result, whose
     /// code is split so the symbol and the text get their own sizes: "shrink text" makes the text
     /// smaller (raised to sit in the middle), "enlarge symbol" makes the symbol bigger (lowered).
-    fn enclosure(&self, w: &mut W, e: &localoffice_doc::eq::Enclosure, locked: bool, props: &CharProps) {
-        use localoffice_doc::eq::EncloseStyle;
+    fn enclosure(&self, w: &mut W, e: &localwriter_doc::eq::Enclosure, locked: bool, props: &CharProps) {
+        use localwriter_doc::eq::EncloseStyle;
         let del = self.is_del(props);
         let tag = if del { "w:delInstrText" } else { "w:instrText" };
         let base = props.size.unwrap_or_else(|| self.doc.styles.resolve_char(None, props).size).clamp(1.0, 1638.0);
@@ -1009,7 +1009,7 @@ impl Writer<'_> {
         w.open("pic:blipFill", &[]);
         w.empty("a:blip", &[("r:embed", &rid)]);
         if crop.iter().any(|c| *c > 0.0) {
-            let c = |v: f32| n((localoffice_geom::finite(v).clamp(0.0, 1.0) * 100_000.0).round() as i64);
+            let c = |v: f32| n((localwriter_geom::finite(v).clamp(0.0, 1.0) * 100_000.0).round() as i64);
             w.empty("a:srcRect", &[("l", &c(crop[0])), ("t", &c(crop[1])), ("r", &c(crop[2])), ("b", &c(crop[3]))]);
         }
         w.open("a:stretch", &[]);
@@ -1082,7 +1082,7 @@ impl Writer<'_> {
                 match extra.corner.filter(|_| *kind == ShapeKind::RoundedRectangle) {
                     Some(c) => {
                         w.open("a:avLst", &[]);
-                        let fmla = format!("val {}", c.min(localoffice_doc::connector::MAX_CORNER));
+                        let fmla = format!("val {}", c.min(localwriter_doc::connector::MAX_CORNER));
                         w.empty("a:gd", &[("name", "adj"), ("fmla", &fmla)]);
                         w.close("a:avLst");
                     }
@@ -1136,7 +1136,7 @@ impl Writer<'_> {
         // Its text, within the same bounds layout shows boxes inside boxes with. A box linked
         // from another (Create Link) shows the rest of that box's text: it names the chain and
         // its place in it instead.
-        let part = (*story).and_then(|id| self.doc.parts.get(&id).filter(|p| p.kind == localoffice_doc::PartKind::TextBox).map(|p| (id, p)));
+        let part = (*story).and_then(|id| self.doc.parts.get(&id).filter(|p| p.kind == localwriter_doc::PartKind::TextBox).map(|p| (id, p)));
         let link = part.and_then(|(id, _)| self.txbx_links.get(&id).copied());
         if let Some((n, seq)) = link.filter(|(_, seq)| *seq > 0) {
             w.empty("wps:linkedTxbx", &[("id", &n.to_string()), ("seq", &seq.to_string())]);
@@ -1161,14 +1161,14 @@ impl Writer<'_> {
         // Text direction and alignment, when not the defaults.
         let body = part.map(|(_, p)| p.body).unwrap_or_default();
         let mut attrs: Vec<(&str, &str)> = Vec::new();
-        if body.vert != localoffice_doc::props::TextVert::Horz {
+        if body.vert != localwriter_doc::props::TextVert::Horz {
             attrs.push(("vert", body.vert.ooxml()));
         }
-        if body.anchor != localoffice_doc::props::VAlign::Top {
-            attrs.push(("anchor", localoffice_doc::props::anchor_ooxml(body.anchor)));
+        if body.anchor != localwriter_doc::props::VAlign::Top {
+            attrs.push(("anchor", localwriter_doc::props::anchor_ooxml(body.anchor)));
         }
         // Internal margins, when the box has its own.
-        let inset = body.inset.map(|i| i.map(|v| v.min(localoffice_doc::MAX_TEXT_BOX_INSET).to_string()));
+        let inset = body.inset.map(|i| i.map(|v| v.min(localwriter_doc::MAX_TEXT_BOX_INSET).to_string()));
         if let Some(inset) = &inset {
             for (n, v) in ["lIns", "tIns", "rIns", "bIns"].into_iter().zip(inset) {
                 attrs.push((n, v));
@@ -1266,7 +1266,7 @@ impl Writer<'_> {
                 let tag = if float.wrap == Wrap::Tight { "wp:wrapTight" } else { "wp:wrapThrough" };
                 w.open(tag, &[("wrapText", float.wrap_text.ooxml())]);
                 // The object's own polygon, or its rectangle (the schema requires one).
-                let s = localoffice_doc::wrap::WRAP_SPACE;
+                let s = localwriter_doc::wrap::WRAP_SPACE;
                 let (edited, pts) = match float.wrap_polygon.as_deref() {
                     Some(p) if p.points.len() >= 3 => (p.edited, p.points.clone()),
                     _ => (false, vec![[0, 0], [0, s], [s, s], [s, 0]]),
@@ -1347,7 +1347,7 @@ impl Writer<'_> {
     /// The section's headers, plus the header holding only the watermark in each slot the
     /// pages show (first page with a title page, even pages with even/odd headers) that has no
     /// header of its own or linked from an earlier section. Sections are written in body order.
-    fn watermark_headers(&mut self, s: &SectionProps) -> localoffice_doc::section::HeaderSet {
+    fn watermark_headers(&mut self, s: &SectionProps) -> localwriter_doc::section::HeaderSet {
         let mut set = s.headers;
         let linked = &mut self.linked_headers;
         if self.doc.settings.watermark.as_ref().and_then(super::watermark::text).is_some() {
@@ -1450,7 +1450,7 @@ fn sectpr_body(w: &mut W, s: &SectionProps) {
             let refs: Vec<(&str, &str)> = a.iter().map(|(k, v)| (*k, v.as_str())).collect();
             w.empty("w:lnNumType", &refs);
         }
-        if s.page_num_set || s.page_num_start.is_some() || s.page_num_format != localoffice_doc::section::NumFormat::Decimal {
+        if s.page_num_set || s.page_num_start.is_some() || s.page_num_format != localwriter_doc::section::NumFormat::Decimal {
             let mut a = vec![("w:fmt", s.page_num_format.ooxml().to_string())];
             if let Some(st) = s.page_num_start {
                 a.push(("w:start", st.to_string()));
@@ -1481,10 +1481,10 @@ fn sectpr_body(w: &mut W, s: &SectionProps) {
             w.empty("w:formProt", if on { &[] } else { &[("w:val", "0")] });
         }
         match s.valign {
-            localoffice_doc::section::PageVAlign::Top => {}
-            localoffice_doc::section::PageVAlign::Center => w.val("w:vAlign", "center"),
-            localoffice_doc::section::PageVAlign::Justify => w.val("w:vAlign", "both"),
-            localoffice_doc::section::PageVAlign::Bottom => w.val("w:vAlign", "bottom"),
+            localwriter_doc::section::PageVAlign::Top => {}
+            localwriter_doc::section::PageVAlign::Center => w.val("w:vAlign", "center"),
+            localwriter_doc::section::PageVAlign::Justify => w.val("w:vAlign", "both"),
+            localwriter_doc::section::PageVAlign::Bottom => w.val("w:vAlign", "bottom"),
         }
         if s.title_page {
             w.empty("w:titlePg", &[]);
@@ -1497,11 +1497,11 @@ fn sectpr_body(w: &mut W, s: &SectionProps) {
         }
         if let Some(g) = &s.doc_grid {
             let mut a = vec![("w:linePitch", twips(g.line_pitch()))];
-            if g.kind != localoffice_doc::section::DocGridType::Default {
+            if g.kind != localwriter_doc::section::DocGridType::Default {
                 a.insert(0, ("w:type", g.kind.ooxml().to_string()));
             }
             if g.char_space != 0 {
-                let cs = g.char_space.clamp(-localoffice_doc::section::MAX_CHAR_SPACE, localoffice_doc::section::MAX_CHAR_SPACE);
+                let cs = g.char_space.clamp(-localwriter_doc::section::MAX_CHAR_SPACE, localwriter_doc::section::MAX_CHAR_SPACE);
                 a.push(("w:charSpace", n(cs as i64)));
             }
             let refs: Vec<(&str, &str)> = a.iter().map(|(k, v)| (*k, v.as_str())).collect();
@@ -1512,7 +1512,7 @@ fn sectpr_body(w: &mut W, s: &SectionProps) {
 
 /// A shape's `cNvPr`/`docPr` name: ink is "Ink <pen> <id>" (and "#<order>" when its drawing
 /// order is known), which reading looks for.
-fn shape_name(kind: ShapeKind, freeform: Option<&localoffice_doc::freeform::Freeform>, id: &str) -> String {
+fn shape_name(kind: ShapeKind, freeform: Option<&localwriter_doc::freeform::Freeform>, id: &str) -> String {
     let f = freeform.filter(|_| kind == ShapeKind::Freeform);
     match (f.and_then(|f| f.ink), f.and_then(|f| f.order)) {
         // The drawing order rides along for Ink Replay: `Ink Pen 3 #12`.
@@ -1522,17 +1522,17 @@ fn shape_name(kind: ShapeKind, freeform: Option<&localoffice_doc::freeform::Free
     }
 }
 
-fn ink_name(tool: localoffice_doc::freeform::InkTool) -> &'static str {
+fn ink_name(tool: localwriter_doc::freeform::InkTool) -> &'static str {
     match tool {
-        localoffice_doc::freeform::InkTool::Pen => "Pen",
-        localoffice_doc::freeform::InkTool::Pencil => "Pencil",
-        localoffice_doc::freeform::InkTool::Highlighter => "Highlighter",
+        localwriter_doc::freeform::InkTool::Pen => "Pen",
+        localwriter_doc::freeform::InkTool::Pencil => "Pencil",
+        localwriter_doc::freeform::InkTool::Highlighter => "Highlighter",
     }
 }
 
 /// A freeform's geometry as DrawingML custom geometry (`a:custGeom`): each path in EMUs of its
 /// own coordinate space (the shape's size when it has none), from `a:moveTo` along `a:lnTo`.
-fn cust_geom(w: &mut W, f: &localoffice_doc::freeform::Freeform, sw: f32, sh: f32) {
+fn cust_geom(w: &mut W, f: &localwriter_doc::freeform::Freeform, sw: f32, sh: f32) {
     let (pw, ph) = (if f.w > 0.0 { f.w } else { sw.max(0.0) }, if f.h > 0.0 { f.h } else { sh.max(0.0) });
     w.open("a:custGeom", &[]);
     w.empty("a:avLst", &[]);
@@ -1546,14 +1546,14 @@ fn cust_geom(w: &mut W, f: &localoffice_doc::freeform::Freeform, sw: f32, sh: f3
         w.empty("a:pt", &[("x", &emu(x)), ("y", &emu(y))]);
         w.close(tag);
     };
-    for p in f.paths.iter().take(localoffice_doc::freeform::MAX_PATHS) {
+    for p in f.paths.iter().take(localwriter_doc::freeform::MAX_PATHS) {
         let mut attrs = vec![("w", emu(pw)), ("h", emu(ph))];
         if !p.closed || f.is_ink() {
             attrs.push(("fill", "none".to_string()));
         }
         let attrs: Vec<(&str, &str)> = attrs.iter().map(|(k, v)| (*k, v.as_str())).collect();
         w.open("a:path", &attrs);
-        for (i, xy) in p.pts.iter().take(localoffice_doc::freeform::MAX_POINTS).enumerate() {
+        for (i, xy) in p.pts.iter().take(localwriter_doc::freeform::MAX_POINTS).enumerate() {
             pt(w, if i == 0 { "a:moveTo" } else { "a:lnTo" }, *xy);
         }
         // A tap: a zero-length line, so it shows as a dot.
@@ -1570,8 +1570,8 @@ fn cust_geom(w: &mut W, f: &localoffice_doc::freeform::Freeform, sw: f32, sh: f3
 }
 
 /// Explicit DrawingML outline dashes, before joins and arrowheads.
-fn line_dash(w: &mut W, dash: &localoffice_doc::line_dash::LineDash) {
-    use localoffice_doc::line_dash::{LineDash, MAX_DASH_STOPS};
+fn line_dash(w: &mut W, dash: &localwriter_doc::line_dash::LineDash) {
+    use localwriter_doc::line_dash::{LineDash, MAX_DASH_STOPS};
     if dash.is_solid() {
         return;
     }
@@ -1593,7 +1593,7 @@ fn line_dash(w: &mut W, dash: &localoffice_doc::line_dash::LineDash) {
 
 /// A shape's `a:effectLst` (ECMA-376 Part 1 §20.1.8.26), children in schema order.
 /// A line's arrowheads (`a:headEnd`, `a:tailEnd`, ECMA-376 §20.1.8.38 / §20.1.8.57).
-fn arrow_ends(w: &mut W, extra: &localoffice_doc::connector::ShapeExtra) {
+fn arrow_ends(w: &mut W, extra: &localwriter_doc::connector::ShapeExtra) {
     if extra.arrow_start {
         w.empty("a:headEnd", &[("type", "triangle")]);
     }
@@ -1603,7 +1603,7 @@ fn arrow_ends(w: &mut W, extra: &localoffice_doc::connector::ShapeExtra) {
 }
 
 /// A preset text warp (`a:prstTxWarp`, ECMA-376 §20.1.9.19) with its adjust values.
-fn text_warp(w: &mut W, warp: &localoffice_doc::wordart::TextWarp) {
+fn text_warp(w: &mut W, warp: &localwriter_doc::wordart::TextWarp) {
     w.open("a:prstTxWarp", &[("prst", &warp.preset)]);
     if warp.adj.is_empty() {
         w.empty("a:avLst", &[]);
@@ -1669,7 +1669,7 @@ fn effect_list(w: &mut W, effects: &ShapeEffects) {
     w.close("a:effectLst");
 }
 
-fn xfrm(w: &mut W, (x, y): (f32, f32), cw: f32, ch: f32, spin: localoffice_geom::Spin) {
+fn xfrm(w: &mut W, (x, y): (f32, f32), cw: f32, ch: f32, spin: localwriter_geom::Spin) {
     w.open("a:xfrm", &spin_attrs(spin).iter().map(|(k, v)| (*k, v.as_str())).collect::<Vec<_>>());
     w.empty("a:off", &[("x", &emu(x)), ("y", &emu(y))]);
     w.empty("a:ext", &[("cx", &emu(cw.max(0.0))), ("cy", &emu(ch.max(0.0)))]);
@@ -1677,15 +1677,15 @@ fn xfrm(w: &mut W, (x, y): (f32, f32), cw: f32, ch: f32, spin: localoffice_geom:
 }
 
 /// An `a:xfrm` holding only a rotation and flips.
-fn xfrm_spin_only(w: &mut W, spin: localoffice_geom::Spin) {
+fn xfrm_spin_only(w: &mut W, spin: localwriter_geom::Spin) {
     w.empty("a:xfrm", &spin_attrs(spin).iter().map(|(k, v)| (*k, v.as_str())).collect::<Vec<_>>());
 }
 
 /// The `a:xfrm` attributes of a rotation and flips (ECMA-376 §20.1.7.6: `rot` in 60000ths of a
 /// degree, clockwise), none for an unturned object.
-pub(super) fn spin_attrs(spin: localoffice_geom::Spin) -> Vec<(&'static str, String)> {
+pub(super) fn spin_attrs(spin: localwriter_geom::Spin) -> Vec<(&'static str, String)> {
     let mut a = Vec::new();
-    let rot = (localoffice_geom::normalize_degrees(spin.deg) as f64 * 60_000.0).round() as i64 % 21_600_000;
+    let rot = (localwriter_geom::normalize_degrees(spin.deg) as f64 * 60_000.0).round() as i64 % 21_600_000;
     if rot != 0 {
         a.push(("rot", rot.to_string()));
     }
@@ -1840,7 +1840,7 @@ pub(super) fn note_pr_inner(w: &mut W, pr: &NoteProps) {
         w.val("w:numFmt", f.ooxml());
     }
     if let Some(n) = pr.num_start {
-        w.val("w:numStart", &n.clamp(1, localoffice_doc::section::MAX_NOTE_START).to_string());
+        w.val("w:numStart", &n.clamp(1, localwriter_doc::section::MAX_NOTE_START).to_string());
     }
     if let Some(r) = pr.num_restart {
         w.val("w:numRestart", r.ooxml());
@@ -1850,18 +1850,18 @@ pub(super) fn note_pr_inner(w: &mut W, pr: &NoteProps) {
 /// The character style for comment reference marks: the document's "annotation reference" style
 /// (Word's built-in name; localized documents give it another id, e.g. Polish
 /// `Odwoaniedokomentarza`), else `CommentReference`.
-fn comment_reference_style(doc: &localoffice_doc::Document) -> &str {
+fn comment_reference_style(doc: &localwriter_doc::Document) -> &str {
     doc.styles
         .styles
         .iter()
-        .find(|s| s.kind == localoffice_doc::styles::StyleKind::Character && s.name.eq_ignore_ascii_case("annotation reference"))
+        .find(|s| s.kind == localwriter_doc::styles::StyleKind::Character && s.name.eq_ignore_ascii_case("annotation reference"))
         .map_or("CommentReference", |s| s.id.as_str())
 }
 
 /// Is kept ink `src` in a form the drawing-level writer writes: its `a:graphic`, a direct run-level
 /// `w:contentPart`, or an `mc:AlternateContent` whose choice holds a drawing (not a group member's
 /// bare `w14:contentPart`, nor one in `mc:AlternateContent` with a `pic:pic` fallback)?
-fn standalone_ink(src: &localoffice_doc::graphic::Embedded) -> bool {
+fn standalone_ink(src: &localwriter_doc::graphic::Embedded) -> bool {
     match crate::xml::parse(src.xml.as_bytes()) {
         Ok(root) => match root.name.as_str() {
             "a:graphic" | "w:contentPart" => true,
@@ -1875,7 +1875,7 @@ fn standalone_ink(src: &localoffice_doc::graphic::Embedded) -> bool {
 #[cfg(test)]
 mod standalone_ink_tests {
     use super::standalone_ink;
-    use localoffice_doc::graphic::Embedded;
+    use localwriter_doc::graphic::Embedded;
 
     fn emb(xml: &str) -> Embedded {
         Embedded { xml: xml.into(), ..Default::default() }

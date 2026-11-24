@@ -2,8 +2,8 @@
 //! Hindi digits, or context-following digits — display only, the text is untouched.
 
 use super::*;
-use localoffice_doc::props::ParaProps;
-use localoffice_doc::{Pos, StoryRef};
+use localwriter_doc::props::ParaProps;
+use localwriter_doc::{Pos, StoryRef};
 
 fn lay_opts(text: &str, rtl_para: bool, numeral: NumeralMode) -> DocLayout {
     let mut d = Document::from_text(text);

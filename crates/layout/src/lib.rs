@@ -1,4 +1,4 @@
-//! LocalOffice layout: turns a [`Document`] into pages.
+//! LocalWriter layout: turns a [`Document`] into pages.
 //!
 //! - [`para`]: one paragraph → lines (shaping, first-fit line breaking, tabs, list labels,
 //!   alignment). Results are memoised per paragraph revision in a [`LayoutCache`].
@@ -28,12 +28,12 @@ use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
-use localoffice_doc::numbering::{Counters, Level};
-use localoffice_doc::para::{Anchor, Float, FloatAlign, InlineObject, Wrap, WrapText};
-use localoffice_doc::props::{Border, CharProps, HeightRule, Rgb, TableFloat, TextDirection};
-use localoffice_doc::section::{HeaderSet, SectionProps, SectionStart};
-use localoffice_doc::{Block, Blocks, Document, Paragraph, Path, StoryRef};
-use localoffice_geom::{Point, Rect, Spin};
+use localwriter_doc::numbering::{Counters, Level};
+use localwriter_doc::para::{Anchor, Float, FloatAlign, InlineObject, Wrap, WrapText};
+use localwriter_doc::props::{Border, CharProps, HeightRule, Rgb, TableFloat, TextDirection};
+use localwriter_doc::section::{HeaderSet, SectionProps, SectionStart};
+use localwriter_doc::{Block, Blocks, Document, Paragraph, Path, StoryRef};
+use localwriter_geom::{Point, Rect, Spin};
 
 pub use fields::FieldCtx;
 pub use hit::VisualStep;
@@ -190,12 +190,12 @@ pub struct TypingWord {
 pub struct ProofOptions {
     /// Mark grammar errors as you type.
     pub grammar: bool,
-    pub spelling: localoffice_proof::Options,
+    pub spelling: localwriter_proof::Options,
 }
 
 impl Default for ProofOptions {
     fn default() -> Self {
-        ProofOptions { grammar: true, spelling: localoffice_proof::Options::default() }
+        ProofOptions { grammar: true, spelling: localwriter_proof::Options::default() }
     }
 }
 
@@ -265,19 +265,19 @@ pub enum Placed {
     },
     Shape {
         rect: Rect,
-        kind: localoffice_doc::para::ShapeKind,
-        fill: Option<localoffice_doc::fill::Fill>,
+        kind: localwriter_doc::para::ShapeKind,
+        fill: Option<localwriter_doc::fill::Fill>,
         stroke: Option<Rgb>,
         stroke_width: f32,
         /// A freeform's paths (ink strokes among them).
-        freeform: Option<Arc<localoffice_doc::freeform::Freeform>>,
-        effects: localoffice_doc::effects::ShapeEffects,
+        freeform: Option<Arc<localwriter_doc::freeform::Freeform>>,
+        effects: localwriter_doc::effects::ShapeEffects,
         spin: Spin,
-        /// Arrowheads and text warp (see [`localoffice_doc::connector::ShapeExtra`]).
-        extra: localoffice_doc::connector::ShapeExtra,
+        /// Arrowheads and text warp (see [`localwriter_doc::connector::ShapeExtra`]).
+        extra: localwriter_doc::connector::ShapeExtra,
         /// The floating object it draws (a Drawing Canvas's members: the canvas's), for leaving
         /// exactly one object out of a page (see [`crate::display::DisplayOptions::hide_object`]).
-        object: Option<localoffice_doc::Pos>,
+        object: Option<localwriter_doc::Pos>,
         /// The description it is tagged with as a figure in tagged PDF (see
         /// [`shape_figure_alt`]); empty for a shape that is an artifact.
         alt: String,
@@ -286,7 +286,7 @@ pub enum Placed {
     /// byte `off` of paragraph `path` (its alt text).
     Graphic {
         rect: Rect,
-        graphic: Arc<localoffice_doc::graphic::Graphic>,
+        graphic: Arc<localwriter_doc::graphic::Graphic>,
         story: StoryRef,
         path: Path,
         off: usize,
@@ -328,7 +328,7 @@ pub enum Placed {
         wrap: Wrap,
         /// Its paragraph's column left and top: where offsets relative to the column and the
         /// paragraph (`Anchor::Column` / `Anchor::Paragraph`) start.
-        origin: localoffice_geom::Point,
+        origin: localwriter_geom::Point,
     },
 }
 
@@ -508,7 +508,7 @@ struct Key {
     rev: u64,
     width: u32,
     label: Option<String>,
-    page: Option<(u32, u32, u32, u32, u64, localoffice_doc::section::NumFormat)>,
+    page: Option<(u32, u32, u32, u32, u64, localwriter_doc::section::NumFormat)>,
     /// The pages a split paragraph's fields are on after its first (`FieldCtx::page_from`).
     page_from: u64,
     table: u64,
@@ -600,7 +600,7 @@ fn env_hash(doc: &Document, opts: &LayoutOptions) -> u64 {
     opts.numeral.hash(&mut h);
     opts.field_codes.hash(&mut h);
     opts.proof.hash(&mut h);
-    localoffice_proof::dictionary_generation().hash(&mut h);
+    localwriter_proof::dictionary_generation().hash(&mut h);
     hyphenation_key(doc).hash(&mut h);
     outline.hash(&mut h);
     opts.filename.hash(&mut h);
@@ -706,7 +706,7 @@ struct Ctx<'a> {
     /// Automatic equation numbers so far.
     eq_count: u32,
     /// Bounds laying out text boxes inside text boxes, for the whole layout.
-    boxes: localoffice_doc::BoxBudget,
+    boxes: localwriter_doc::BoxBudget,
     /// Linked text boxes (Create Link).
     chains: textbox::Chains,
     /// The current section's document grid (body text only: none for headers and footers).
@@ -841,7 +841,7 @@ impl Ctx<'_> {
         }
         let mut p = Paragraph::with_text(
             &n.to_string(),
-            CharProps { size: Some(10.0), color: Some(localoffice_doc::TextColor::Rgb(Rgb(0x60, 0x60, 0x60))), ..Default::default() },
+            CharProps { size: Some(10.0), color: Some(localwriter_doc::TextColor::Rgb(Rgb(0x60, 0x60, 0x60))), ..Default::default() },
         );
         p.props.space_after = Some(0.0);
         p.props.space_before = Some(0.0);
@@ -1102,9 +1102,9 @@ fn left_out_objects(
 /// earlier pass (empty: numbered on). With `hide_deleted`, notes whose reference mark is a
 /// tracked deletion are left out, as in the final text.
 fn note_info(doc: &Document, hide_deleted: HideDeleted, pages: &HashMap<u32, usize>) -> HashMap<u32, fields::NoteNum> {
-    use localoffice_doc::section::NoteRestart;
+    use localwriter_doc::section::NoteRestart;
     let sections = doc.sections();
-    let opts: Vec<[localoffice_doc::section::NoteOptions; 2]> =
+    let opts: Vec<[localwriter_doc::section::NoteOptions; 2]> =
         sections.iter().map(|(_, s)| [doc.note_options(s, false), doc.note_options(s, true)]).collect();
     let mut m = HashMap::new();
     // Per kind (footnotes, endnotes): the last number, and the section and page of the last note.
@@ -1128,7 +1128,7 @@ fn note_info(doc: &Document, hide_deleted: HideDeleted, pages: &HashMap<u32, usi
             while sections.get(si).is_some_and(|(end, _)| block > *end) && si + 1 < sections.len() {
                 si += 1;
             }
-            let ki = usize::from(*kind == localoffice_doc::para::NoteKind::Endnote);
+            let ki = usize::from(*kind == localwriter_doc::para::NoteKind::Endnote);
             let Some(o) = opts.get(si).and_then(|o| o.get(ki)) else { return true };
             let page = if ki == 0 { pages.get(id).copied() } else { None };
             let Some(slot) = last.get_mut(ki) else { return true };
@@ -1167,7 +1167,7 @@ fn footnote_pages(doc: &Document, pages: &[Page]) -> HashMap<u32, usize> {
     for (pi, p) in pages.iter().enumerate() {
         for it in &p.items {
             if let Placed::Lines { story: StoryRef::Part(id), .. } | Placed::Cell { story: StoryRef::Part(id), .. } = it
-                && doc.parts.get(id).is_some_and(|part| part.kind == localoffice_doc::PartKind::Footnote)
+                && doc.parts.get(id).is_some_and(|part| part.kind == localwriter_doc::PartKind::Footnote)
             {
                 m.entry(*id).or_insert(pi);
             }
@@ -1230,7 +1230,7 @@ fn layout_box(
     let mut last_top = 0.0f32;
     // Word has no frames in a text box: a framed paragraph there (its style's frame, usually)
     // runs with the box's text (#2357).
-    let frames = !matches!(story, StoryRef::Part(id) if ctx.doc.parts.get(&id).is_some_and(|p| p.kind == localoffice_doc::PartKind::TextBox));
+    let frames = !matches!(story, StoryRef::Part(id) if ctx.doc.parts.get(&id).is_some_and(|p| p.kind == localwriter_doc::PartKind::TextBox));
     // The bottom of the last paragraph's lines.
     let mut prev_end = 0.0f32;
     for (i, b) in blocks.iter().enumerate() {
@@ -1372,7 +1372,7 @@ fn layout_box(
                 // Page tables do not contribute to the footer text's intrinsic height.
                 if frame.is_none()
                     && !in_cell
-                    && matches!(story, StoryRef::Part(id) if ctx.doc.parts.get(&id).is_some_and(|p| p.kind == localoffice_doc::PartKind::Footer))
+                    && matches!(story, StoryRef::Part(id) if ctx.doc.parts.get(&id).is_some_and(|p| p.kind == localwriter_doc::PartKind::Footer))
                     && t.props.float.is_some_and(|f| f.v_rel == Anchor::Page)
                 {
                     continue;
@@ -1429,7 +1429,7 @@ fn natural_width(pl: &ParaLayout) -> f32 {
 }
 
 /// A text frame's placement as a floating object's (`w:framePr` → anchors, alignment, wrap).
-fn frame_float(fr: &localoffice_doc::props::TextFrame) -> Float {
+fn frame_float(fr: &localwriter_doc::props::TextFrame) -> Float {
     let anchor = |a: &str, text: Anchor| match a {
         "page" => Anchor::Page,
         "margin" => Anchor::Margin,
@@ -1538,7 +1538,7 @@ fn clear_of_float_tables(mut r: Rect, f: &TableFloat, legacy: f32, text_left: f3
 }
 
 /// A text box's default internal margins (Word's: 0.1" left/right, 0.05" top/bottom); a box's
-/// own come from its [`localoffice_doc::TextBody`].
+/// own come from its [`localwriter_doc::TextBody`].
 #[cfg(test)]
 const BOX_INSET_X: f32 = 7.2;
 #[cfg(test)]
@@ -1600,13 +1600,13 @@ fn fit_box(items: Vec<Placed>, height: f32) -> Vec<Placed> {
 /// Word joins neighbouring paragraphs with the same borders and indents into one box: the top
 /// border goes above the first of them only, the bottom one below the last, and the shading and
 /// side borders run on through the space between them (`table`: the cell's paragraph properties).
-fn border_group(doc: &Document, a: &Paragraph, b: &Paragraph, table: Option<&localoffice_doc::props::ParaProps>) -> bool {
+fn border_group(doc: &Document, a: &Paragraph, b: &Paragraph, table: Option<&localwriter_doc::props::ParaProps>) -> bool {
     let (a, b) = (doc.styles.resolve_para_in(&a.props, table), doc.styles.resolve_para_in(&b.props, table));
     a.borders.is_some() && a.borders == b.borders && a.indent_left == b.indent_left && a.indent_right == b.indent_right
 }
 
 /// Whether paragraph `i` of `blocks` and the one at `j` are of one border group.
-fn joined(doc: &Document, blocks: &Blocks, i: usize, j: Option<usize>, table: Option<&localoffice_doc::props::ParaProps>) -> bool {
+fn joined(doc: &Document, blocks: &Blocks, i: usize, j: Option<usize>, table: Option<&localwriter_doc::props::ParaProps>) -> bool {
     match (blocks.get(i).map(|b| &**b), j.and_then(|j| blocks.get(j)).map(|b| &**b)) {
         (Some(Block::Para(a)), Some(Block::Para(b))) => border_group(doc, a, b, table),
         _ => false,
@@ -1735,7 +1735,7 @@ struct PageBuilder<'a> {
     block_marks: Vec<usize>,
     /// The vertical alignment of the section the current page started in: a page finished when
     /// the next section starts is aligned as its own section asks, not the next one.
-    page_valign: localoffice_doc::section::PageVAlign,
+    page_valign: localwriter_doc::section::PageVAlign,
     /// The document's own footnote separators, laid out for the section's text width.
     seps: NoteSeps,
     /// Where the last paragraph's lines ended: page count, column and y.
@@ -1791,7 +1791,7 @@ struct NoteSeps {
 
 impl NoteSeps {
     /// Lay out `seps` `width` wide.
-    fn new(ctx: &mut Ctx, seps: &localoffice_doc::NoteSeparators, width: f32) -> NoteSeps {
+    fn new(ctx: &mut Ctx, seps: &localwriter_doc::NoteSeparators, width: f32) -> NoteSeps {
         let mut lay = |blocks: &Option<Blocks>| blocks.as_ref().map(|b| sep_box(ctx, b, width));
         NoteSeps { sep: lay(&seps.separator), cont: lay(&seps.continuation_separator), notice: lay(&seps.continuation_notice) }
     }
@@ -2119,10 +2119,10 @@ impl PageBuilder<'_> {
     /// blocks out (justified).
     fn apply_valign(&mut self) {
         let k = match self.page_valign {
-            localoffice_doc::section::PageVAlign::Top => return,
-            localoffice_doc::section::PageVAlign::Justify => return self.justify_page(),
-            localoffice_doc::section::PageVAlign::Center => 0.5,
-            localoffice_doc::section::PageVAlign::Bottom => 1.0,
+            localwriter_doc::section::PageVAlign::Top => return,
+            localwriter_doc::section::PageVAlign::Justify => return self.justify_page(),
+            localwriter_doc::section::PageVAlign::Center => 0.5,
+            localwriter_doc::section::PageVAlign::Bottom => 1.0,
         };
         if self.web {
             return;
@@ -2165,7 +2165,7 @@ impl PageBuilder<'_> {
         self.excl.extend(early.get(&self.pages.len()).into_iter().flatten().map(|(_, _, a)| a.clone()));
         self.seeded = self.excl.len();
         self.float_tables.clear();
-        if self.sect.line_numbers.as_ref().is_some_and(|l| l.restart == localoffice_doc::section::LineNumberRestart::Page) {
+        if self.sect.line_numbers.as_ref().is_some_and(|l| l.restart == localwriter_doc::section::LineNumberRestart::Page) {
             self.line_no = 0;
         }
         let s = self.sect;
@@ -2264,7 +2264,7 @@ pub fn layout(doc: &Document, cache: &mut LayoutCache, opts: &LayoutOptions) -> 
     // paginating: lay out again with the totals found until they hold (bounded). Footnotes
     // numbered again on each page likewise settle over a few more passes.
     let per_page = opts.view == ViewMode::Print
-        && doc.sections().iter().any(|(_, s)| doc.note_options(s, false).num_restart == localoffice_doc::section::NoteRestart::EachPage);
+        && doc.sections().iter().any(|(_, s)| doc.note_options(s, false).num_restart == localwriter_doc::section::NoteRestart::EachPage);
     let mut note_pages = HashMap::new();
     let mut note_passes = 1;
     let mut totals = Totals::first_guess(doc.sections().len());
@@ -2346,7 +2346,7 @@ fn layout_pass(
         notes_hash,
         numbers: HashMap::new(),
         eq_count: 0,
-        boxes: localoffice_doc::BoxBudget::default(),
+        boxes: localwriter_doc::BoxBudget::default(),
         chains: Default::default(),
         grid: para::Grid::default(),
         uses_totals: false,
@@ -2406,7 +2406,7 @@ fn layout_pass(
         web_sect.margin_top = 18.0;
         web_sect.gutter = 0.0;
         web_sect.columns = Default::default();
-        web_sect.valign = localoffice_doc::section::PageVAlign::Top;
+        web_sect.valign = localwriter_doc::section::PageVAlign::Top;
         &web_sect
     } else {
         first_sect
@@ -2434,7 +2434,7 @@ fn layout_pass(
         line_no: 0,
         page_items_start: 0,
         block_marks: Vec::new(),
-        page_valign: localoffice_doc::section::PageVAlign::Top,
+        page_valign: localwriter_doc::section::PageVAlign::Top,
         seps: NoteSeps::default(),
         para_end: None,
         behind: Vec::new(),
@@ -2456,7 +2456,7 @@ fn layout_pass(
             .fields
             .notes
             .iter()
-            .filter(|(id, _)| doc.parts.get(id).is_some_and(|p| p.kind == localoffice_doc::PartKind::Endnote))
+            .filter(|(id, _)| doc.parts.get(id).is_some_and(|p| p.kind == localwriter_doc::PartKind::Endnote))
             .map(|(id, n)| (n.order, *id, n.section))
             .collect();
         ids.sort();
@@ -2487,7 +2487,7 @@ fn layout_pass(
         pb.sect_idx = si;
         ctx.grid = para::Grid::default();
         let (foot, end_opts) = (doc.note_options(sect, false), doc.note_options(sect, true));
-        pb.sect_beneath = foot.pos == localoffice_doc::section::NotePos::BeneathText;
+        pb.sect_beneath = foot.pos == localwriter_doc::section::NotePos::BeneathText;
         if !web && !doc.footnote_separators.is_empty() {
             pb.seps = NoteSeps::new(&mut ctx, &doc.footnote_separators, sect.text_width());
         }
@@ -2516,7 +2516,7 @@ fn layout_pass(
         };
         ctx.grid = para::Grid::of(doc, sect);
         let restart = sect.page_num_start;
-        if sect.line_numbers.as_ref().is_some_and(|l| l.restart == localoffice_doc::section::LineNumberRestart::Section) {
+        if sect.line_numbers.as_ref().is_some_and(|l| l.restart == localwriter_doc::section::LineNumberRestart::Section) {
             pb.line_no = 0;
         }
         let start = if si == 0 { SectionStart::NextPage } else { sect.start };
@@ -2565,7 +2565,7 @@ fn layout_pass(
         // start of the block that reaches it, with shorter columns (see `balance_columns`).
         let balance = !web
             && pb.cols.len() > 1
-            && sect.valign == localoffice_doc::section::PageVAlign::Top
+            && sect.valign == localwriter_doc::section::PageVAlign::Top
             && sections.get(si + 1).is_some_and(|(_, s)| s.start == SectionStart::Continuous);
         pb.col_break_page = None;
         pb.next_starts_page = !web && sections.get(si + 1).is_some_and(|(_, s)| s.start != SectionStart::Continuous);
@@ -2591,7 +2591,7 @@ fn layout_pass(
             boxes_discarded += balance_columns(&mut ctx, &mut pb, (first, block), &snap, body_top);
         }
         // Endnotes at the end of the section: those referenced so far.
-        if end_opts.pos == localoffice_doc::section::NotePos::SectEnd && !pb.pages.is_empty() {
+        if end_opts.pos == localwriter_doc::section::NotePos::SectEnd && !pb.pages.is_empty() {
             let mut here = Vec::new();
             while let Some((id, _)) = endnotes.front().filter(|(_, s)| *s <= si).copied() {
                 endnotes.pop_front();
@@ -3134,7 +3134,7 @@ fn floating(o: &InlineObject) -> Option<(f32, f32, &Float)> {
 /// to the box itself.
 fn float_rect(frame: Option<PageFrame>, col: (f32, f32), y0: f32, w: f32, h: f32, float: &Float) -> Rect {
     // Thinner than a point stays thin (a 0.25 pt rule, a flat line): Word keeps the size.
-    let (w, h) = (localoffice_geom::finite(w).clamp(0.0, 4000.0), localoffice_geom::finite(h).clamp(0.0, 4000.0));
+    let (w, h) = (localwriter_geom::finite(w).clamp(0.0, 4000.0), localwriter_geom::finite(h).clamp(0.0, 4000.0));
     // Each axis: the reference area's start and extent, in page coordinates. Across, as laid out
     // before an even page is mirrored (less the shift it then gets).
     let page_x = |f: &PageFrame| {
@@ -3312,7 +3312,7 @@ fn float_items(o: &InlineObject, rect: Rect, outer: (Spin, Point), story: StoryR
             vec![Placed::Image { rect, media: media.clone(), crop: *crop, story, path: Path(path.to_vec()), off, spin }]
         }
         InlineObject::Shape { kind, fill, stroke, stroke_width, effects, freeform, extra, .. } => {
-            let object = localoffice_doc::Pos { story, path: Path(path.to_vec()), off };
+            let object = localwriter_doc::Pos { story, path: Path(path.to_vec()), off };
             vec![Placed::Shape {
                 rect,
                 kind: *kind,
@@ -3344,7 +3344,7 @@ fn float_items(o: &InlineObject, rect: Rect, outer: (Spin, Point), story: StoryR
                     vec![
                         Placed::Shape {
                             rect,
-                            kind: localoffice_doc::para::ShapeKind::Rectangle,
+                            kind: localwriter_doc::para::ShapeKind::Rectangle,
                             fill: c.fill.clone(),
                             stroke: c.stroke,
                             stroke_width: c.stroke_width,
@@ -3352,7 +3352,7 @@ fn float_items(o: &InlineObject, rect: Rect, outer: (Spin, Point), story: StoryR
                             freeform: None,
                             spin,
                             extra: Default::default(),
-                            object: Some(localoffice_doc::Pos { story, path: Path(path.to_vec()), off }),
+                            object: Some(localwriter_doc::Pos { story, path: Path(path.to_vec()), off }),
                             alt: String::new(),
                         },
                         Placed::Clip { rect, spin, items: members },
@@ -3615,7 +3615,7 @@ fn place_objects(
             }
             let text_box = match obj {
                 InlineObject::Shape { story: Some(id), .. }
-                    if ctx.doc.parts.get(id).is_some_and(|p| p.kind == localoffice_doc::PartKind::TextBox) =>
+                    if ctx.doc.parts.get(id).is_some_and(|p| p.kind == localwriter_doc::PartKind::TextBox) =>
                 {
                     Some(*id)
                 }
@@ -3642,7 +3642,7 @@ fn place_objects(
                     .into_iter()
                     .filter_map(|(r, c)| {
                         c.text_box()
-                            .filter(|id| ctx.doc.parts.get(id).is_some_and(|p| p.kind == localoffice_doc::PartKind::TextBox))
+                            .filter(|id| ctx.doc.parts.get(id).is_some_and(|p| p.kind == localwriter_doc::PartKind::TextBox))
                             .map(|id| (id, carried(r, float.spin(), centre)))
                     })
                     .collect(),
@@ -3975,7 +3975,7 @@ fn place_para_in_flow(ctx: &mut Ctx, pb: &mut PageBuilder, p: &Paragraph, block:
                     if *ci >= l.c0
                         && *ci < l.c1
                         && !pb.notes.iter().chain(new_notes.iter()).any(|x| x.id == *id)
-                        && let Some(part) = ctx.doc.parts.get(id).filter(|p| p.kind == localoffice_doc::PartKind::Footnote)
+                        && let Some(part) = ctx.doc.parts.get(id).filter(|p| p.kind == localwriter_doc::PartKind::Footnote)
                     {
                         let blocks = part.blocks.clone();
                         let BoxLayout { items, height: h, .. } =
@@ -3998,7 +3998,7 @@ fn place_para_in_flow(ctx: &mut Ctx, pb: &mut PageBuilder, p: &Paragraph, block:
             // the margin, or footnotes, keep the whole line clear of them.
             let at_margin = pb.bottom >= pb.sect.page_h - pb.sect.margin_bottom - 0.01;
             let fit_h = match pl.rp.line_spacing {
-                localoffice_doc::props::LineSpacing::Multiple(m)
+                localwriter_doc::props::LineSpacing::Multiple(m)
                     if m > 1.0 && at_margin && pb.notes.is_empty() && new_notes.is_empty() && line_notes.is_empty() =>
                 {
                     // `baseline` is from the paragraph's top; the text ends a descent below it.
@@ -4036,7 +4036,7 @@ fn place_para_in_flow(ctx: &mut Ctx, pb: &mut PageBuilder, p: &Paragraph, block:
             let only_break = matches!(l.end, LineEnd::PageBreak | LineEnd::ColumnBreak)
                 && p.text
                     .get(l.start..l.stop)
-                    .is_some_and(|t| t.chars().all(|c| matches!(c, localoffice_doc::para::PAGE_BREAK | localoffice_doc::para::COLUMN_BREAK)));
+                    .is_some_and(|t| t.chars().all(|c| matches!(c, localwriter_doc::para::PAGE_BREAK | localwriter_doc::para::COLUMN_BREAK)));
             // An empty paragraph closing a section before a new page: measured in Word, it stays
             // on a full page instead of starting one of its own.
             let closing_mark = pb.next_starts_page && p.section.is_some() && p.text.is_empty();
@@ -4181,7 +4181,7 @@ fn place_para_in_flow(ctx: &mut Ctx, pb: &mut PageBuilder, p: &Paragraph, block:
         // there (Word).
         let starts_with_break = l0 == 1
             && pl.lines.first().is_some_and(|l| {
-                p.text.get(l.start..l.stop).is_some_and(|t| !t.is_empty() && t.chars().all(|c| c == localoffice_doc::para::PAGE_BREAK))
+                p.text.get(l.start..l.stop).is_some_and(|t| !t.is_empty() && t.chars().all(|c| c == localwriter_doc::para::PAGE_BREAK))
             });
         match forced_break {
             Some(LineEnd::PageBreak) if mark_with_break => {
@@ -4231,7 +4231,7 @@ fn place_para_in_flow(ctx: &mut Ctx, pb: &mut PageBuilder, p: &Paragraph, block:
 /// control boundaries…), or nothing at all: a line of them takes no room after a page break.
 fn only_markers(p: &Paragraph, range: std::ops::Range<usize>) -> bool {
     let Some(text) = p.text.get(range.clone()) else { return false };
-    text.char_indices().all(|(i, c)| c == localoffice_doc::para::OBJ && p.object_at(range.start + i).is_some_and(InlineObject::is_marker))
+    text.char_indices().all(|(i, c)| c == localwriter_doc::para::OBJ && p.object_at(range.start + i).is_some_and(InlineObject::is_marker))
 }
 
 /// The outline of the body for an Outline view pass.
@@ -4301,7 +4301,7 @@ fn place_outline_para(ctx: &mut Ctx, pb: &mut PageBuilder, p: &Paragraph, block:
 
 /// How far a paragraph with mirrored indents (`w:mirrorIndents`) moves right on page `number`:
 /// its left and right indents are the inside and outside ones, which swap sides on even pages.
-fn mirror_shift(rp: &localoffice_doc::resolve::ResolvedPara, number: u32, web: bool) -> f32 {
+fn mirror_shift(rp: &localwriter_doc::resolve::ResolvedPara, number: u32, web: bool) -> f32 {
     if !rp.mirror_indents || web || !number.is_multiple_of(2) {
         return 0.0;
     }
@@ -4314,7 +4314,7 @@ fn mirror_shift(rp: &localoffice_doc::resolve::ResolvedPara, number: u32, web: b
 /// paragraph. Same tests as the spacing between paragraphs in `place_para_in_flow`: contextual
 /// spacing removes this paragraph's space after only when this one asks for it, and the next
 /// counts as a list item when it gets a label.
-fn space_after_kept(ctx: &Ctx, block: usize, rp: &localoffice_doc::resolve::ResolvedPara, listed: bool) -> f32 {
+fn space_after_kept(ctx: &Ctx, block: usize, rp: &localwriter_doc::resolve::ResolvedPara, listed: bool) -> f32 {
     let after = rp.space_after.max(0.0);
     if after <= 0.0 {
         return 0.0;
@@ -4417,7 +4417,7 @@ fn row_keeps_next(row: &table::RowLayout) -> bool {
         .unwrap_or(false)
 }
 
-fn row_can_start(row: &localoffice_doc::Row, laid: &table::RowLayout, room: f32, page_height: f32) -> bool {
+fn row_can_start(row: &localwriter_doc::Row, laid: &table::RowLayout, room: f32, page_height: f32) -> bool {
     if laid.height <= room + 0.01 {
         return true;
     }
@@ -4438,7 +4438,7 @@ fn row_can_start(row: &localoffice_doc::Row, laid: &table::RowLayout, room: f32,
 /// 5 000 pages).
 const MAX_HEADER_ITEMS: usize = 500_000;
 
-fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &localoffice_doc::Table, block: usize, body_top: f32) {
+fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &localwriter_doc::Table, block: usize, body_top: f32) {
     pb.prev = None;
     let width = pb.col_w();
     let mut tl = table::layout_table(ctx, StoryRef::Body, t, &[block as u32], width, 1);
@@ -4594,7 +4594,7 @@ fn table_notes(ctx: &mut Ctx, pb: &mut PageBuilder, items: &[Placed]) {
     }
     let before = pb.notes_h();
     for id in ids {
-        let Some(part) = ctx.doc.parts.get(&id).filter(|p| p.kind == localoffice_doc::PartKind::Footnote) else { continue };
+        let Some(part) = ctx.doc.parts.get(&id).filter(|p| p.kind == localwriter_doc::PartKind::Footnote) else { continue };
         let blocks = part.blocks.clone();
         let BoxLayout { items, height: h, .. } = layout_box(ctx, StoryRef::Part(id), &blocks, &[], pb.sect.text_width(), BoxContext::Other, 0, None);
         pb.notes.push(NoteBox { id, items, h, cont: false });
@@ -4788,7 +4788,7 @@ fn below(excl: &[WrapArea], mut y: f32, x0: f32, x1: f32) -> f32 {
 /// Whether a header, a footer or a text box shows a `PAGEREF` field, which they resolve from the
 /// paginated body (see [`bookmark_pages`]).
 fn headers_footers_refer_to_pages(doc: &Document) -> bool {
-    use localoffice_doc::PartKind;
+    use localwriter_doc::PartKind;
     doc.parts.iter().filter(|(_, part)| matches!(part.kind, PartKind::Header | PartKind::Footer | PartKind::TextBox)).any(|(id, _)| {
         let story = StoryRef::Part(*id);
         doc.para_paths(story)

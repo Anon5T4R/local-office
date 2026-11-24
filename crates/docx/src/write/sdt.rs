@@ -1,13 +1,13 @@
 //! Content controls → `w:sdt` (ECMA-376 §17.5.2; check boxes and repeating sections as the
 //! [MS-DOCX] `w14`/`w15` extensions).
 //!
-//! Controls are markers in the model ([`localoffice_doc::control`]); the file wants them as
+//! Controls are markers in the model ([`localwriter_doc::control`]); the file wants them as
 //! elements around runs (inline) or around whole paragraphs and tables (block level). [`plan`]
 //! decides, per block list, which controls are written where so that the XML always nests.
 
-use localoffice_doc::Blocks;
-use localoffice_doc::control::{ContentControl, ControlEvent, ControlKind, control_events, pair_events};
-use localoffice_doc::para::OBJ;
+use localwriter_doc::Blocks;
+use localwriter_doc::control::{ContentControl, ControlEvent, ControlKind, control_events, pair_events};
+use localwriter_doc::para::OBJ;
 
 use crate::xml::W;
 
@@ -83,14 +83,14 @@ pub fn plan(bl: &Blocks) -> Plan<'_> {
     let at_start = |b: usize, off: usize| {
         para(b).is_some_and(|p| {
             p.text.get(..off).is_some_and(|t| t.chars().all(|c| c == OBJ))
-                && (0..off).step_by(OBJ.len_utf8()).all(|o| matches!(p.object_at(o), Some(localoffice_doc::InlineObject::ControlStart { .. })))
+                && (0..off).step_by(OBJ.len_utf8()).all(|o| matches!(p.object_at(o), Some(localwriter_doc::InlineObject::ControlStart { .. })))
         })
     };
     let at_end = |b: usize, off: usize| {
         para(b).is_some_and(|p| {
             let from = off + OBJ.len_utf8();
             p.text.get(from..).is_some_and(|t| t.chars().all(|c| c == OBJ))
-                && (from..p.len()).step_by(OBJ.len_utf8()).all(|o| matches!(p.object_at(o), Some(localoffice_doc::InlineObject::ControlEnd)))
+                && (from..p.len()).step_by(OBJ.len_utf8()).all(|o| matches!(p.object_at(o), Some(localwriter_doc::InlineObject::ControlEnd)))
         })
     };
     let mut mode = vec![Mode::Inline; ranges.len()];

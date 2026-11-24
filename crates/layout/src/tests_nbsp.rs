@@ -7,7 +7,7 @@ use super::{Document, LayoutCache, LayoutOptions, Placed, layout};
 /// Built from the bundled font so the test needs no installed font.
 fn wide_nbsp_family() -> &'static str {
     const FAMILY: &str = "Wnbsp";
-    let inter = localoffice_fonts::word::resolve("Inter", false, false).face;
+    let inter = localwriter_fonts::word::resolve("Inter", false, false).face;
     let mut data = inter.data().to_vec();
     let gid = inter.glyph_for('\u{a0}') as usize;
     assert_ne!(gid, inter.glyph_for(' ') as usize, "Inter keeps a glyph of its own for U+00A0");
@@ -30,15 +30,15 @@ fn wide_nbsp_family() -> &'static str {
             }
         }
     }
-    localoffice_fonts::FontDb::global().add_font(data);
+    localwriter_fonts::FontDb::global().add_font(data);
     FAMILY
 }
 
 /// The width of the first line of `text` set in the wide-nbsp font.
 fn line_width(text: &str) -> f32 {
-    let chr = localoffice_doc::CharProps { font: Some(wide_nbsp_family().into()), size: Some(12.0), ..Default::default() };
+    let chr = localwriter_doc::CharProps { font: Some(wide_nbsp_family().into()), size: Some(12.0), ..Default::default() };
     let mut d = Document::new();
-    d.body = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, chr))];
+    d.body = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, chr))];
     let mut c = LayoutCache::new();
     let l = layout(&d, &mut c, &LayoutOptions::default());
     for p in &l.pages {
@@ -54,7 +54,7 @@ fn line_width(text: &str) -> f32 {
 
 #[test]
 fn a_no_break_space_is_as_wide_as_a_space() {
-    let face = localoffice_fonts::word::resolve(wide_nbsp_family(), false, false).face;
+    let face = localwriter_fonts::word::resolve(wide_nbsp_family(), false, false).face;
     assert_eq!(face.family, wide_nbsp_family(), "the test font is installed under its own name");
     assert!(
         face.advance(face.glyph_for('\u{a0}')) > 1.9 * face.advance(face.glyph_for(' ')),

@@ -12,10 +12,10 @@
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
-use localoffice_doc::para::ShapeKind;
-use localoffice_doc::props::{Align, Border, BorderStyle, CharProps, Rgb};
-use localoffice_doc::{Block, Document, Paragraph, StoryRef};
-use localoffice_geom::Rect;
+use localwriter_doc::para::ShapeKind;
+use localwriter_doc::props::{Align, Border, BorderStyle, CharProps, Rgb};
+use localwriter_doc::{Block, Document, Paragraph, StoryRef};
+use localwriter_geom::Rect;
 
 use crate::{DocLayout, Page, ParaLayout, Placed};
 
@@ -169,7 +169,7 @@ pub(crate) fn symbol_items(pl: &Arc<ParaLayout>, x: f32, y: f32, level: u8, chil
     let disc = |r: f32| Placed::Shape {
         rect: Rect::new(cx - r, cy - r, r * 2.0, r * 2.0),
         kind: ShapeKind::Ellipse,
-        fill: Some(localoffice_doc::fill::Fill::solid(SYMBOL_GREY)),
+        fill: Some(localwriter_doc::fill::Fill::solid(SYMBOL_GREY)),
         stroke: None,
         stroke_width: 0.0,
         freeform: None,

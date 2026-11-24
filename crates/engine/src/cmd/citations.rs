@@ -2,10 +2,10 @@
 //! GB/T 7714, GOST, SIST02), source manager, index, table of figures, cross-references, table
 //! of authorities, footnote options.
 
-use localoffice_doc::collate::{SortKey, heading_letter, sort_key};
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::props::{CharProps, TabAlign, TabLeader, TabStop};
-use localoffice_doc::{Block, Document, Paragraph, Path, Pos, Source, StoryRef};
+use localwriter_doc::collate::{SortKey, heading_letter, sort_key};
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::props::{CharProps, TabAlign, TabLeader, TabStop};
+use localwriter_doc::{Block, Document, Paragraph, Path, Pos, Source, StoryRef};
 use serde_json::{Value, json};
 
 use super::references::FieldCode;
@@ -107,7 +107,7 @@ const fn names(first: Name, rest: Name, sep: &'static str, two: &'static str, la
 const AUTHOR_DATE: Cite = Cite::AuthorDate { year_sep: " ", pages_sep: ", p. " };
 
 /// Every style, in picker order (alphabetical). Formats follow the published style guides'
-/// rules for the source types LocalOffice records, written in our own words.
+/// rules for the source types LocalWriter records, written in our own words.
 pub static STYLES: [CiteStyle; 12] = [
     CiteStyle {
         name: "APA",
@@ -345,7 +345,7 @@ pub fn specs() -> Vec<CommandSpec> {
             r#"{"kind"?: "footnote|endnote", "pos"?: "pageBottom|beneathText" (footnotes) | "sectEnd|docEnd" (endnotes), "numFmt"?: "decimal|lowerRoman|upperRoman|lowerLetter|upperLetter|…", "numStart"?: 1-32767, "numRestart"?: "continuous|eachSect|eachPage" (each page: footnotes only), "scope"?: "document|section", "footnoteFormat"?: …, "endnoteFormat"?: …} — no settings: the options in effect at the caret"#,
         ),
         CommandSpec::new("references.researcher", "Researcher", "References › Research", |s, _| {
-            s.status = "Researcher needs an online service; Local Word keeps your documents offline.".into();
+            s.status = "Researcher needs an online service; Local Writer keeps your documents offline.".into();
             Ok(json!({"available": false}))
         })
         .pure(),
@@ -585,7 +585,7 @@ const MAX_SOURCES_FILE: u64 = 32 << 20;
 fn import_sources(s: &mut Session, path: &str) -> Result<(), CmdError> {
     // Through `io`, which keeps automation inside its read root (#769).
     let bytes = crate::io::read_file_capped(path, MAX_SOURCES_FILE, "sources file").map_err(CmdError::Failed)?;
-    let file = localoffice_docx::read_sources(&bytes).map_err(|e| CmdError::Failed(e.to_string()))?;
+    let file = localwriter_docx::read_sources(&bytes).map_err(|e| CmdError::Failed(e.to_string()))?;
     let mut added = false;
     // The tags and (title, author-or-editor) keys already here, once: an import of thousands
     // of untagged sources must not rescan the list per source. Tags follow `auto_tag`: the
@@ -594,7 +594,7 @@ fn import_sources(s: &mut Session, path: &str) -> Result<(), CmdError> {
     let mut keys: std::collections::HashSet<(String, String)> = s.doc.sources.iter().map(|x| (x.title.clone(), by_author(x).to_string())).collect();
     let mut next: std::collections::HashMap<String, u32> = std::collections::HashMap::new();
     for mut src in file.sources {
-        if s.doc.sources.len() >= localoffice_docx::MAX_SOURCES {
+        if s.doc.sources.len() >= localwriter_docx::MAX_SOURCES {
             break;
         }
         if src.tag.is_empty() {
@@ -856,7 +856,7 @@ fn captioned_as(p: &Paragraph, ident: &str) -> bool {
 /// caption typed by hand what follows the label and the number, less the separator.
 fn caption_body(p: &Paragraph, label: &str) -> String {
     let seq_end = p.object_offsets().into_iter().find_map(|o| match p.object_at(o) {
-        Some(InlineObject::Field { instr, .. }) if FieldCode::parse(instr).name == "SEQ" => Some(o + localoffice_doc::para::OBJ.len_utf8()),
+        Some(InlineObject::Field { instr, .. }) if FieldCode::parse(instr).name == "SEQ" => Some(o + localwriter_doc::para::OBJ.len_utf8()),
         _ => None,
     });
     let rest = match seq_end {
@@ -864,7 +864,7 @@ fn caption_body(p: &Paragraph, label: &str) -> String {
             let mut k = 0;
             let mut rest = String::new();
             for (at, c) in p.text.char_indices() {
-                if c == localoffice_doc::para::OBJ {
+                if c == localwriter_doc::para::OBJ {
                     if at >= end
                         && let Some(o) = p.objects.get(k)
                     {
@@ -974,12 +974,12 @@ pub fn update_generated(s: &mut Session) -> Result<(), CmdError> {
 /// layout cache starts over (and the saved file would gain a style it doesn't use).
 fn add_entry_style(s: &mut Session) {
     if s.doc.styles.get(ENTRY_STYLE).is_none() {
-        s.doc.styles.upsert(localoffice_doc::Style {
+        s.doc.styles.upsert(localwriter_doc::Style {
             id: ENTRY_STYLE.into(),
             name: "List Entry".into(),
-            kind: localoffice_doc::StyleKind::Paragraph,
+            kind: localwriter_doc::StyleKind::Paragraph,
             based_on: Some("Normal".into()),
-            para: localoffice_doc::ParaProps { space_after: Some(4.0), ..Default::default() },
+            para: localwriter_doc::ParaProps { space_after: Some(4.0), ..Default::default() },
             hidden: true,
             ..Default::default()
         });
@@ -1147,13 +1147,13 @@ fn caption_label(p: &Paragraph, text: &str) -> Option<String> {
         Some((i, (seq_at, instr))) => {
             // The text in `from..to` with the bookmark marks dropped, if it says anything.
             let said = |from: usize, to: usize| {
-                let t: String = p.text.get(from..to).unwrap_or_default().chars().filter(|c| *c != localoffice_doc::para::OBJ).collect();
+                let t: String = p.text.get(from..to).unwrap_or_default().chars().filter(|c| *c != localwriter_doc::para::OBJ).collect();
                 let t = t.trim();
                 t.chars().any(char::is_alphanumeric).then(|| t.to_string())
             };
             let first = fields.first().map_or(0, |(o, _)| *o);
             let after_previous =
-                i.checked_sub(1).and_then(|k| fields.get(k)).map_or(0, |(o, _)| o.saturating_add(localoffice_doc::para::OBJ.len_utf8()));
+                i.checked_sub(1).and_then(|k| fields.get(k)).map_or(0, |(o, _)| o.saturating_add(localwriter_doc::para::OBJ.len_utf8()));
             said(0, first).or_else(|| said(after_previous, *seq_at)).or_else(|| instr.split_whitespace().nth(1).map(|id| id.replace('_', " ")))?
         }
         None => text.get(..text.find(|c: char| c.is_ascii_digit())?)?.trim().to_string(),
@@ -1234,7 +1234,7 @@ pub fn ref_targets(s: &Session, to: &str) -> Vec<(String, Pos)> {
 /// when `number_only`), reusing one already there. Returns its name and `at` moved past the
 /// bookmark marks inserted before it.
 fn ref_bookmark(s: &mut Session, pos: &Pos, number_only: bool, mut at: Pos) -> Result<(String, Pos), CmdError> {
-    const MARK: usize = localoffice_doc::para::OBJ.len_utf8();
+    const MARK: usize = localwriter_doc::para::OBJ.len_utf8();
     let para = s.doc.para(pos.story, &pos.path).ok_or_else(|| CmdError::Params("cross-reference target is gone".into()))?;
     let end = if number_only { para.text.find(':').unwrap_or(para.len()) } else { para.len() };
     if let Some(InlineObject::BookmarkStart { name }) = para.object_at(0)
@@ -1272,7 +1272,7 @@ mod tests {
 
     #[test]
     fn citations_and_bibliography() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("text.insert", &json!({"text": "Studios matter "})).unwrap();
         s.run("references.citation", &json!({"source": {"author": "Rivera, Alex; Chen, Mei", "title": "Shared Spaces", "year": "2021", "publisher": "Harbor Books", "city": "Portland"}})).unwrap();
         assert!(s.doc.plain_text(StoryRef::Body).contains("(Rivera & Chen, 2021)"), "{}", s.doc.plain_text(StoryRef::Body));
@@ -1291,7 +1291,7 @@ mod tests {
     /// style would make the next layout start over from nothing.
     #[test]
     fn update_fields_adds_the_entry_style_only_with_a_list() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("plain text"));
+        let mut s = Session::new(localwriter_doc::Document::from_text("plain text"));
         s.run("select.all", &json!({})).unwrap();
         s.run("references.updateFields", &json!({})).unwrap();
         assert!(s.doc.styles.get(ENTRY_STYLE).is_none());
@@ -1305,7 +1305,7 @@ mod tests {
 
     #[test]
     fn bibliography_round_trip_docx() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("text.insert", &json!({"text": "Studios matter "})).unwrap();
         s.run(
             "references.citation",
@@ -1331,8 +1331,8 @@ mod tests {
         s.run("references.bibliography", &json!({})).unwrap();
 
         // Serialize to DOCX and back — sources must survive.
-        let bytes = localoffice_docx::write(&s.doc).expect("docx write");
-        let doc = localoffice_docx::read(&bytes).expect("docx read");
+        let bytes = localwriter_docx::write(&s.doc).expect("docx write");
+        let doc = localwriter_docx::read(&bytes).expect("docx read");
         assert_eq!(doc.sources.len(), 1, "round-tripped sources: {:?}", doc.sources);
         assert_eq!(doc.sources[0].author, "Rivera, Alex; Chen, Mei");
         assert_eq!(doc.sources[0].title, "Shared Spaces");
@@ -1354,23 +1354,23 @@ mod tests {
 
     #[test]
     fn citation_style_survives_docx_save_and_reopen() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("references.citation", &json!({"source": {"author": "Rivera, Alex", "title": "Shared Spaces", "year": "2021"}})).unwrap();
         s.run("references.citationStyle", &json!({"style": "Harvard (Anglia)"})).unwrap();
-        let bytes = localoffice_docx::write(&s.doc).expect("docx write");
-        let doc = localoffice_docx::read(&bytes).expect("docx read");
+        let bytes = localwriter_docx::write(&s.doc).expect("docx write");
+        let doc = localwriter_docx::read(&bytes).expect("docx read");
         assert_eq!(doc.settings.bib_style.as_deref(), Some("Harvard (Anglia)"));
         assert_eq!(Session::new(doc.clone()).bib_style, "Harvard (Anglia)");
-        let mut other = Session::new(localoffice_doc::Document::new());
+        let mut other = Session::new(localwriter_doc::Document::new());
         other.set_document(doc);
         assert_eq!(other.bib_style, "Harvard (Anglia)");
         // A document without a recorded style is APA.
-        assert_eq!(Session::new(localoffice_doc::Document::new()).bib_style, "APA");
+        assert_eq!(Session::new(localwriter_doc::Document::new()).bib_style, "APA");
     }
 
     #[test]
     fn index_and_figures() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Kilns are hot.\nPresses are heavy.\nMore kilns."));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Kilns are hot.\nPresses are heavy.\nMore kilns."));
         s.run("select.text", &json!({"text": "Kilns"})).unwrap();
         s.run("references.markEntry", &json!({})).unwrap();
         s.run("select.text", &json!({"text": "Presses"})).unwrap();
@@ -1399,7 +1399,7 @@ mod tests {
     /// cross-reference type of its own, `label:<Name>`, next to Figure, Table and Equation.
     #[test]
     fn cross_reference_to_a_custom_caption_label() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Rock\nSee "));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Rock\nSee "));
         s.run("select.text", &json!({"text": "Rock"})).unwrap();
         s.run("references.caption", &json!({"label": "Plate", "text": "A rock"})).unwrap();
         assert_eq!(caption_labels(&s), vec!["Plate".to_string()]);
@@ -1417,7 +1417,7 @@ mod tests {
     /// letter and roman numbering, which have no digit, still name it; a multi-word label too.
     #[test]
     fn caption_labels_do_not_need_a_digit() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Rock\nGem\nSand\nSee "));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Rock\nGem\nSand\nSee "));
         for (text, label, format) in [("Rock", "Plate", "ALPHABETIC"), ("Gem", "Photo Plate", "ROMAN"), ("Sand", "Chart", "ARABIC")] {
             s.run("select.text", &json!({"text": text})).unwrap();
             s.run("references.caption", &json!({"label": label, "text": text, "format": format})).unwrap();
@@ -1446,7 +1446,7 @@ mod tests {
     /// and a list of tables; each keeps its own label and leader when updated.
     #[test]
     fn table_of_figures_for_each_caption_label() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Kiln\nPress\nRock\nTablet\n"));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Kiln\nPress\nRock\nTablet\n"));
         for (text, label) in [("Kiln", "Figure"), ("Press", "Table"), ("Rock", "Photo Plate"), ("Tablet", "Figure")] {
             s.run("select.text", &json!({"text": text})).unwrap();
             s.run("references.caption", &json!({"label": label, "text": text})).unwrap();
@@ -1492,7 +1492,7 @@ mod tests {
             (json!({"pageNumbers": false}), "Figure 1: The kiln"),
             (json!({"rightAlign": false, "includeLabel": false}), "The kiln 1"),
         ] {
-            let mut s = Session::new(localoffice_doc::Document::from_text("Kiln\n"));
+            let mut s = Session::new(localwriter_doc::Document::from_text("Kiln\n"));
             s.run("select.text", &json!({"text": "Kiln"})).unwrap();
             s.run("references.caption", &json!({"label": "Figure", "text": "The kiln"})).unwrap();
             s.run("caret.docEnd", &json!({})).unwrap();
@@ -1508,7 +1508,7 @@ mod tests {
     /// with another's is not.
     #[test]
     fn table_of_figures_from_word_and_typed_captions() {
-        let mut d = localoffice_doc::Document::from_text("Figure 1: Typed\nFigures 2: Not a figure\nFigure 3 \u{2014} Dashed\nfigure 4: Lower\nList");
+        let mut d = localwriter_doc::Document::from_text("Figure 1: Typed\nFigures 2: Not a figure\nFigure 3 \u{2014} Dashed\nfigure 4: Lower\nList");
         for path in d.para_paths(StoryRef::Body).into_iter().take(4) {
             d.para_mut(StoryRef::Body, &path).unwrap().props.style = Some("Caption".into());
         }
@@ -1534,7 +1534,7 @@ mod tests {
     /// of date and gains entries (moving the new one down) while every list is rebuilt.
     #[test]
     fn table_of_figures_leader_survives_a_stale_list_above() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Kiln\nPress\nRock\n"));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Kiln\nPress\nRock\n"));
         for (text, label) in [("Kiln", "Figure"), ("Press", "Table")] {
             s.run("select.text", &json!({"text": text})).unwrap();
             s.run("references.caption", &json!({"label": label, "text": text})).unwrap();
@@ -1556,7 +1556,7 @@ mod tests {
     /// paragraph) is replaced by the rebuilt entries, not listed twice, and keeps its leader.
     #[test]
     fn table_of_figures_from_word_replaces_its_saved_list() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Kiln\nList"));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Kiln\nList"));
         s.run("select.text", &json!({"text": "Kiln"})).unwrap();
         s.run("references.caption", &json!({"label": "Figure", "text": "Kiln"})).unwrap();
         let last = s.doc.body.len() - 1;
@@ -1586,7 +1586,7 @@ mod tests {
     /// before the number (`STYLEREF`, " Specimen ", `SEQ Figure` is a figure).
     #[test]
     fn table_of_figures_goes_by_the_seq_identifier() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Rock\n"));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Rock\n"));
         let field = |instr: &str| InlineObject::Field {
             instr: instr.into(),
             result: String::new(),
@@ -1619,7 +1619,7 @@ mod tests {
     /// between that and the `SEQ` number; the text is the label, not the `SEQ` identifier.
     #[test]
     fn caption_label_after_a_chapter_number_field() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Rock\nSee "));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Rock\nSee "));
         let field = |instr: &str| InlineObject::Field {
             instr: instr.into(),
             result: String::new(),
@@ -1656,7 +1656,7 @@ mod tests {
     /// #661: References › Table of Authorities › Update Table picks up citations marked after the table.
     #[test]
     fn table_of_authorities_updates() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Smith v. Jones held it.\nDoe v. Roe agreed."));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Smith v. Jones held it.\nDoe v. Roe agreed."));
         s.run("select.text", &json!({"text": "Smith v. Jones"})).unwrap();
         s.run("references.markCitation", &json!({})).unwrap();
         s.run("caret.docEnd", &json!({})).unwrap();
@@ -1686,7 +1686,7 @@ mod tests {
 
     #[test]
     fn cross_references_point_at_real_bookmarks() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Kilns\nSee here."));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Kilns\nSee here."));
         s.run("caret.docStart", &json!({})).unwrap();
         s.run("styles.apply", &json!({"style": "Heading 1"})).unwrap();
         s.run("caret.docEnd", &json!({})).unwrap();
@@ -1712,7 +1712,7 @@ mod tests {
 
     #[test]
     fn cross_reference_to_a_bookmark_shows_its_text() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Kilns are hot.\nSee "));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Kilns are hot.\nSee "));
         s.run("select.text", &json!({"text": "Kilns"})).unwrap();
         s.run("insert.bookmark", &json!({"name": "Spot"})).unwrap();
         s.run("caret.docEnd", &json!({})).unwrap();
@@ -1723,7 +1723,7 @@ mod tests {
 
     #[test]
     fn cross_reference_inside_its_own_target_paragraph() {
-        let mut s = Session::new(localoffice_doc::Document::from_text("Kilns"));
+        let mut s = Session::new(localwriter_doc::Document::from_text("Kilns"));
         s.run("styles.apply", &json!({"style": "Heading 1"})).unwrap();
         s.run("caret.docEnd", &json!({})).unwrap();
         s.run("insert.crossReference", &json!({"to": "heading", "target": "Kilns"})).unwrap();
@@ -1739,7 +1739,7 @@ mod tests {
 
     #[test]
     fn editing_author_and_year_keeps_the_tag_and_updates_the_citation_text() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("references.sources", &json!({"add": src_of("Smith, Ann", "2020")})).unwrap();
         assert_eq!(s.doc.sources[0].tag, "Smi20");
         s.run("references.citation", &json!({"tag": "Smi20"})).unwrap();
@@ -1756,7 +1756,7 @@ mod tests {
 
     #[test]
     fn a_new_sources_tag_is_three_letters_and_two_year_digits() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         for (a, y) in [
             ("Kim", "2000"),
             ("Kim", "2000"),
@@ -1772,7 +1772,7 @@ mod tests {
         }
         let tags: Vec<_> = s.doc.sources.iter().map(|x| x.tag.as_str()).collect();
         assert_eq!(tags, ["Kim00", "Kim001", "Kim002", "Lee19", "Li99", "Src", "Src1", "Üna7", "ONe05"]);
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         let mut a = src_of("Lee", "2019");
         a["tag"] = json!("MyTag");
         s.run("references.sources", &json!({"add": a})).unwrap();
@@ -1788,7 +1788,7 @@ mod tests {
 
     #[test]
     fn author_date_styles_cite_and_list() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         two_sources(&mut s, "Shared Spaces");
         s.run("references.citation", &json!({"tag": "A", "pages": "12"})).unwrap();
         s.run("references.citation", &json!({"tag": "B"})).unwrap();
@@ -1847,7 +1847,7 @@ mod tests {
         std::fs::write(&path, xml).unwrap();
         let path = path.to_string_lossy().to_string();
 
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("references.sources", &json!({"import": path})).unwrap();
         assert_eq!(s.doc.sources.len(), 2, "the source with no content is dropped");
         assert_eq!(s.doc.sources[0].tag, "Riv21");
@@ -1897,7 +1897,7 @@ mod tests {
         )
         .unwrap();
         let path = path.to_string_lossy().to_string();
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("references.sources", &json!({"import": path})).unwrap();
         let tags: Vec<_> = s.doc.sources.iter().map(|x| x.tag.as_str()).collect();
         assert_eq!(tags, ["Riv21", "Riv211", "Src"], "{tags:?}");
@@ -1908,7 +1908,7 @@ mod tests {
 
     #[test]
     fn numbered_styles_count_in_order_of_first_citation() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         two_sources(&mut s, "Shared Spaces");
         s.run("references.citationStyle", &json!({"style": "ISO 690 (numerical)"})).unwrap();
         s.run("text.insert", &json!({"text": "Later "})).unwrap();
@@ -1951,7 +1951,7 @@ mod tests {
 
     #[test]
     fn gost_numbers_follow_its_name_or_title_sort() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         two_sources(&mut s, "Atlas of Studios");
         s.run("references.citation", &json!({"tag": "A"})).unwrap();
         s.run("references.citation", &json!({"tag": "B", "pages": "15"})).unwrap();

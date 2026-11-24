@@ -3,10 +3,10 @@
 
 use std::sync::Arc;
 
-use localoffice_doc::THEME_COLORS;
-use localoffice_doc::fill::{Fill, Gradient, GradientFlip, GradientKind, PathShape};
-use localoffice_doc::props::Rgb;
-use localoffice_doc::wordart::{GradStop, MAX_STOPS};
+use localwriter_doc::THEME_COLORS;
+use localwriter_doc::fill::{Fill, Gradient, GradientFlip, GradientKind, PathShape};
+use localwriter_doc::props::Rgb;
+use localwriter_doc::wordart::{GradStop, MAX_STOPS};
 
 use crate::units::int;
 use crate::xml::El;
@@ -242,7 +242,7 @@ pub(crate) fn adjust_lum(c: Rgb, f: impl Fn(f64) -> f64) -> Rgb {
 
 #[cfg(test)]
 mod tests {
-    use localoffice_doc::THEME_COLORS;
+    use localwriter_doc::THEME_COLORS;
 
     use super::*;
 

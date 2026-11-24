@@ -2,11 +2,11 @@
 
 Choose **File › Settings › Interface language › Slovenščina**, or follow a Slovenian system display
 language (`sl-SI`, `sl_SI.UTF-8`). The catalog code is `sl`; `ui.language` with `{"value":"sl"}`
-selects it explicitly, and `LOCALOFFICE_LANGUAGE=sl-SI` does the same for a headless screenshot or a
+selects it explicitly, and `LOCALWRITER_LANGUAGE=sl-SI` does the same for a headless screenshot or a
 launch while the preference is `auto`. Document text, command ids, CLI/MCP/control responses and
 file paths do not change.
 
-craft-i18n's `locales/sl/localoffice.tsv` (storytold/craft-i18n; it was `crates/ui-egui/src/i18n/sl.tsv`) has 2,614 entries: every key of every other catalog (built-in
+craft-i18n's `locales/sl/localwriter.tsv` (storytold/craft-i18n; it was `crates/ui-egui/src/i18n/sl.tsv`) has 2,614 entries: every key of every other catalog (built-in
 style names, equation gallery labels, paper sizes, watermarks, greetings, citation style names and
 native print settings included). It is written from the meaning of the English labels; no proprietary translation
 resources were consulted.

@@ -1,4 +1,4 @@
-//! LocalOffice document model.
+//! LocalWriter document model.
 //!
 //! A [`Document`] holds the main story (`body`) and secondary stories (`parts`: headers,
 //! footers, notes, comments, text boxes). A story is a list of [`Block`]s: paragraphs and tables;
@@ -448,7 +448,7 @@ pub struct Comment {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub durable_id: Option<String>,
     /// The comment's UTC timestamp: from the file (`w16cex:dateUtc`, where `date` is local time),
-    /// or the time LocalOffice stamped the comment with.
+    /// or the time LocalWriter stamped the comment with.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date_utc: Option<String>,
 }
@@ -700,7 +700,7 @@ pub enum ZoomFit {
 /// Word's compatibility mode for documents that don't state one.
 pub const LEGACY_COMPAT_MODE: u32 = 12;
 
-/// The compatibility mode of documents created by Word 2013 and later, and by LocalOffice.
+/// The compatibility mode of documents created by Word 2013 and later, and by LocalWriter.
 pub const COMPAT_MODE_CURRENT: u32 = 15;
 
 /// Word's hyphenation zone when a document doesn't set one (0.25"), points.
@@ -758,7 +758,7 @@ impl Watermark {
         if let Some([w, h]) = self.size.filter(|[w, h]| w.is_finite() && h.is_finite() && *w > 0.0 && *h > 0.0) {
             return [w.min(4000.0), h.min(4000.0)];
         }
-        let (pw, ph) = (localoffice_geom::finite(page_w).clamp(72.0, 4000.0), localoffice_geom::finite(page_h).clamp(72.0, 4000.0));
+        let (pw, ph) = (localwriter_geom::finite(page_w).clamp(72.0, 4000.0), localwriter_geom::finite(page_h).clamp(72.0, 4000.0));
         let across = if self.diagonal { (pw * pw + ph * ph).sqrt() } else { pw };
         let width = (across * 0.5).clamp(36.0, 2000.0);
         let chars = self.text.chars().take(200).count().max(1) as f32;

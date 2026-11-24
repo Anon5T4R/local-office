@@ -1,7 +1,7 @@
 //! View tab and status bar: views, zoom, show/hide, panes.
 
-use localoffice_doc::{Zoom, ZoomFit};
-use localoffice_layout::{NumeralMode, ViewMode};
+use localwriter_doc::{Zoom, ZoomFit};
+use localwriter_layout::{NumeralMode, ViewMode};
 use serde_json::{Value, json};
 
 use super::sel_result;

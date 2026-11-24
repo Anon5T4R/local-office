@@ -1,7 +1,7 @@
-//! SmartArt graphics LocalOffice makes ([`SmartArtSpec`]) as diagram parts (ECMA-376 Part 1 §21.4)
+//! SmartArt graphics LocalWriter makes ([`SmartArtSpec`]) as diagram parts (ECMA-376 Part 1 §21.4)
 //! and back.
 //!
-//! LocalOffice lays a graphic out with its own algorithms ([`layout`]: blocks, steps with arrows,
+//! LocalWriter lays a graphic out with its own algorithms ([`layout`]: blocks, steps with arrows,
 //! a cycle, a tree, a pyramid, a radial, a matrix, overlapping circles) and writes five parts:
 //! - the data model ([`data_xml`], `dgm:dataModel`): the document point, a node point per item
 //!   with its text, and connections that give each item its parent;
@@ -9,15 +9,15 @@
 //!   definition ([`colors_xml`]) of our own, named by the identifiers ECMA-376 applications use
 //!   for the matching built-in layouts, styles and colours;
 //! - the drawing ([`drawing_xml`], `dsp:drawing`): every shape already placed, so any reader
-//!   shows the graphic as LocalOffice laid it out. LocalOffice draws its own graphics from that same
+//!   shows the graphic as LocalWriter laid it out. LocalWriter draws its own graphics from that same
 //!   drawing ([`smart_art_items`]).
 //!
 //! [`spec_of`] turns a data part back into the model only when writing that model again gives
 //! the same markup: a diagram another program made or changed stays read-only.
 
-use localoffice_doc::graphic::GraphicItem;
-use localoffice_doc::props::Rgb;
-use localoffice_doc::smart_art::{MAX_ITEMS, SmartArtColors, SmartArtItem, SmartArtLayout, SmartArtSpec};
+use localwriter_doc::graphic::GraphicItem;
+use localwriter_doc::props::Rgb;
+use localwriter_doc::smart_art::{MAX_ITEMS, SmartArtColors, SmartArtItem, SmartArtLayout, SmartArtSpec};
 
 use crate::read::diagram::{text_width, wrap};
 use crate::xml::{self, El, MAX_DEPTH, Node, W};
@@ -1075,7 +1075,7 @@ fn same(a: &El, b: &El, depth: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use localoffice_doc::THEME_COLORS;
+    use localwriter_doc::THEME_COLORS;
 
     fn parse(s: &str) -> El {
         xml::parse(s.as_bytes()).unwrap()

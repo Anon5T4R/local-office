@@ -21,8 +21,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use localoffice_doc::props::VAlign;
-use localoffice_doc::{Align, Document, Rgb};
+use localwriter_doc::props::VAlign;
+use localwriter_doc::{Align, Document, Rgb};
 
 use crate::model::{self, Cell, FBlock, FTable, Flow, Fmt, Inline, Kind, ListInfo, Meta, Para, RevMark, make_img};
 
@@ -35,7 +35,7 @@ const MAX_SECTIONS: usize = 10_000;
 /// The encoding of an East Asian multibyte code page (932 Shift-JIS, 936 GBK, 949 UHC, 950 Big5),
 /// which [`Reader::finish_multibyte`] decodes a run with; `None` for the single-byte code pages.
 fn multibyte_encoding(code_page: u16) -> Option<&'static encoding_rs::Encoding> {
-    let label = localoffice_doc::encoding::multibyte_encoding_name(code_page)?;
+    let label = localwriter_doc::encoding::multibyte_encoding_name(code_page)?;
     encoding_rs::Encoding::for_label(label.as_bytes())
 }
 
@@ -107,14 +107,14 @@ struct Writer {
     /// size, code font…): what a run's formatting without a direct value resolves to.
     base: Fmt,
     /// The body's sections in order (the last is the document's); empty when it has just one.
-    sections: Vec<localoffice_doc::SectionProps>,
+    sections: Vec<localwriter_doc::SectionProps>,
     /// The section being written.
     sect_i: usize,
 }
 
 /// `\sectd` and a section's formatting, in the words the reader reads back.
-fn sect_words(s: &localoffice_doc::SectionProps) -> String {
-    use localoffice_doc::section::{NumFormat, SectionStart};
+fn sect_words(s: &localwriter_doc::SectionProps) -> String {
+    use localwriter_doc::section::{NumFormat, SectionStart};
     let tw = |v: f32| if v.is_finite() { ((v * 20.0).round() as i64).max(0) } else { 0 };
     let mut o = String::from("\\sectd");
     o.push_str(match s.start {
@@ -172,8 +172,8 @@ fn style_num(k: Kind) -> Option<u32> {
     }
 }
 
-fn rtf_border_style(s: localoffice_doc::props::BorderStyle) -> &'static str {
-    use localoffice_doc::props::BorderStyle;
+fn rtf_border_style(s: localwriter_doc::props::BorderStyle) -> &'static str {
+    use localwriter_doc::props::BorderStyle;
     match s {
         BorderStyle::None => "\\brdrnone",
         BorderStyle::Single => "\\brdrs",
@@ -188,7 +188,7 @@ fn rtf_border_style(s: localoffice_doc::props::BorderStyle) -> &'static str {
 }
 
 impl Writer {
-    fn write_border(&mut self, prefix: &str, side: char, b: localoffice_doc::props::Border, out: &mut String) {
+    fn write_border(&mut self, prefix: &str, side: char, b: localwriter_doc::props::Border, out: &mut String) {
         out.push_str(&format!("\\{prefix}{side}"));
         out.push_str(rtf_border_style(b.style));
         let w = ((b.width * 20.0).round() as i64).clamp(1, 150);
@@ -205,7 +205,7 @@ impl Writer {
         }
     }
 
-    fn cell_borders(&mut self, borders: Option<&localoffice_doc::props::Borders>, borderless: bool, out: &mut String) {
+    fn cell_borders(&mut self, borders: Option<&localwriter_doc::props::Borders>, borderless: bool, out: &mut String) {
         if let Some(b) = borders {
             for (side, opt) in [('t', &b.top), ('l', &b.left), ('b', &b.bottom), ('r', &b.right)] {
                 if let Some(border) = opt.filter(|x| x.is_visible()) {
@@ -270,7 +270,7 @@ impl Writer {
         // A script, `file:`, UNC or other non-web target is written as plain text, as the HTML and
         // Markdown exporters do: Word follows a HYPERLINK field's target on click, and a UNC one
         // leaks the reader's NTLM credentials.
-        match f.link.as_deref().filter(|l| localoffice_doc::link::is_safe_href(l)) {
+        match f.link.as_deref().filter(|l| localwriter_doc::link::is_safe_href(l)) {
             Some(l) => {
                 out.push_str(&format!("{{\\field{{\\*\\fldinst{{HYPERLINK \"{}\"}}}}{{\\fldrslt{{{}}}}}}}", esc(&l.replace('"', "%22")), body));
             }
@@ -711,7 +711,7 @@ pub fn dttm_to_iso(v: u32) -> Option<String> {
 
 /// An ISO 8601 date (`YYYY-MM-DD`, optionally `THH:MM…`; seconds and zone ignored) as an RTF
 /// DTTM; `None` when it isn't one or falls outside DTTM's years (1900–2411). DTTM has no time
-/// zone or seconds: the clock time is written as given (LocalOffice keeps UTC, `Z`), and seconds
+/// zone or seconds: the clock time is written as given (LocalWriter keeps UTC, `Z`), and seconds
 /// and any offset are dropped.
 pub fn iso_to_dttm(s: &str) -> Option<u32> {
     let num = |a: usize, b: usize| s.get(a..b).filter(|t| t.bytes().all(|c| c.is_ascii_digit())).and_then(|t| t.parse::<u32>().ok());
@@ -737,7 +737,7 @@ pub fn iso_to_dttm(s: &str) -> Option<u32> {
 /// RTF text of a document.
 pub fn export(doc: &Document) -> String {
     let flow = model::from_doc_tracked(doc);
-    let base_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| localoffice_doc::styles::BODY_FONT.to_string());
+    let base_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| localwriter_doc::styles::BODY_FONT.to_string());
     let mut w = Writer {
         t: Tables { fonts: vec![base_font], colors: Vec::new() },
         lists: Vec::new(),
@@ -748,7 +748,7 @@ pub fn export(doc: &Document) -> String {
     };
     let mut body = String::new();
     // Every section starts with its own `\sectd`; `\sect` breaks only where there are several.
-    let secs: Vec<localoffice_doc::SectionProps> = doc.sections().into_iter().map(|(_, s)| s.clone()).collect();
+    let secs: Vec<localwriter_doc::SectionProps> = doc.sections().into_iter().map(|(_, s)| s.clone()).collect();
     if let Some(first) = secs.first() {
         body.push_str(&sect_words(first));
     }
@@ -759,7 +759,7 @@ pub fn export(doc: &Document) -> String {
     export_with(&flow.meta, &w, &body, &doc.last_section)
 }
 
-fn export_with(m: &Meta, w: &Writer, body: &str, sec: &localoffice_doc::SectionProps) -> String {
+fn export_with(m: &Meta, w: &Writer, body: &str, sec: &localwriter_doc::SectionProps) -> String {
     let mut out = String::from("{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\\uc1\n{\\fonttbl");
     for (i, f) in w.t.fonts.iter().enumerate() {
         let fam = if model::is_mono(f) { "\\fmodern" } else { "\\fswiss" };
@@ -769,7 +769,7 @@ fn export_with(m: &Meta, w: &Writer, body: &str, sec: &localoffice_doc::SectionP
     for c in &w.t.colors {
         out.push_str(&format!("\\red{}\\green{}\\blue{};", c.0, c.1, c.2));
     }
-    out.push_str("}\n{\\*\\generator Local Word;}\n{\\stylesheet{\\s0\\snext0 Normal;}");
+    out.push_str("}\n{\\*\\generator Local Writer;}\n{\\stylesheet{\\s0\\snext0 Normal;}");
     for n in 1..=6u32 {
         let sz = HEAD_SIZES.get(n as usize - 1).copied().unwrap_or(12.0);
         out.push_str(&format!("{{\\s{n}\\sbasedon0\\snext0\\outlinelevel{}\\keepn\\b\\fs{} heading {n};}}", n - 1, (sz * 2.0) as i32));
@@ -943,7 +943,7 @@ struct St {
     /// (`\li`, `\ri`, `\fi`), twips.
     /// The paragraph's borders (`\brdrt`, `\brdrb`, `\brdrl`, `\brdrr`) and the side being
     /// described.
-    borders: localoffice_doc::props::Borders,
+    borders: localwriter_doc::props::Borders,
     border_side: Option<char>,
     sb: Option<i32>,
     sa: Option<i32>,
@@ -996,7 +996,7 @@ struct CellDef {
     right: i32,
     /// The borders the cell names (`\clbrdrt` … `\clbrdrr`, each with its line style, `\brdrw`
     /// width and `\brdrcf` colour).
-    borders: localoffice_doc::props::Borders,
+    borders: localwriter_doc::props::Borders,
     valign: Option<VAlign>,
 }
 
@@ -1016,8 +1016,8 @@ struct PageGeom {
 
 impl PageGeom {
     /// The section properties these give, Word's defaults where the file names none.
-    fn section(&self) -> localoffice_doc::SectionProps {
-        let mut s = localoffice_doc::SectionProps::default();
+    fn section(&self) -> localwriter_doc::SectionProps {
+        let mut s = localwriter_doc::SectionProps::default();
         // Twips to points, ignoring nonsense (zero, negative, or beyond Word's 22").
         let pt = |v: Option<i32>, lo: f32, hi: f32| v.map(|t| t as f32 / 20.0).filter(|v| v.is_finite() && (lo..=hi).contains(v));
         if let Some(w) = pt(self.w, 72.0, 1584.0) {
@@ -1043,7 +1043,7 @@ impl PageGeom {
             }
         }
         // Margins that leave no room for text fall back to Word's.
-        let d = localoffice_doc::SectionProps::default();
+        let d = localwriter_doc::SectionProps::default();
         if s.page_w - s.margin_left - s.margin_right < 72.0 {
             (s.margin_left, s.margin_right) = (d.margin_left, d.margin_right);
         }
@@ -1059,19 +1059,19 @@ impl PageGeom {
 #[derive(Clone, Debug, Default)]
 struct SecFmt {
     page: PageGeom,
-    start: localoffice_doc::section::SectionStart,
+    start: localwriter_doc::section::SectionStart,
     cols: Option<i32>,
     colsx: Option<i32>,
     linebetcol: bool,
     pgn_restart: bool,
     pgn_start: Option<i32>,
-    pgn_fmt: localoffice_doc::section::NumFormat,
+    pgn_fmt: localwriter_doc::section::NumFormat,
     title_page: bool,
 }
 
 impl SecFmt {
     /// The section's properties over the document's page (`doc`); headers and footers unset.
-    fn props(&self, doc: &PageGeom) -> localoffice_doc::SectionProps {
+    fn props(&self, doc: &PageGeom) -> localwriter_doc::SectionProps {
         let p = &self.page;
         let page = PageGeom {
             w: p.w.or(doc.w),
@@ -1212,7 +1212,7 @@ impl Reader {
     }
 
     /// The border of the cell side being described, else of the paragraph side.
-    fn cell_border_slot(&mut self) -> Option<&mut Option<localoffice_doc::props::Border>> {
+    fn cell_border_slot(&mut self) -> Option<&mut Option<localwriter_doc::props::Border>> {
         let (b, side) = match self.cell_side {
             Some(c) => (&mut self.def_cur.borders, c),
             None => (&mut self.st.borders, self.st.border_side?),
@@ -1266,7 +1266,7 @@ impl Reader {
     /// A section formatting word: applied to the current section, unless it's inside a header
     /// or footer (whose `\sectd` isn't the body's). False when `w` isn't one.
     fn section_word(&mut self, w: &str, p: Option<i32>) -> bool {
-        use localoffice_doc::section::{NumFormat, SectionStart};
+        use localwriter_doc::section::{NumFormat, SectionStart};
         let on = p != Some(0);
         let pv = p.unwrap_or(0);
         // Inside a header or footer the word is read into a scratch copy and dropped.
@@ -1428,7 +1428,7 @@ impl Reader {
         let cp = self.code_page();
         let Some(encoding) = multibyte_encoding(cp) else {
             self.finish_multibyte();
-            let c = localoffice_doc::encoding::code_page_byte(cp, b);
+            let c = localwriter_doc::encoding::code_page_byte(cp, b);
             self.ch(c);
             return;
         };
@@ -1506,7 +1506,7 @@ impl Reader {
             self.finish_multibyte();
             let mut out = String::with_capacity(chunk.len());
             for b in chunk {
-                out.push(localoffice_doc::encoding::code_page_byte(cp, *b));
+                out.push(localwriter_doc::encoding::code_page_byte(cp, *b));
             }
             if !out.is_empty() {
                 self.text(&out);
@@ -1567,8 +1567,8 @@ impl Reader {
 
     /// The formatting a paragraph of kind `kind` in style `id` gives its runs. A style whose
     /// entry and `\sbasedon` chain set no character formatting (a bare `{\s2 heading 2;}`) has
-    /// LocalOffice's own (`style_fmt`); otherwise what the chain doesn't set is RTF's default (not
-    /// bold, not italic, 12 pt). The font alone falls back per property: LocalOffice writes the code
+    /// LocalWriter's own (`style_fmt`); otherwise what the chain doesn't set is RTF's default (not
+    /// bold, not italic, 12 pt). The font alone falls back per property: LocalWriter writes the code
     /// font on each code paragraph, not in its Code entry.
     fn style_base(&self, kind: Kind, id: i32) -> Fmt {
         let mut f = style_fmt(kind);
@@ -1856,7 +1856,7 @@ impl Reader {
             }
             out.push(c);
         }
-        if !out.is_empty() && self.table.len() < localoffice_doc::table::MAX_ROWS {
+        if !out.is_empty() && self.table.len() < localwriter_doc::table::MAX_ROWS {
             rights.truncate(out.len());
             self.table.push(out);
             self.table_rights.push(rights);
@@ -2005,10 +2005,10 @@ impl Reader {
                         self.font_name.clear();
                         self.font_cp_cur = None;
                     }
-                    "fcharset" => self.font_cp_cur = localoffice_doc::encoding::charset_code_page(pv),
+                    "fcharset" => self.font_cp_cur = localwriter_doc::encoding::charset_code_page(pv),
                     // A font's explicit code page (`\cpg1251`, `\cpg932`) wins over its charset.
                     "cpg" => {
-                        if let Some(cp) = u16::try_from(pv).ok().filter(|cp| localoffice_doc::encoding::is_text_code_page(*cp)) {
+                        if let Some(cp) = u16::try_from(pv).ok().filter(|cp| localwriter_doc::encoding::is_text_code_page(*cp)) {
                             self.font_cp_cur = Some(cp);
                         }
                     }
@@ -2213,13 +2213,13 @@ impl Reader {
             }
             "fs" => self.st.fmt.size = if pv > 0 { Some((pv as f32 / 2.0).clamp(1.0, 1638.0)) } else { None },
             "ansicpg" => {
-                if let Some(cp) = u16::try_from(pv).ok().filter(|cp| localoffice_doc::encoding::is_text_code_page(*cp)) {
+                if let Some(cp) = u16::try_from(pv).ok().filter(|cp| localwriter_doc::encoding::is_text_code_page(*cp)) {
                     self.ansicpg = cp;
                 }
             }
             // The Macintosh and IBM PC character sets: 8-bit text is Mac OS Roman, or DOS code
             // page 437 (`\pc`) or 850 (`\pca`) (#1653).
-            "mac" if self.ansicpg == 0 => self.ansicpg = localoffice_doc::encoding::MAC_ROMAN_CODE_PAGE,
+            "mac" if self.ansicpg == 0 => self.ansicpg = localwriter_doc::encoding::MAC_ROMAN_CODE_PAGE,
             "pc" if self.ansicpg == 0 => self.ansicpg = 437,
             "pca" if self.ansicpg == 0 => self.ansicpg = 850,
             "deff" => self.deff = pv,
@@ -2288,7 +2288,7 @@ impl Reader {
             | "brdrtbl"
                 if self.cell_side.is_some() || self.st.border_side.is_some() =>
             {
-                use localoffice_doc::props::{Border, BorderStyle};
+                use localwriter_doc::props::{Border, BorderStyle};
                 let style = match w {
                     "brdrnone" | "brdrnil" | "brdrtbl" => BorderStyle::None,
                     "brdrth" => BorderStyle::Thick,
@@ -2503,7 +2503,7 @@ fn is_char_format_word(w: &str) -> bool {
 
 /// The spacing and indents in points of the paragraph formatting `st`.
 fn spacing(st: &St) -> model::Spacing {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     let pt = |v: i32| (v as f32 / 20.0).clamp(-1584.0, 1584.0);
     let gap = |v: Option<i32>| v.map(|v| pt(v).max(0.0));
     let sl = st.sl;
@@ -2610,7 +2610,7 @@ struct Parsed {
     flow: Flow,
     page: PageGeom,
     /// The last section's properties (the others are on the paragraphs that end them).
-    last_section: localoffice_doc::SectionProps,
+    last_section: localwriter_doc::SectionProps,
     default_font: Option<String>,
     /// Each section's headers and footers, in order, the last section's last.
     headers_footers: Vec<Vec<(HeaderFooter, Vec<FBlock>)>>,
@@ -2864,10 +2864,10 @@ pub fn import(bytes: &[u8]) -> Result<Document, String> {
     // Each section's own headers and footers; those it leaves out stay linked to the previous.
     let mut sets = Vec::with_capacity(headers_footers.len());
     for parts in &headers_footers {
-        let (mut headers, mut footers) = (localoffice_doc::section::HeaderSet::default(), localoffice_doc::section::HeaderSet::default());
+        let (mut headers, mut footers) = (localwriter_doc::section::HeaderSet::default(), localwriter_doc::section::HeaderSet::default());
         for (which, blocks) in parts {
             let blocks = model::part_blocks(&mut doc, blocks);
-            let id = doc.add_part(if which.footer { localoffice_doc::PartKind::Footer } else { localoffice_doc::PartKind::Header }, blocks);
+            let id = doc.add_part(if which.footer { localwriter_doc::PartKind::Footer } else { localwriter_doc::PartKind::Header }, blocks);
             let set = if which.footer { &mut footers } else { &mut headers };
             match which.pages {
                 HfPages::Default => set.default = Some(id),
@@ -2879,9 +2879,9 @@ pub fn import(bytes: &[u8]) -> Result<Document, String> {
     }
     let mut sets = sets.into_iter();
     for b in &mut doc.body {
-        if let localoffice_doc::Block::Para(p) = &**b
+        if let localwriter_doc::Block::Para(p) = &**b
             && p.section.is_some()
-            && let localoffice_doc::Block::Para(p) = std::sync::Arc::make_mut(b)
+            && let localwriter_doc::Block::Para(p) = std::sync::Arc::make_mut(b)
             && let Some(s) = p.section.as_deref_mut()
             && let Some((h, f)) = sets.next()
         {
@@ -2896,7 +2896,7 @@ pub fn import(bytes: &[u8]) -> Result<Document, String> {
     let dp = &mut doc.styles.default_para;
     dp.space_before = Some(0.0);
     dp.space_after = Some(0.0);
-    dp.line_spacing = Some(localoffice_doc::props::LineSpacing::Multiple(1.0));
+    dp.line_spacing = Some(localwriter_doc::props::LineSpacing::Multiple(1.0));
     if default_font.is_some() {
         doc.styles.default_chr.font = default_font;
     }
@@ -2962,21 +2962,21 @@ mod tests {
         // \pard resets them.
         assert!(paras[1].borders.is_none());
         let b = paras[2].borders.unwrap();
-        assert_eq!(b.top.map(|x| x.style), Some(localoffice_doc::props::BorderStyle::Double));
+        assert_eq!(b.top.map(|x| x.style), Some(localwriter_doc::props::BorderStyle::Double));
         assert!(b.left.is_some() && b.right.is_some() && b.bottom.is_none());
         // An empty paragraph with only a bottom border is still a rule.
         assert_eq!(paras[3].kind, Kind::Rule);
         // The document's paragraph carries them.
         let d = import(rtf).unwrap();
-        let first = d.body.iter().find_map(|b| if let localoffice_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
+        let first = d.body.iter().find_map(|b| if let localwriter_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
         assert!(first.props.borders.and_then(|b| b.bottom).is_some());
         // Paragraph borders round-trip through export and import.
         let exported = export(&d);
         assert!(exported.contains("\\brdrb\\brdrs\\brdrw10\\brdrcf1"), "{exported}");
         let back = import(exported.as_bytes()).unwrap();
-        let first = back.body.iter().find_map(|b| if let localoffice_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
+        let first = back.body.iter().find_map(|b| if let localwriter_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
         let b = first.props.borders.unwrap().bottom.unwrap();
-        assert_eq!((b.style, b.width, b.color), (localoffice_doc::props::BorderStyle::Single, 0.5, Some(Rgb(216, 216, 216))));
+        assert_eq!((b.style, b.width, b.color), (localwriter_doc::props::BorderStyle::Single, 0.5, Some(Rgb(216, 216, 216))));
     }
 
     #[test]
@@ -2995,7 +2995,7 @@ mod tests {
             let p = id.and_then(|id| d.parts.get(&id)).unwrap();
             p.blocks
                 .iter()
-                .filter_map(|b| if let localoffice_doc::Block::Para(p) = &**b { Some(p.text.clone()) } else { None })
+                .filter_map(|b| if let localwriter_doc::Block::Para(p) = &**b { Some(p.text.clone()) } else { None })
                 .collect::<Vec<_>>()
                 .join("|")
         };
@@ -3016,7 +3016,7 @@ mod tests {
 
     #[test]
     fn paragraph_spacing_and_indents() {
-        use localoffice_doc::props::LineSpacing;
+        use localwriter_doc::props::LineSpacing;
         let rtf = br"{\rtf1\ansi
 \pard\sb120\sa150\sl360\slmult1\li720\ri360\fi-360 a\par
 \pard\sl-280 b\par
@@ -3036,7 +3036,7 @@ mod tests {
         let d = import(rtf).unwrap();
         assert_eq!(d.styles.default_para.space_after, Some(0.0));
         assert_eq!(d.styles.default_para.line_spacing, Some(LineSpacing::Multiple(1.0)));
-        let first = d.body.iter().find_map(|b| if let localoffice_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
+        let first = d.body.iter().find_map(|b| if let localwriter_doc::Block::Para(p) = &**b { Some(p) } else { None }).unwrap();
         assert_eq!(first.props.space_after, Some(7.5));
         assert_eq!(first.props.indent_first, Some(-18.0));
     }
@@ -3050,7 +3050,7 @@ mod tests {
         assert_eq!(d.styles.default_chr.font.as_deref(), Some("Arial"));
         // No font table: our default stays.
         let d = import(br"{\rtf1\ansi x\par}").unwrap();
-        assert_eq!(d.styles.default_chr.font, localoffice_doc::StyleSheet::builtin().default_chr.font);
+        assert_eq!(d.styles.default_chr.font, localwriter_doc::StyleSheet::builtin().default_chr.font);
     }
 
     #[test]
@@ -3089,7 +3089,7 @@ mod tests {
         assert!(exported.contains("\\landscape"), "exported RTF must include \\landscape: {exported}");
         // Nonsense keeps Word's defaults.
         let d = import(br"{\rtf1\ansi\paperw0\margl99999 x\par}").unwrap();
-        assert_eq!(d.last_section, localoffice_doc::SectionProps::default());
+        assert_eq!(d.last_section, localwriter_doc::SectionProps::default());
     }
 
     #[test]
@@ -3115,12 +3115,12 @@ mod tests {
         let b = t.rows[0][0].borders.unwrap();
         assert!(b.top.is_none() && b.left.is_none() && b.right.is_none());
         let bottom = b.bottom.unwrap();
-        assert_eq!((bottom.style, bottom.width, bottom.color), (localoffice_doc::props::BorderStyle::Single, 0.75, Some(Rgb(174, 174, 174))));
+        assert_eq!((bottom.style, bottom.width, bottom.color), (localwriter_doc::props::BorderStyle::Single, 0.75, Some(Rgb(174, 174, 174))));
         // Every side, in different styles, per cell.
         let f = parse(br"{\rtf1\ansi\trowd\clbrdrt\brdrdb\clbrdrl\brdrs\brdrw10\clbrdrb\brdrdot\clbrdrr\brdrth\cellx2000\cellx4000\pard\intbl a\cell b\cell\row}").unwrap();
         let FBlock::Table(t) = &f.blocks[0] else { panic!() };
         let b = t.rows[0][0].borders.unwrap();
-        use localoffice_doc::props::BorderStyle as S;
+        use localwriter_doc::props::BorderStyle as S;
         assert_eq!(
             [b.top.map(|x| x.style), b.left.map(|x| x.style), b.bottom.map(|x| x.style), b.right.map(|x| x.style)],
             [Some(S::Double), Some(S::Single), Some(S::Dotted), Some(S::Thick)]
@@ -3133,7 +3133,7 @@ mod tests {
         assert!(t.rows[0][0].borders.is_none());
         // The document's cells carry them.
         let d = import(br"{\rtf1\ansi\trowd\clbrdrb\brdrs\cellx2000\pard\intbl a\cell\row}").unwrap();
-        let t = d.body.iter().find_map(|b| if let localoffice_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
+        let t = d.body.iter().find_map(|b| if let localwriter_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
         assert!(t.props.style.is_none());
         assert!(t.rows[0].cells[0].props.borders.and_then(|b| b.bottom).is_some());
         // Borderless tables export without cell borders and round-trip borderless.
@@ -3141,7 +3141,7 @@ mod tests {
         let exported = export(&d);
         assert!(!exported.contains("\\clbrdr"), "{exported}");
         let back = import(exported.as_bytes()).unwrap();
-        let tb = back.body.iter().find_map(|b| if let localoffice_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
+        let tb = back.body.iter().find_map(|b| if let localwriter_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
         assert!(tb.props.style.is_none());
         assert!(tb.rows[0].cells[0].props.borders.is_none());
 
@@ -3151,13 +3151,13 @@ mod tests {
         let exported = export(&d);
         assert!(exported.contains("\\clbrdrb\\brdrdb\\brdrw15\\brdrcf1"), "{exported}");
         let back = import(exported.as_bytes()).unwrap();
-        let tb = back.body.iter().find_map(|b| if let localoffice_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
+        let tb = back.body.iter().find_map(|b| if let localwriter_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
         let b = tb.rows[0].cells[0].props.borders.unwrap().bottom.unwrap();
-        assert_eq!((b.style, b.width, b.color), (localoffice_doc::props::BorderStyle::Double, 0.75, Some(Rgb(174, 174, 174))));
+        assert_eq!((b.style, b.width, b.color), (localwriter_doc::props::BorderStyle::Double, 0.75, Some(Rgb(174, 174, 174))));
 
         // The table sizes to the document's page, not Letter.
         let d = import(br"{\rtf1\ansi\paperw11906\margl1134\margr1134\trowd\cellx4818\cellx9638\pard\intbl a\cell b\cell\row}").unwrap();
-        let t = d.body.iter().find_map(|b| if let localoffice_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
+        let t = d.body.iter().find_map(|b| if let localwriter_doc::Block::Table(t) = &**b { Some(t) } else { None }).unwrap();
         assert_eq!(t.grid, [240.9, 241.0]);
     }
 
@@ -3387,17 +3387,17 @@ mod tests {
     /// (text, insertion (author, date), deletion (author, date)) of each run of the first paragraph.
     #[allow(clippy::type_complexity)]
     fn tracked_runs(doc: &Document) -> Vec<(String, Option<(String, String)>, Option<(String, String)>)> {
-        let rev = |i: Option<u32>, kind: localoffice_doc::RevisionKind| {
+        let rev = |i: Option<u32>, kind: localwriter_doc::RevisionKind| {
             i.map(|i| {
                 let r = doc.revisions.get(i as usize).unwrap();
                 assert_eq!(r.kind, kind);
                 (r.author.clone(), r.date.clone())
             })
         };
-        let Some(localoffice_doc::Block::Para(p)) = doc.body.first().map(|b| &**b) else { panic!("no paragraph") };
+        let Some(localwriter_doc::Block::Para(p)) = doc.body.first().map(|b| &**b) else { panic!("no paragraph") };
         p.run_ranges()
             .map(|(r, cp)| {
-                (p.text[r].to_string(), rev(cp.ins, localoffice_doc::RevisionKind::Insert), rev(cp.del, localoffice_doc::RevisionKind::Delete))
+                (p.text[r].to_string(), rev(cp.ins, localwriter_doc::RevisionKind::Insert), rev(cp.del, localwriter_doc::RevisionKind::Delete))
             })
             .collect()
     }
@@ -3503,45 +3503,45 @@ mod tests {
         // Revision marks are character formatting: `\pard` resets paragraph formatting only.
         let rtf = br"{\rtf1{\*\revtbl {Unknown;}{Bob;}}\deleted\revauthdel1 gone\par\pard more\par}";
         let doc = import(rtf).unwrap();
-        let Some(localoffice_doc::Block::Para(p)) = doc.body.get(1).map(|b| &**b) else { panic!("no second paragraph") };
+        let Some(localwriter_doc::Block::Para(p)) = doc.body.get(1).map(|b| &**b) else { panic!("no second paragraph") };
         assert_eq!(p.text, "more");
         let del = p.props_of_char(0).del.and_then(|i| doc.revisions.get(i as usize));
-        assert_eq!(del.map(|r| (r.kind, r.author.as_str())), Some((localoffice_doc::RevisionKind::Delete, "Bob")));
+        assert_eq!(del.map(|r| (r.kind, r.author.as_str())), Some((localwriter_doc::RevisionKind::Delete, "Bob")));
     }
 
     /// The body's paragraphs.
-    fn doc_paras(doc: &Document) -> Vec<&localoffice_doc::Paragraph> {
+    fn doc_paras(doc: &Document) -> Vec<&localwriter_doc::Paragraph> {
         doc.body
             .iter()
             .filter_map(|b| match &**b {
-                localoffice_doc::Block::Para(p) => Some(p),
+                localwriter_doc::Block::Para(p) => Some(p),
                 _ => None,
             })
             .collect()
     }
 
     /// A document of `paras` with `revisions`.
-    fn doc_with(paras: Vec<localoffice_doc::Paragraph>, revisions: Vec<localoffice_doc::Revision>) -> Document {
+    fn doc_with(paras: Vec<localwriter_doc::Paragraph>, revisions: Vec<localwriter_doc::Revision>) -> Document {
         let mut doc = Document::new();
-        doc.body = paras.into_iter().map(localoffice_doc::para_block).collect();
+        doc.body = paras.into_iter().map(localwriter_doc::para_block).collect();
         doc.revisions = revisions;
         doc
     }
 
     /// Kind, author and date of revision `i`.
-    fn rev_of(doc: &Document, i: Option<u32>) -> Option<(localoffice_doc::RevisionKind, String, String)> {
+    fn rev_of(doc: &Document, i: Option<u32>) -> Option<(localwriter_doc::RevisionKind, String, String)> {
         i.and_then(|i| doc.revisions.get(i as usize)).map(|r| (r.kind, r.author.clone(), r.date.clone()))
     }
 
     #[test]
     fn character_formatting_change_round_trips() {
-        use localoffice_doc::props::{CharProps, PropChange};
-        use localoffice_doc::{Revision, RevisionKind};
+        use localwriter_doc::props::{CharProps, PropChange};
+        use localwriter_doc::{Revision, RevisionKind};
         // "Bold" was made bold by Alice; before, it was plain italic.
         let old = CharProps { italic: Some(true), ..Default::default() };
         let cp = CharProps { bold: Some(true), fmt_change: PropChange::boxed(0, old), ..Default::default() };
         let doc = doc_with(
-            vec![localoffice_doc::Paragraph::with_text("Bold", cp)],
+            vec![localwriter_doc::Paragraph::with_text("Bold", cp)],
             vec![Revision::new(RevisionKind::Format, "Alice", "2024-03-15T10:30:00Z")],
         );
         let rtf = export(&doc);
@@ -3561,10 +3561,10 @@ mod tests {
 
     #[test]
     fn paragraph_formatting_change_round_trips() {
-        use localoffice_doc::props::{CharProps, ParaProps, PropChange};
-        use localoffice_doc::{Align, Revision, RevisionKind};
+        use localwriter_doc::props::{CharProps, ParaProps, PropChange};
+        use localwriter_doc::{Align, Revision, RevisionKind};
         // Bob centred a right-aligned paragraph.
-        let mut p = localoffice_doc::Paragraph::with_text("Centred", CharProps::default());
+        let mut p = localwriter_doc::Paragraph::with_text("Centred", CharProps::default());
         p.props.align = Some(Align::Center);
         p.props.fmt_change = PropChange::boxed(0, ParaProps { align: Some(Align::Right), ..Default::default() });
         let doc = doc_with(vec![p], vec![Revision::new(RevisionKind::Format, "Bob", "2025-01-02T08:05:00Z")]);
@@ -3583,14 +3583,14 @@ mod tests {
 
     #[test]
     fn paragraph_mark_revisions_round_trip() {
-        use localoffice_doc::props::CharProps;
-        use localoffice_doc::{Revision, RevisionKind};
+        use localwriter_doc::props::CharProps;
+        use localwriter_doc::{Revision, RevisionKind};
         // Bob deleted the mark after "One" (joining it to "Two"); Alice inserted the one after "Two".
-        let mut one = localoffice_doc::Paragraph::with_text("One", CharProps::default());
+        let mut one = localwriter_doc::Paragraph::with_text("One", CharProps::default());
         one.mark.del = Some(0);
-        let mut two = localoffice_doc::Paragraph::with_text("Two", CharProps::default());
+        let mut two = localwriter_doc::Paragraph::with_text("Two", CharProps::default());
         two.mark.ins = Some(1);
-        let three = localoffice_doc::Paragraph::with_text("Three", CharProps::default());
+        let three = localwriter_doc::Paragraph::with_text("Three", CharProps::default());
         let doc = doc_with(
             vec![one, two, three],
             vec![
@@ -3617,7 +3617,7 @@ mod tests {
 
     #[test]
     fn formatting_revisions_read_as_the_spec_writes_them() {
-        use localoffice_doc::{Align, RevisionKind};
+        use localwriter_doc::{Align, RevisionKind};
         // RTF 1.9.1 "Revision Marks": `\crauth`/`\crdate` with `{\*\oldcprops …}` on a run,
         // `\prauth`/`\prdate` with `{\*\oldpprops …}` on a paragraph, and a `\par` inside a
         // `\revised` group.
@@ -3726,7 +3726,7 @@ mod tests {
 
     #[test]
     fn word_oldcprops_hold_only_the_changed_properties() {
-        use localoffice_doc::RevisionKind;
+        use localwriter_doc::RevisionKind;
         // Word for Mac 16.113 saving tracked formatting changes as RTF: "beta" made bold,
         // "gamma" (bold) grown from 12 to 16 pt. `\oldcprops` holds only what changed, with
         // `\crauth`/`\crdate` inside the group; the rest of the old formatting is the run's.
@@ -3755,7 +3755,7 @@ mod tests {
 
     #[test]
     fn word_oldpprops_hold_the_full_old_paragraph_formatting() {
-        use localoffice_doc::{Align, RevisionKind};
+        use localwriter_doc::{Align, RevisionKind};
         // Word for Mac 16.113: a paragraph centred with tracking on. `\oldpprops` is the full
         // old set from `\pard`; `\prauth`/`\prdate` are on the paragraph.
         let rtf = br"{\rtf1\ansi\deff0{\fonttbl{\f0 Times New Roman;}}{\*\revtbl {Unknown;}{Alice;}}
@@ -3775,20 +3775,20 @@ mod tests {
 
     #[test]
     fn oldcprops_are_written_as_the_differences() {
-        use localoffice_doc::props::{CharProps, PropChange};
-        use localoffice_doc::{Revision, RevisionKind};
+        use localwriter_doc::props::{CharProps, PropChange};
+        use localwriter_doc::{Revision, RevisionKind};
         let rev = || vec![Revision::new(RevisionKind::Format, "Alice", "2024-03-15T10:30:00Z")];
         // Made bold: the group holds `\b0` and who changed it, nothing else.
         let old = CharProps { font: Some("Arial".into()), size: Some(14.0), ..Default::default() };
         let cp =
             CharProps { bold: Some(true), font: Some("Arial".into()), size: Some(14.0), fmt_change: PropChange::boxed(0, old), ..Default::default() };
-        let rtf = export(&doc_with(vec![localoffice_doc::Paragraph::with_text("Bold", cp)], rev()));
+        let rtf = export(&doc_with(vec![localwriter_doc::Paragraph::with_text("Bold", cp)], rev()));
         assert!(rtf.contains("{\\*\\oldcprops \\b0\\crauth1\\crdate-1480361314}"), "{rtf}");
         // Several changes, on and off, round-trip.
-        let red = localoffice_doc::props::TextColor::Rgb(localoffice_doc::props::Rgb(255, 0, 0));
+        let red = localwriter_doc::props::TextColor::Rgb(localwriter_doc::props::Rgb(255, 0, 0));
         let old = CharProps {
             italic: Some(true),
-            underline: Some(localoffice_doc::props::Underline::Single),
+            underline: Some(localwriter_doc::props::Underline::Single),
             size: Some(14.0),
             color: Some(red),
             font: Some("Arial".into()),
@@ -3801,7 +3801,7 @@ mod tests {
             fmt_change: PropChange::boxed(0, old.clone()),
             ..Default::default()
         };
-        let rtf = export(&doc_with(vec![localoffice_doc::Paragraph::with_text("Mixed", cp)], rev()));
+        let rtf = export(&doc_with(vec![localwriter_doc::Paragraph::with_text("Mixed", cp)], rev()));
         let back = import(rtf.as_bytes()).unwrap();
         let paras = doc_paras(&back);
         let cp = paras.first().unwrap().props_of_char(0);
@@ -3898,8 +3898,8 @@ mod tests {
 
     #[test]
     fn heading_and_code_runs_take_their_style_formatting_on_import() {
-        // A stylesheet entry without formatting words (LocalOffice's older files, minimal
-        // stylesheets): LocalOffice's own heading and code formatting stand in for the style's.
+        // A stylesheet entry without formatting words (LocalWriter's older files, minimal
+        // stylesheets): LocalWriter's own heading and code formatting stand in for the style's.
         let rtf = br"{\rtf1\ansi{\fonttbl{\f0 Times New Roman;}{\f1 Arial;}{\f2 Courier New;}}{\stylesheet{\s0 Normal;}{\s2 heading 2;}{\s9 Code;}}
 \pard\s2\b\fs32 Head\par
 \pard\s2\b\fs26 Small\par
@@ -3978,7 +3978,7 @@ mod tests {
     fn hostile_sbasedon_chains_are_harmless() {
         let mut chain = String::new();
         // s100 (heading 5) based on s101 … s139, the last one not bold: past the bound, so
-        // heading 5 takes LocalOffice's bold.
+        // heading 5 takes LocalWriter's bold.
         for i in 100..140 {
             let name = if i == 100 { "heading 5".to_string() } else { format!("x{i}") };
             let b0 = if i == 139 { "\\b0" } else { "" };
@@ -3996,7 +3996,7 @@ mod tests {
 \pard\s-2147483648\fs56 title\par}}"
         );
         let runs = text_runs(rtf.as_bytes());
-        // Self-based heading 1: LocalOffice's values.
+        // Self-based heading 1: LocalWriter's values.
         assert_eq!((run_fmt(&runs, "one").size, run_fmt(&runs, "one").bold), (None, false));
         // A loop between heading 3 and 4: both take heading 3's `\b0`.
         assert!(run_fmt(&runs, "three").bold);
@@ -4045,7 +4045,7 @@ mod tests {
 
     #[test]
     fn a_code_paragraph_round_trips_without_a_direct_code_font() {
-        // LocalOffice's Code entry has no `\f` (the code font is on the paragraph): the code font
+        // LocalWriter's Code entry has no `\f` (the code font is on the paragraph): the code font
         // stands in for the style's.
         let mut code = Para { kind: Kind::Code, ..Default::default() };
         code.push_text("let x", &Fmt::default());
@@ -4128,7 +4128,7 @@ mod tests {
         let f = parse(br"{\rtf1\ansi\trowd\clbrdrt\brdrs\brdrw10{\*\oldpprops \brdrdb\brdrw120\brdrcf1}\cellx2000\pard\intbl a\cell\row}").unwrap();
         let FBlock::Table(t) = &f.blocks[0] else { panic!() };
         let top = t.rows[0][0].borders.and_then(|b| b.top).unwrap();
-        assert_eq!((top.style, top.width, top.color), (localoffice_doc::props::BorderStyle::Single, 0.5, None));
+        assert_eq!((top.style, top.width, top.color), (localwriter_doc::props::BorderStyle::Single, 0.5, None));
         // Unterminated groups and deep nesting.
         for bad in [
             &br"{\rtf1\pard\prauth1\prdate5{\*\oldpprops \pard\qc"[..],
@@ -4147,7 +4147,7 @@ mod tests {
 
     #[test]
     fn sections_keep_their_page_columns_numbering_and_headers() {
-        use localoffice_doc::section::{NumFormat, SectionStart};
+        use localwriter_doc::section::{NumFormat, SectionStart};
         // A4 portrait → landscape restarting at 1 with its own header → continuous two columns
         // → portrait. A `\sectd` inside a footer group is the footer's, not the body's.
         let rtf = br"{\rtf1\ansi\paperw11906\paperh16838\margl1134\margr1134
@@ -4169,7 +4169,7 @@ mod tests {
         let d = import(rtf).unwrap();
         let secs = d.sections();
         assert_eq!(secs.len(), 4, "{secs:?}");
-        let s: Vec<&localoffice_doc::SectionProps> = secs.iter().map(|(_, s)| *s).collect();
+        let s: Vec<&localwriter_doc::SectionProps> = secs.iter().map(|(_, s)| *s).collect();
         // Page size and orientation; the document's margins apply to every section.
         for (i, land) in [(0, false), (1, true), (2, true), (3, false)] {
             assert_eq!(s[i].landscape, land, "section {i}");
@@ -4198,7 +4198,7 @@ mod tests {
             let p = id.and_then(|id| d.parts.get(&id)).unwrap();
             p.blocks
                 .iter()
-                .filter_map(|b| if let localoffice_doc::Block::Para(p) = &**b { Some(p.text.clone()) } else { None })
+                .filter_map(|b| if let localwriter_doc::Block::Para(p) = &**b { Some(p.text.clone()) } else { None })
                 .collect::<Vec<_>>()
                 .join("|")
         };
@@ -4213,7 +4213,7 @@ mod tests {
         }
         // Each section ends on its own paragraph, after the text it holds.
         let body_text = |i: usize| match d.body.get(i).map(|b| &**b) {
-            Some(localoffice_doc::Block::Para(p)) => p.text.clone(),
+            Some(localwriter_doc::Block::Para(p)) => p.text.clone(),
             _ => "<table>".into(),
         };
         assert_eq!(body_text(secs[0].0 - 1), "First");
@@ -4230,9 +4230,9 @@ mod tests {
 
     #[test]
     fn export_writes_every_section() {
-        use localoffice_doc::section::{NumFormat, SectionStart};
-        use localoffice_doc::{Block, SectionProps};
-        let mut d = localoffice_doc::Document::from_text("one\ntwo\nthree");
+        use localwriter_doc::section::{NumFormat, SectionStart};
+        use localwriter_doc::{Block, SectionProps};
+        let mut d = localwriter_doc::Document::from_text("one\ntwo\nthree");
         let s1 = SectionProps { margin_left: 90.0, header: 30.0, footer: 40.0, ..Default::default() };
         let mut s2 = SectionProps { start: SectionStart::Continuous, page_w: 792.0, page_h: 612.0, landscape: true, ..Default::default() };
         s2.columns.count = 2;
@@ -4277,14 +4277,14 @@ mod tests {
         // Each section keeps its text.
         assert_eq!(secs.iter().map(|(i, _)| *i).collect::<Vec<_>>(), [0, 1, 2]);
         // One section: no section break.
-        let one = export(&localoffice_doc::Document::from_text("a\nb"));
+        let one = export(&localwriter_doc::Document::from_text("a\nb"));
         assert!(!one.contains("\\sect\n") && !one.contains("\\sect\\"), "{one}");
     }
 
     #[test]
     fn export_keeps_a_single_sections_formatting() {
-        use localoffice_doc::SectionProps;
-        let mut d = localoffice_doc::Document::from_text("a\nb");
+        use localwriter_doc::SectionProps;
+        let mut d = localwriter_doc::Document::from_text("a\nb");
         d.last_section = SectionProps { title_page: true, ..Default::default() };
         d.last_section.columns.count = 2;
         d.last_section.columns.space = 20.0;
@@ -4296,8 +4296,8 @@ mod tests {
 
     #[test]
     fn export_keeps_a_section_that_ends_the_body() {
-        use localoffice_doc::{Block, SectionProps};
-        let mut d = localoffice_doc::Document::from_text("a\nb");
+        use localwriter_doc::{Block, SectionProps};
+        let mut d = localwriter_doc::Document::from_text("a\nb");
         let s1 = SectionProps { landscape: true, page_w: 792.0, page_h: 612.0, ..Default::default() };
         if let Some(Block::Para(p)) = d.body.get_mut(1).map(std::sync::Arc::make_mut) {
             p.section = Some(Box::new(s1));
@@ -4312,9 +4312,9 @@ mod tests {
 
     #[test]
     fn export_writes_no_section_break_inside_a_table() {
-        use localoffice_doc::{Block, SectionProps};
-        let mut d = localoffice_doc::Document::from_text("a");
-        let mut t = localoffice_doc::Table::new(1, 1, 400.0);
+        use localwriter_doc::{Block, SectionProps};
+        let mut d = localwriter_doc::Document::from_text("a");
+        let mut t = localwriter_doc::Table::new(1, 1, 400.0);
         if let Some(Block::Para(p)) =
             t.rows.first_mut().and_then(|r| r.cells.first_mut()).and_then(|c| c.blocks.first_mut()).map(std::sync::Arc::make_mut)
         {
@@ -4399,7 +4399,7 @@ mod tests {
     fn table_cell_vertical_alignment() {
         let rtf = br"{\rtf1\ansi\trowd\clvertalt\cellx1000\clvertalc\cellx2000\clvertalb\cellx3000\intbl top\cell center\cell bottom\cell\row}";
         let doc = import(rtf).unwrap();
-        let localoffice_doc::Block::Table(t) = &*doc.body[0] else { panic!() };
+        let localwriter_doc::Block::Table(t) = &*doc.body[0] else { panic!() };
         assert_eq!(t.rows[0].cells[0].props.valign, Some(VAlign::Top));
         assert_eq!(t.rows[0].cells[1].props.valign, Some(VAlign::Center));
         assert_eq!(t.rows[0].cells[2].props.valign, Some(VAlign::Bottom));

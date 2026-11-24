@@ -94,7 +94,7 @@ mod tests {
     fn a_failed_file_listing_fails_the_check() {
         // #1364: outside a git checkout `git ls-files` fails, and its empty output read as "no
         // files" passed the check.
-        let dir = std::env::temp_dir().join(format!("localoffice-xtask-assets-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-xtask-assets-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(dir.join("ATTRIBUTION.md"), "").unwrap();
         let inside_git = Command::new("git").current_dir(&dir).args(["rev-parse", "--git-dir"]).output().is_ok_and(|o| o.status.success());

@@ -2,7 +2,7 @@
 
 English spelling works out of the box. Polish, Russian, Portuguese, Czech, Italian, Croatian,
 Turkish, Indonesian and Spanish spelling use a standard **Hunspell** dictionary (an `.aff` and a `.dic` file) that
-Local Word reads at runtime. These dictionaries are not bundled: they are large, and several are
+Local Writer reads at runtime. These dictionaries are not bundled: they are large, and several are
 GPL or LGPL licensed. Without one, the language isn't checked. The status bar then shows the
 language with **(no dictionary)**, for example *Português (Brasil) (no dictionary)*.
 
@@ -11,11 +11,11 @@ size limit, a parse error), the language isn't checked either, and the status ba
 **(dictionary unreadable)** instead. Its tooltip gives the `.dic` file and the reason, and
 **File › Settings › Proofing** lists the same reason next to the file.
 
-Install a dictionary once, restart LocalOffice, and the language is checked as you type.
+Install a dictionary once, restart LocalWriter, and the language is checked as you type.
 
 ## Which files each language needs
 
-LocalOffice looks for the first of these file names (each name means a `<name>.aff` and
+LocalWriter looks for the first of these file names (each name means a `<name>.aff` and
 `<name>.dic` pair in the same folder):
 
 | Language | File names | Common source |
@@ -46,19 +46,19 @@ The files may be UTF-8 or the encoding named on the `.aff`'s `SET` line (ISO 885
 ISO 8859-9, KOI8-R and Windows-1251 are read as well; the original VERO `pt_BR` is ISO 8859-1, older
 Turkish `tr_TR` dictionaries ISO 8859-9).
 
-## Where Local Word looks
+## Where Local Writer looks
 
 The first folder holding a matching pair wins:
 
 1. The folder set in **File › Options › Proofing › Dictionaries folder**. This is the easiest
    way on every system, and it works for an app started from the Start menu, Finder or the Dock.
    The same pane lists the dictionary file each language found.
-2. The folder in the `LOCALOFFICE_DICTIONARIES` environment variable.
+2. The folder in the `LOCALWRITER_DICTIONARIES` environment variable.
 3. The system's usual places:
 
 | System | Folders |
 |---|---|
-| Windows | `%LOCALAPPDATA%\LocalOffice\dictionaries`, `%LOCALAPPDATA%\hunspell`, `%APPDATA%\LocalOffice\dictionaries`, `%APPDATA%\hunspell`, LibreOffice's `share\extensions\dict-*` under `Program Files` (on any drive) |
+| Windows | `%LOCALAPPDATA%\LocalWriter\dictionaries`, `%LOCALAPPDATA%\hunspell`, `%APPDATA%\LocalWriter\dictionaries`, `%APPDATA%\hunspell`, LibreOffice's `share\extensions\dict-*` under `Program Files` (on any drive) |
 | macOS | `~/Library/Spelling`, `/Library/Spelling`, `/opt/homebrew/share/hunspell`, `/usr/local/share/hunspell`, `/Applications/LibreOffice.app/Contents/Resources/extensions/dict-*` |
 | Linux and BSD | `~/.local/share/hunspell`, `/usr/share/hunspell`, `/usr/share/myspell`, `/usr/share/myspell/dicts`, `/usr/local/share/hunspell`, `/usr/local/share/myspell`, LibreOffice's `share/extensions/dict-*` under `/usr/lib/libreoffice` or `/opt/libreoffice` |
 
@@ -70,15 +70,15 @@ VERO, the Brazilian Portuguese dictionary LibreOffice ships, is available from t
 
 ### If LibreOffice is installed
 
-Nothing to do: LocalOffice finds LibreOffice's `dict-pt-BR` extension on its own. Restart
-LocalOffice after installing LibreOffice.
+Nothing to do: LocalWriter finds LibreOffice's `dict-pt-BR` extension on its own. Restart
+LocalWriter after installing LibreOffice.
 
 ### Windows
 
 In PowerShell:
 
 ```powershell
-$d = "$env:LOCALAPPDATA\LocalOffice\dictionaries"
+$d = "$env:LOCALAPPDATA\LocalWriter\dictionaries"
 New-Item -ItemType Directory -Force $d | Out-Null
 $base = "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/pt_BR"
 Invoke-WebRequest "$base/pt_BR.aff" -OutFile "$d\pt_BR.aff" -UseBasicParsing
@@ -117,17 +117,17 @@ from the LibreOffice repository (for example `it_IT/it_IT.aff`; the Spanish ones
 
 ## Checking that it works
 
-- Restart LocalOffice. The status bar no longer says **(no dictionary)**, and a misspelled word
+- Restart LocalWriter. The status bar no longer says **(no dictionary)**, and a misspelled word
   such as `impramir` is underlined, with `imprimir` among its suggestions.
 - **File › Options › Proofing** lists the file each language found.
 - From the command line:
 
   ```sh
-  localoffice-cli run --cmd 'text.insert={"text":"Vou impramir o documento."}' --cmd select.all --cmd 'review.language={"lang":"pt-BR"}' --cmd review.issues --print
+  localwriter-cli run --cmd 'text.insert={"text":"Vou impramir o documento."}' --cmd select.all --cmd 'review.language={"lang":"pt-BR"}' --cmd review.issues --print
   ```
 
   The `review.issues` line lists `impramir` as a spelling issue with its suggestions.
-- The log file (`%APPDATA%\LocalOffice\logs\localoffice.log` on Windows) says
+- The log file (`%APPDATA%\LocalWriter\logs\localwriter.log` on Windows) says
   `Portuguese spelling: no Hunspell pt_BR dictionary installed` when none was found.
 
 Never commit dictionary files to this repository: they stay on the user's system.

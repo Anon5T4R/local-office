@@ -3,13 +3,13 @@
 //! {"button": n}` to answer a question Zotero is asking (agents; people click the dialog).
 //!
 //! A command runs on a background thread that holds the socket to Zotero. Each call Zotero makes
-//! is handed to the UI thread, answered against the session by [`localoffice_zotero::Bridge`] in
+//! is handed to the UI thread, answered against the session by [`localwriter_zotero::Bridge`] in
 //! [`poll`], and the answer goes back to the thread. Zotero's questions (`Document_displayAlert`)
 //! become a dialog; the thread waits until the user answers.
 
 use std::sync::mpsc::{Receiver, Sender};
 
-use localoffice_zotero::{Bridge, Call, Command, Host};
+use localwriter_zotero::{Bridge, Call, Command, Host};
 use serde_json::{Value, json};
 
 use crate::WordApp;
@@ -31,10 +31,10 @@ struct Alert {
 #[derive(Default)]
 pub struct ZoteroLink {
     /// Where Zotero listens (default `127.0.0.1:23116`).
-    pub options: localoffice_zotero::client::Options,
+    pub options: localwriter_zotero::client::Options,
     bridge: Bridge,
     calls: Option<Receiver<Pending>>,
-    done: Option<Receiver<Result<localoffice_zotero::Outcome, String>>>,
+    done: Option<Receiver<Result<localwriter_zotero::Outcome, String>>>,
     alert: Option<Alert>,
     /// The command in flight.
     pub busy: Option<Command>,
@@ -105,15 +105,15 @@ fn start(app: &mut WordApp, cmd: Command, ctx: Option<egui::Context>) -> Result<
     let wake = ctx.clone();
     let opts = app.zotero.options.clone();
     let spawned = std::thread::Builder::new().name("zotero".into()).spawn(move || {
-        let r = localoffice_zotero::client::run_command(&opts, cmd, &mut |call| {
+        let r = localwriter_zotero::client::run_command(&opts, cmd, &mut |call| {
             let (tx, rx) = channel();
             if call_tx.send(Pending { call: call.clone(), reply: tx }).is_err() {
-                return Err("LocalOffice closed the document".into());
+                return Err("LocalWriter closed the document".into());
             }
             if let Some(c) = &wake {
                 c.request_repaint();
             }
-            rx.recv().unwrap_or_else(|_| Err("LocalOffice closed the document".into()))
+            rx.recv().unwrap_or_else(|_| Err("LocalWriter closed the document".into()))
         });
         let _ = done_tx.send(r.map_err(|e| e.to_string()));
         if let Some(c) = &wake {
@@ -176,7 +176,7 @@ pub fn poll(app: &mut WordApp, ctx: &egui::Context) {
         app.zotero.methods.push(p.call.method.clone());
         if app.session.document_id() != app.zotero.document {
             // New or Open replaced the document this command started in: its edits must not land in the new one.
-            let _ = p.reply.send(Err("LocalOffice replaced the document this command started in".into()));
+            let _ = p.reply.send(Err("LocalWriter replaced the document this command started in".into()));
             continue;
         }
         let rev = app.session.rev();
@@ -266,9 +266,9 @@ pub fn show_alert(app: &mut WordApp, ctx: &egui::Context) {
 mod tests {
     use std::net::TcpListener;
 
-    use localoffice_doc::{Document, StoryRef};
-    use localoffice_engine::Session;
-    use localoffice_zotero::wire;
+    use localwriter_doc::{Document, StoryRef};
+    use localwriter_engine::Session;
+    use localwriter_zotero::wire;
     use serde_json::{Value, json};
 
     use crate::{Services, WordApp};
@@ -313,7 +313,7 @@ mod tests {
             json!(["Document_complete", [1]]),
         ]);
         let mut app = WordApp::new(Session::new(Document::from_text("Cite: ")), Services::default());
-        app.session.sel = localoffice_engine::Selection::caret(localoffice_doc::Pos::body(0, 6));
+        app.session.sel = localwriter_engine::Selection::caret(localwriter_doc::Pos::body(0, 6));
         app.zotero.options.addr = addr;
         let ctx = egui::Context::default();
         app.ctx = Some(ctx.clone());

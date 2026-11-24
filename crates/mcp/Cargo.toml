@@ -1,18 +1,18 @@
 [package]
-name = "localoffice-mcp"
+name = "localwriter-mcp"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word MCP server: every command as a tool, headless or bridged to the running app"
+description = "Local Writer MCP server: every command as a tool, headless or bridged to the running app"
 
 [lints]
 workspace = true
 
 [dependencies]
-localoffice-doc = { workspace = true }
-localoffice-engine = { workspace = true }
-localoffice-render = { workspace = true }
-localoffice-control-key = { workspace = true }
+localwriter-doc = { workspace = true }
+localwriter-engine = { workspace = true }
+localwriter-render = { workspace = true }
+localwriter-control-key = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }

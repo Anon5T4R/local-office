@@ -15,10 +15,10 @@
 
 use std::collections::{BTreeMap, HashSet};
 
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::props::{Border, BorderStyle, CharProps, Rgb, TextColor};
-use localoffice_doc::{Document, Paragraph, Pos, StoryRef};
-use localoffice_geom::Rect;
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::props::{Border, BorderStyle, CharProps, Rgb, TextColor};
+use localwriter_doc::{Document, Paragraph, Pos, StoryRef};
+use localwriter_geom::Rect;
 
 use crate::display::{author_order, revision_color};
 use crate::{BoxContext, BoxLayout, Ctx, DocLayout, Edges, Placed, fit_box, layout_box, push_para};

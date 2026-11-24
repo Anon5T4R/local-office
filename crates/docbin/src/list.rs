@@ -2,9 +2,9 @@
 //! instances with LFOLVL overrides) resolved into the numbering model
 //! ([MS-DOC] §2.8.1 "Determining List Formatting of a Paragraph", §2.9).
 
-use localoffice_doc::numbering::{AbstractNum, Level, LevelSuffix, Num, Numbering};
-use localoffice_doc::props::{Align, CharProps, ParaProps};
-use localoffice_doc::section::NumFormat;
+use localwriter_doc::numbering::{AbstractNum, Level, LevelSuffix, Num, Numbering};
+use localwriter_doc::props::{Align, CharProps, ParaProps};
+use localwriter_doc::section::NumFormat;
 
 use crate::fib::{Fib, pair};
 use crate::fmt;

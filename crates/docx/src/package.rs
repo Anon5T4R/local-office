@@ -53,8 +53,8 @@ pub mod rt {
 pub const GLOSSARY_CONTENT_TYPE: &str = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml";
 /// `Document::passthrough` key: a fingerprint of `Document::glossary` as read, so a save can tell
 /// an untouched glossary (written back verbatim) from an edited one (written from the model).
-/// Not a package part: LocalOffice's own bookkeeping.
-pub const GLOSSARY_READ: &str = "localoffice:glossary.read";
+/// Not a package part: LocalWriter's own bookkeeping.
+pub const GLOSSARY_READ: &str = "localwriter:glossary.read";
 /// Most building blocks read from one glossary.
 pub const MAX_GLOSSARY_ENTRIES: usize = 10_000;
 /// The glossary entry types `w:type` takes (ST_DocPartType); others aren't kept.
@@ -64,7 +64,7 @@ pub const GLOSSARY_BEHAVIORS: [&str; 3] = ["content", "p", "pg"];
 
 /// A fingerprint of `glossary` (FNV-1a over its debug form): stable across runs and builds that
 /// keep the model's shape, and cheap (nothing is allocated).
-pub fn glossary_fingerprint(glossary: &[localoffice_doc::BuildingBlock]) -> String {
+pub fn glossary_fingerprint(glossary: &[localwriter_doc::BuildingBlock]) -> String {
     struct Fnv(u64);
     impl std::fmt::Write for Fnv {
         fn write_str(&mut self, s: &str) -> std::fmt::Result {
@@ -84,36 +84,36 @@ pub fn glossary_fingerprint(glossary: &[localoffice_doc::BuildingBlock]) -> Stri
 pub const VBA_PROJECT_PART: &str = "word/vbaProject.bin";
 /// `Document::passthrough` key listing the parts the project relates to (VBA data, signatures…),
 /// one `relationship type \t part name \t content type` line each; each part's bytes are kept
-/// under its part name. Not a package part: LocalOffice's own bookkeeping.
-pub const VBA_RELATED: &str = "localoffice:vbaProject.related";
+/// under its part name. Not a package part: LocalWriter's own bookkeeping.
+pub const VBA_RELATED: &str = "localwriter:vbaProject.related";
 /// Most parts we carry along with a macro project.
 pub const MAX_VBA_RELATED: usize = 64;
 
 /// `Document::passthrough` key listing the parts that objects read from a file refer to (charts,
-/// SmartArt diagrams, OLE objects: see `localoffice_doc::graphic::Embedded`), with their content
+/// SmartArt diagrams, OLE objects: see `localwriter_doc::graphic::Embedded`), with their content
 /// types and own relationships, as [`EmbeddedManifest`] lines. Each part's bytes are kept under its
-/// part name. Not a package part: LocalOffice's own bookkeeping.
-pub const EMBEDDED_PARTS: &str = "localoffice:embedded.parts";
+/// part name. Not a package part: LocalWriter's own bookkeeping.
+pub const EMBEDDED_PARTS: &str = "localwriter:embedded.parts";
 /// The font table kept from a file (read by `Reader::keep_part_tree`), with the fonts it embeds.
 pub const FONT_TABLE_PART: &str = "word/fontTable.xml";
 /// Custom XML roots kept by the package (P) or main document (D): `owner\ttype\tpart`.
 /// Their opaque bytes and related parts use the same bounded manifest as embedded objects.
-pub const CUSTOM_XML_ROOTS: &str = "localoffice:customXml.roots";
+pub const CUSTOM_XML_ROOTS: &str = "localwriter:customXml.roots";
 /// The original `word/settings.xml` when it holds settings the model doesn't (merged into on
-/// save by `write::settings_merge`). Not a package part: LocalOffice's own bookkeeping.
-pub const SETTINGS_ORIG: &str = "localoffice:settings.orig";
+/// save by `write::settings_merge`). Not a package part: LocalWriter's own bookkeeping.
+pub const SETTINGS_ORIG: &str = "localwriter:settings.orig";
 /// Extended properties (`docProps/app.xml`) the model doesn't hold but a save keeps
-/// ([`APP_KEPT_PROPS`]): `name\tvalue` lines. Not a package part: LocalOffice's own bookkeeping.
-pub const APP_KEPT: &str = "localoffice:app.kept";
+/// ([`APP_KEPT_PROPS`]): `name\tvalue` lines. Not a package part: LocalWriter's own bookkeeping.
+pub const APP_KEPT: &str = "localwriter:app.kept";
 /// The `docProps/app.xml` properties carried over from the file. Counts (pages, lines,
 /// characters, editing time) and the producing application's version are not: they describe
-/// the file Word saved, not the one LocalOffice writes.
+/// the file Word saved, not the one LocalWriter writes.
 pub const APP_KEPT_PROPS: &[&str] =
     &["Template", "Manager", "Company", "HyperlinkBase", "ScaleCrop", "LinksUpToDate", "SharedDoc", "HyperlinksChanged"];
-/// Parts LocalOffice doesn't model, carried verbatim: `owner\ttype\tpart` lines (owner `P` for
+/// Parts LocalWriter doesn't model, carried verbatim: `owner\ttype\tpart` lines (owner `P` for
 /// the package, `D` for the main document), with their bytes and relationships in the
-/// [`EmbeddedManifest`]. Not a package part: LocalOffice's own bookkeeping.
-pub const UNMODELLED_ROOTS: &str = "localoffice:unmodelled.roots";
+/// [`EmbeddedManifest`]. Not a package part: LocalWriter's own bookkeeping.
+pub const UNMODELLED_ROOTS: &str = "localwriter:unmodelled.roots";
 /// Most parts we carry along for a file's embedded objects.
 pub const MAX_EMBEDDED_PARTS: usize = 4096;
 /// Most relationships we keep for one such part.

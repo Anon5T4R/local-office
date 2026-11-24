@@ -1,6 +1,6 @@
 //! The folders automation may read and write (#769).
 //!
-//! `localoffice-cli mcp --automation-read-root <dir> --automation-write-root <dir>` confines the
+//! `localwriter-cli mcp --automation-read-root <dir> --automation-write-root <dir>` confines the
 //! files an agent's commands reach. [`AutomationRoots`] holds the two folders. While they are in force, every path a command
 //! reads goes through [`check_read`] and every path it writes through [`check_write`]:
 //!
@@ -16,7 +16,7 @@
 //! - Read and write access are separate: a root given alone grants only its own kind of access.
 //!
 //! Roots are in force on a thread inside [`confine`], and in the whole process after
-//! [`confine_process`] (`localoffice-cli mcp`), except inside [`unconfined`]. Without roots
+//! [`confine_process`] (`localwriter-cli mcp`), except inside [`unconfined`]. Without roots
 //! nothing is checked.
 //!
 //! A path is checked, then opened: a process that can change the folders in between (swapping in

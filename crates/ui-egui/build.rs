@@ -10,8 +10,8 @@
 //! A missing or malformed file gives empty tables (or no names) and a warning.
 //!
 //! - `CRAFT_I18N_DIR` (the in-repo `i18n/` catalogs by default; the env var overrides, for
-//!   experiments): `craft_i18n.rs` holds `CRAFT_I18N`, one (locale, shared catalog, LocalOffice
-//!   catalog) entry per locale that has a `localoffice.tsv`. The catalogs are files of this
+//!   experiments): `craft_i18n.rs` holds `CRAFT_I18N`, one (locale, shared catalog, LocalWriter
+//!   catalog) entry per locale that has a `localwriter.tsv`. The catalogs are files of this
 //!   repository (clean-room translations, see `i18n/ATTRIBUTION-craft-i18n.md`); with
 //!   `CRAFT_I18N_REQUIRED=1` (releases) a missing catalog set is an error instead of a warning.
 
@@ -37,8 +37,8 @@ fn main() {
     }
 }
 
-/// The catalog this app reads in each locale: `locales/<locale>/localoffice.tsv`.
-const APP_CATALOG: &str = "localoffice.tsv";
+/// The catalog this app reads in each locale: `locales/<locale>/localwriter.tsv`.
+const APP_CATALOG: &str = "localwriter.tsv";
 
 /// `CRAFT_I18N` from `CRAFT_I18N_DIR` (the in-repo `i18n/` catalogs by default; the env var
 /// still overrides, for experiments): the `Embedded` list the craft-i18n crate reads.
@@ -66,7 +66,7 @@ fn craft_i18n() -> String {
             }
         },
     };
-    let mut o = String::from("/// (locale, shared catalog, LocalOffice's catalog), one entry per locale; `\"\"` for a missing file.\n");
+    let mut o = String::from("/// (locale, shared catalog, LocalWriter's catalog), one entry per locale; `\"\"` for a missing file.\n");
     o.push_str("pub static CRAFT_I18N: &craft_i18n::Embedded = &[\n");
     for (code, shared, app) in entries {
         // `{:?}` escapes the path (Windows backslashes) as a Rust string literal.

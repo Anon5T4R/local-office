@@ -6,8 +6,8 @@
 //! put the new object inside it ([`add_member`]). Fit, Expand and Scale Drawing change its frame;
 //! Shape Fill and Shape Outline colour its background and border.
 
-use localoffice_doc::para::{CanvasStyle, Float, GroupChild, InlineObject, MAX_GROUP_CHILDREN};
-use localoffice_doc::{PartKind, Pos, StoryRef};
+use localwriter_doc::para::{CanvasStyle, Float, GroupChild, InlineObject, MAX_GROUP_CHILDREN};
+use localwriter_doc::{PartKind, Pos, StoryRef};
 use serde_json::{Value, json};
 
 use super::objects::object_selection;
@@ -58,8 +58,8 @@ fn insert(s: &mut Session, v: &Value) -> CmdResult {
     let w = p::f32(v, "width").unwrap_or(432.0).clamp(MIN_SIDE, MAX_SIDE);
     let h = p::f32(v, "height").unwrap_or(216.0).clamp(MIN_SIDE, MAX_SIDE);
     let style = CanvasStyle {
-        fill: p::str(v, "fill").and_then(localoffice_doc::props::Rgb::parse).map(localoffice_doc::fill::Fill::solid),
-        stroke: p::str(v, "outline").and_then(localoffice_doc::props::Rgb::parse),
+        fill: p::str(v, "fill").and_then(localwriter_doc::props::Rgb::parse).map(localwriter_doc::fill::Fill::solid),
+        stroke: p::str(v, "outline").and_then(localwriter_doc::props::Rgb::parse),
         stroke_width: 0.75,
     };
     let props = s.typing_props();
@@ -257,7 +257,7 @@ mod tests {
     /// selected canvas, not into the text, and the canvas's frame keeps its size (#344).
     #[test]
     fn shapes_inserted_with_a_canvas_selected_go_inside_it() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("text.insert", &json!({"text": "Before "})).unwrap();
         s.run("insert.canvas", &json!({})).unwrap();
         let c = canvas(&s);
@@ -279,8 +279,8 @@ mod tests {
         assert_eq!(
             style,
             CanvasStyle {
-                fill: localoffice_doc::props::Rgb::parse("FFF2CC").map(localoffice_doc::fill::Fill::solid),
-                stroke: localoffice_doc::props::Rgb::parse("1F4E79"),
+                fill: localwriter_doc::props::Rgb::parse("FFF2CC").map(localwriter_doc::fill::Fill::solid),
+                stroke: localwriter_doc::props::Rgb::parse("1F4E79"),
                 stroke_width: 1.5
             }
         );
@@ -302,7 +302,7 @@ mod tests {
     /// Scale Drawing scales frame and members together.
     #[test]
     fn fit_expand_and_scale_change_the_frame() {
-        let mut s = Session::new(localoffice_doc::Document::new());
+        let mut s = Session::new(localwriter_doc::Document::new());
         s.run("insert.canvas", &json!({"width": 400, "height": 300})).unwrap();
         s.run("insert.shape", &json!({"kind": "rectangle", "width": 100, "height": 40})).unwrap();
         s.run("insert.shape", &json!({"kind": "ellipse", "width": 50, "height": 50})).unwrap();

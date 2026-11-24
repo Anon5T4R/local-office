@@ -401,14 +401,14 @@ fn qat_page(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm, h: f32) {
 
 #[cfg(test)]
 mod tests {
-    use localoffice_engine::Session;
+    use localwriter_engine::Session;
     use serde_json::json;
 
     use crate::dialogs::Dialog;
     use crate::{Services, WordApp};
 
     fn app() -> WordApp {
-        WordApp::new(Session::new(localoffice_doc::Document::new()), Services::default())
+        WordApp::new(Session::new(localwriter_doc::Document::new()), Services::default())
     }
 
     /// #379: Tools › Customize Ribbon opens the dialog; a custom tab with a group, a hidden tab and

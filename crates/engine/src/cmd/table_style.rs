@@ -4,9 +4,9 @@
 
 use std::sync::Arc;
 
-use localoffice_doc::props::{Align, Border, BorderStyle, Borders, ParaProps, Rgb, TextColor, Underline, VAlign};
-use localoffice_doc::styles::{PartFormat, Style, StyleKind, TablePart, TableStyleParts, TableStyleProps};
-use localoffice_doc::{Block, Table};
+use localwriter_doc::props::{Align, Border, BorderStyle, Borders, ParaProps, Rgb, TextColor, Underline, VAlign};
+use localwriter_doc::styles::{PartFormat, Style, StyleKind, TablePart, TableStyleParts, TableStyleProps};
+use localwriter_doc::{Block, Table};
 use serde_json::{Value, json};
 
 use crate::{CmdError, CmdResult, CommandSpec, Session, p};

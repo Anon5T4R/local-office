@@ -4,10 +4,10 @@
 //! runs `table.newStyle` / `table.modifyStyle` with only what changed.
 
 use egui::{Rect, Sense, Stroke, Ui, pos2, vec2};
-use localoffice_doc::props::{Align, Border, BorderStyle, Borders, TableLook, Underline, VAlign};
-use localoffice_doc::styles::{PartFormat, PartSet, TablePart, TableStyleProps};
-use localoffice_doc::{CharProps, Rgb, TextColor};
-use localoffice_engine::cmd::table_style::CELL_ALIGNS;
+use localwriter_doc::props::{Align, Border, BorderStyle, Borders, TableLook, Underline, VAlign};
+use localwriter_doc::styles::{PartFormat, PartSet, TablePart, TableStyleProps};
+use localwriter_doc::{CharProps, Rgb, TextColor};
+use localwriter_engine::cmd::table_style::CELL_ALIGNS;
 use serde::Serialize;
 use serde_json::{Value, json};
 
@@ -464,7 +464,7 @@ pub fn body(app: &mut WordApp, ui: &mut Ui, f: Form) -> bool {
         .styles
         .styles
         .iter()
-        .filter(|s| s.kind == localoffice_doc::StyleKind::Table && Some(&s.id) != id.as_ref())
+        .filter(|s| s.kind == localwriter_doc::StyleKind::Table && Some(&s.id) != id.as_ref())
         .map(|s| (s.id.clone(), s.name.clone()))
         .collect();
     let base_name = styles.iter().find(|(i, _)| i == based_on).map(|(_, n)| n.clone()).unwrap_or_else(|| based_on.clone());
@@ -594,7 +594,7 @@ pub fn body(app: &mut WordApp, ui: &mut Ui, f: Form) -> bool {
     let look = look_for(look, PARTS.get(*region).map_or(TablePart::WholeTable, |(p, _)| *p));
     ui.add_space(4.0);
     ui.label(egui::RichText::new(tl!("Preview")).small().weak());
-    table_style_preview(ui, localoffice_engine::cmd::table_style::preview(&app.session, &v).as_ref(), look);
+    table_style_preview(ui, localwriter_engine::cmd::table_style::preview(&app.session, &v).as_ref(), look);
     let (ok, cancel) = buttons(ui, tl!("OK"));
     if ok {
         let cmd = if id.is_some() { "table.modifyStyle" } else { "table.newStyle" };
@@ -645,14 +645,14 @@ fn current_table_style(app: &WordApp) -> Option<String> {
     let s = &app.session;
     let (tp, _, _) = s.sel.focus.path.cell()?;
     let id = s.doc.table(s.sel.focus.story, &tp)?.props.style.clone()?;
-    s.doc.styles.get(&id).filter(|st| st.kind == localoffice_doc::StyleKind::Table).map(|st| st.id.clone())
+    s.doc.styles.get(&id).filter(|st| st.kind == localwriter_doc::StyleKind::Table).map(|st| st.id.clone())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use egui_kittest::kittest::Queryable;
-    use localoffice_engine::Session;
+    use localwriter_engine::Session;
 
     fn steps(h: &mut egui_kittest::Harness<'_, WordApp>) {
         for _ in 0..4 {
@@ -664,7 +664,7 @@ mod tests {
     /// even banded rows) and no other.
     #[test]
     fn the_part_picker_edits_the_part_it_shows() {
-        let mut app = WordApp::new(Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        let mut app = WordApp::new(Session::new(localwriter_doc::Document::new()), crate::Services::default());
         app.run("insert.table", json!({"rows": 4, "cols": 3})).unwrap();
         app.run("table.newStyle", json!({"name": "Parts"})).unwrap();
         app.dialog = Dialog::open("modifyTableStyle", &mut app);
@@ -721,8 +721,8 @@ mod tests {
     /// Table Grid) sends explicit "no line" edges, and the header row draws no lines.
     #[test]
     fn no_border_hides_inherited_lines() {
-        use localoffice_layout::Placed;
-        let mut app = WordApp::new(Session::new(localoffice_doc::Document::new()), crate::Services::default());
+        use localwriter_layout::Placed;
+        let mut app = WordApp::new(Session::new(localwriter_doc::Document::new()), crate::Services::default());
         app.run("insert.table", json!({"rows": 2, "cols": 3})).unwrap();
         app.run("table.look", json!({"headerRow": true})).unwrap();
         app.run("table.newStyle", json!({"name": "Parts", "basedOn": "Table Grid"})).unwrap();

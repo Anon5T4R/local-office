@@ -10,11 +10,11 @@
 
 use std::sync::Arc;
 
-use localoffice_doc::props::VMerge;
-use localoffice_doc::props::{CellProps, CharProps, ParaProps, PropChange, RowProps, TableProps};
-use localoffice_doc::section::SectionProps;
-use localoffice_doc::table::{Cell, Row, Table};
-use localoffice_doc::{Block, Blocks, Document, Paragraph, Revision, RevisionKind};
+use localwriter_doc::props::VMerge;
+use localwriter_doc::props::{CellProps, CharProps, ParaProps, PropChange, RowProps, TableProps};
+use localwriter_doc::section::SectionProps;
+use localwriter_doc::table::{Cell, Row, Table};
+use localwriter_doc::{Block, Blocks, Document, Paragraph, Revision, RevisionKind};
 use serde::Serialize;
 use serde_json::{Value, json};
 

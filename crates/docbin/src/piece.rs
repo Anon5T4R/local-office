@@ -1,7 +1,7 @@
 //! The piece table ([MS-DOC] `Clx`/`Pcdt`/`PlcPcd`): where every character position lives in
 //! the WordDocument stream, and how it is encoded.
 
-use localoffice_doc::encoding::cp1252;
+use localwriter_doc::encoding::cp1252;
 
 use crate::DocbinError;
 

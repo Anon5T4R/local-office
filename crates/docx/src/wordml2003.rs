@@ -13,7 +13,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use base64::Engine as _;
-use localoffice_doc::Document;
+use localwriter_doc::Document;
 
 use crate::DocxError;
 use crate::flat::W2003_NS;

@@ -3468,7 +3468,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice"
+name = "localwriter"
 version = "0.11.44"
 dependencies = [
  "arboard",
@@ -3482,12 +3482,13 @@ dependencies = [
  "egui",
  "fmv-macos-events",
  "getrandom 0.3.4",
- "localoffice-control-key",
- "localoffice-doc",
- "localoffice-engine",
- "localoffice-fonts",
- "localoffice-proof",
- "localoffice-ui-egui",
+ "localwriter-ai",
+ "localwriter-control-key",
+ "localwriter-doc",
+ "localwriter-engine",
+ "localwriter-fonts",
+ "localwriter-proof",
+ "localwriter-ui-egui",
  "log",
  "objc2 0.6.5",
  "objc2-app-kit 0.3.2",
@@ -3504,38 +3505,39 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-ai"
+name = "localwriter-ai"
 version = "0.11.44"
 dependencies = [
  "local-ai",
+ "log",
  "serde",
  "serde_json",
 ]
 
 [[package]]
-name = "localoffice-cli"
+name = "localwriter-cli"
 version = "0.11.44"
 dependencies = [
  "craft-mcp",
- "localoffice-doc",
- "localoffice-engine",
- "localoffice-mcp",
- "localoffice-render",
- "localoffice-zotero",
+ "localwriter-doc",
+ "localwriter-engine",
+ "localwriter-mcp",
+ "localwriter-render",
+ "localwriter-zotero",
  "serde_json",
  "sys-locale",
 ]
 
 [[package]]
-name = "localoffice-control-key"
+name = "localwriter-control-key"
 version = "0.11.44"
 
 [[package]]
-name = "localoffice-doc"
+name = "localwriter-doc"
 version = "0.11.44"
 dependencies = [
  "base64 0.23.1",
- "localoffice-geom",
+ "localwriter-geom",
  "log",
  "proptest",
  "serde",
@@ -3546,14 +3548,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-docbin"
+name = "localwriter-docbin"
 version = "0.11.44"
 dependencies = [
  "cfb",
  "chrono",
  "image",
- "localoffice-doc",
- "localoffice-geom",
+ "localwriter-doc",
+ "localwriter-geom",
  "log",
  "miniz_oxide 0.9.1",
  "proptest",
@@ -3563,7 +3565,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-docx"
+name = "localwriter-docx"
 version = "0.11.44"
 dependencies = [
  "aes 0.9.3",
@@ -3573,8 +3575,8 @@ dependencies = [
  "getrandom 0.3.4",
  "hmac 0.13.0",
  "image",
- "localoffice-doc",
- "localoffice-geom",
+ "localwriter-doc",
+ "localwriter-geom",
  "log",
  "proptest",
  "quick-xml 0.41.0",
@@ -3587,7 +3589,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-engine"
+name = "localwriter-engine"
 version = "0.11.44"
 dependencies = [
  "cfb",
@@ -3596,16 +3598,16 @@ dependencies = [
  "getrandom 0.3.4",
  "image",
  "libc",
- "localoffice-doc",
- "localoffice-docbin",
- "localoffice-docx",
- "localoffice-fonts",
- "localoffice-formats",
- "localoffice-geom",
- "localoffice-layout",
- "localoffice-pdf",
- "localoffice-proof",
- "localoffice-render",
+ "localwriter-doc",
+ "localwriter-docbin",
+ "localwriter-docx",
+ "localwriter-fonts",
+ "localwriter-formats",
+ "localwriter-geom",
+ "localwriter-layout",
+ "localwriter-pdf",
+ "localwriter-proof",
+ "localwriter-render",
  "log",
  "regex",
  "regex-automata",
@@ -3617,7 +3619,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-fonts"
+name = "localwriter-fonts"
 version = "0.11.44"
 dependencies = [
  "brotli-decompressor",
@@ -3631,7 +3633,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-formats"
+name = "localwriter-formats"
 version = "0.11.44"
 dependencies = [
  "cfb",
@@ -3639,8 +3641,8 @@ dependencies = [
  "chrono",
  "encoding_rs",
  "image",
- "localoffice-doc",
- "localoffice-geom",
+ "localwriter-doc",
+ "localwriter-geom",
  "log",
  "proptest",
  "quick-xml 0.41.0",
@@ -3648,7 +3650,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-geom"
+name = "localwriter-geom"
 version = "0.11.44"
 dependencies = [
  "image",
@@ -3656,16 +3658,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-layout"
+name = "localwriter-layout"
 version = "0.11.44"
 dependencies = [
  "image",
  "kurbo 0.13.1",
- "localoffice-doc",
- "localoffice-fonts",
- "localoffice-geom",
- "localoffice-metafile",
- "localoffice-proof",
+ "localwriter-doc",
+ "localwriter-fonts",
+ "localwriter-geom",
+ "localwriter-metafile",
+ "localwriter-proof",
  "log",
  "serde",
  "serde_json",
@@ -3675,19 +3677,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-mcp"
+name = "localwriter-mcp"
 version = "0.11.44"
 dependencies = [
- "localoffice-control-key",
- "localoffice-doc",
- "localoffice-engine",
- "localoffice-render",
+ "localwriter-control-key",
+ "localwriter-doc",
+ "localwriter-engine",
+ "localwriter-render",
  "log",
  "serde_json",
 ]
 
 [[package]]
-name = "localoffice-metafile"
+name = "localwriter-metafile"
 version = "0.11.44"
 dependencies = [
  "kurbo 0.13.1",
@@ -3695,7 +3697,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-pdf"
+name = "localwriter-pdf"
 version = "0.11.44"
 dependencies = [
  "chrono",
@@ -3705,17 +3707,17 @@ dependencies = [
  "hayro-syntax",
  "image",
  "kurbo 0.13.1",
- "localoffice-doc",
- "localoffice-fonts",
- "localoffice-geom",
- "localoffice-layout",
- "localoffice-metafile",
+ "localwriter-doc",
+ "localwriter-fonts",
+ "localwriter-geom",
+ "localwriter-layout",
+ "localwriter-metafile",
  "log",
  "thiserror 2.0.21",
 ]
 
 [[package]]
-name = "localoffice-proof"
+name = "localwriter-proof"
 version = "0.11.44"
 dependencies = [
  "log",
@@ -3725,21 +3727,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-render"
+name = "localwriter-render"
 version = "0.11.44"
 dependencies = [
  "image",
- "localoffice-doc",
- "localoffice-fonts",
- "localoffice-geom",
- "localoffice-layout",
- "localoffice-metafile",
+ "localwriter-doc",
+ "localwriter-fonts",
+ "localwriter-geom",
+ "localwriter-layout",
+ "localwriter-metafile",
  "log",
  "vello_cpu",
 ]
 
 [[package]]
-name = "localoffice-ui-egui"
+name = "localwriter-ui-egui"
 version = "0.11.44"
 dependencies = [
  "cfb",
@@ -3755,14 +3757,14 @@ dependencies = [
  "egui_extras",
  "egui_kittest",
  "image",
- "localoffice-ai",
- "localoffice-doc",
- "localoffice-engine",
- "localoffice-fonts",
- "localoffice-geom",
- "localoffice-layout",
- "localoffice-render",
- "localoffice-zotero",
+ "localwriter-ai",
+ "localwriter-doc",
+ "localwriter-engine",
+ "localwriter-fonts",
+ "localwriter-geom",
+ "localwriter-layout",
+ "localwriter-render",
+ "localwriter-zotero",
  "log",
  "serde",
  "serde_json",
@@ -3773,13 +3775,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "localoffice-zotero"
+name = "localwriter-zotero"
 version = "0.11.44"
 dependencies = [
- "localoffice-doc",
- "localoffice-docx",
- "localoffice-engine",
- "localoffice-formats",
+ "localwriter-doc",
+ "localwriter-docx",
+ "localwriter-engine",
+ "localwriter-formats",
  "log",
  "proptest",
  "serde_json",

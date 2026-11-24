@@ -1,11 +1,11 @@
-//! Zotero's fields and preferences as LocalOffice stores them (the Word plugin's layout).
+//! Zotero's fields and preferences as LocalWriter stores them (the Word plugin's layout).
 //!
 //! A citation is a range field with code `ADDIN ZOTERO_ITEM CSL_CITATION {…}`; Zotero itself
 //! sees the code without the `ADDIN ZOTERO_` prefix (`ITEM CSL_CITATION {…}`). Fields in
 //! footnotes and endnotes are listed at their note reference, with the note's number.
 
-use localoffice_doc::para::{NoteKind, OBJ};
-use localoffice_doc::{Document, InlineObject, PartKind, Pos, StoryRef};
+use localwriter_doc::para::{NoteKind, OBJ};
+use localwriter_doc::{Document, InlineObject, PartKind, Pos, StoryRef};
 
 /// The stored code prefix.
 pub const PREFIX: &str = "ADDIN ZOTERO_";
@@ -114,7 +114,7 @@ pub fn list(doc: &Document) -> Vec<ZField> {
             Ev::Note(id, n) => story_fields(doc, StoryRef::Part(id), n).into_iter().all(|f| take(f, &mut out)),
         };
         if !fits {
-            log::warn!("Zotero: the document has more citation fields than Local Word hands Zotero; the rest are left out");
+            log::warn!("Zotero: the document has more citation fields than Local Writer hands Zotero; the rest are left out");
             break;
         }
     }

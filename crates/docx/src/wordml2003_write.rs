@@ -21,7 +21,7 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 
 use base64::Engine as _;
-use localoffice_doc::Document;
+use localwriter_doc::Document;
 
 use crate::flat::W2003_NS;
 use crate::package::{Package, Rels, rt};

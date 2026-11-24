@@ -1,7 +1,7 @@
-//! Headless UI screenshots: renders the whole LocalOffice window offscreen (wgpu), so it works
+//! Headless UI screenshots: renders the whole LocalWriter window offscreen (wgpu), so it works
 //! with a locked screen or a hidden window.
 //!
-//! `cargo run -p localoffice-ui-egui --example ui_shot -- script.jsonl`
+//! `cargo run -p localwriter-ui-egui --example ui_shot -- script.jsonl`
 //!
 //! The script is JSON lines: control-channel requests (`{"method": …, "params": …}`, see
 //! `docs/control-protocol.md`), `{"shot": "/abs/out.png"}` to save the window as PNG, or
@@ -10,8 +10,8 @@
 //! document unless the first line is `{"empty": true}`; `{"empty": true, "startScreen": true}`
 //! starts the way the desktop app does with nothing to open (File › Home, #766).
 
-use localoffice_engine::Session;
-use localoffice_ui_egui::{ControlRequest, Services, WordApp};
+use localwriter_engine::Session;
+use localwriter_ui_egui::{ControlRequest, Services, WordApp};
 
 static READY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
@@ -22,9 +22,9 @@ fn main() {
     let lines: Vec<serde_json::Value> =
         script.lines().filter(|l| !l.trim().is_empty()).map(|l| serde_json::from_str(l).expect("json line")).collect();
     let doc = if lines.first().is_some_and(|l| l.get("empty").is_some()) {
-        localoffice_doc::Document::new()
+        localwriter_doc::Document::new()
     } else {
-        localoffice_engine::sample::sample_document()
+        localwriter_engine::sample::sample_document()
     };
     let mut app = WordApp::new(Session::new(doc), Services::default()).with_control(rx);
     app.integrated_titlebar = true;

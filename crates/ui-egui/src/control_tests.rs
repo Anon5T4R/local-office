@@ -1,13 +1,13 @@
 //! The control channel's `doc`: methods addressed to an open document that isn't the active one.
 
-use localoffice_engine::Session;
+use localwriter_engine::Session;
 use serde_json::{Value, json};
 
 use super::{ControlRequest, Outcome, handle};
 use crate::{Services, WordApp};
 
 fn app() -> WordApp {
-    WordApp::new(Session::new(localoffice_doc::Document::new()), Services::default())
+    WordApp::new(Session::new(localwriter_doc::Document::new()), Services::default())
 }
 
 /// Send one request the way the control channel does and return the reply.
@@ -25,7 +25,7 @@ fn exec(a: &mut WordApp, command: &str, params: Value) -> Value {
 }
 
 fn body(a: &WordApp) -> String {
-    a.session.doc.plain_text(localoffice_doc::StoryRef::Body)
+    a.session.doc.plain_text(localwriter_doc::StoryRef::Body)
 }
 
 /// Two documents, the first typed in and parked behind the second: (first, second).

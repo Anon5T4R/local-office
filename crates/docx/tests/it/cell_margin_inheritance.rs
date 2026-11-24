@@ -11,12 +11,12 @@ fn fixture() -> Vec<u8> {
 
 #[test]
 fn partial_margin_stays_partial() {
-    let doc = localoffice_docx::read(&fixture()).unwrap();
+    let doc = localwriter_docx::read(&fixture()).unwrap();
     let table = doc.body[0].as_table().unwrap();
     assert_eq!(table.rows[0].cells[0].props.margins, None, "a left-only margin is not a complete override");
     assert_eq!(table.rows[0].cells[0].props.resolved_margins([6.0, 7.0, 8.0, 9.0]), [6.0, 0.0, 8.0, 9.0]);
-    let bytes = localoffice_docx::write(&doc).unwrap();
-    let reopened = localoffice_docx::read(&bytes).unwrap();
+    let bytes = localwriter_docx::write(&doc).unwrap();
+    let reopened = localwriter_docx::read(&bytes).unwrap();
     let cell = &reopened.body[0].as_table().unwrap().rows[0].cells[0];
     assert_eq!(cell.props.resolved_margins([6.0, 7.0, 8.0, 9.0]), [6.0, 0.0, 8.0, 9.0]);
     let mut zip = zip::ZipArchive::new(Cursor::new(bytes)).unwrap();

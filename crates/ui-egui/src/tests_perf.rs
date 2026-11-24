@@ -2,8 +2,8 @@
 
 use std::time::Instant;
 
-use localoffice_doc::table::{Cell, Table};
-use localoffice_doc::{Block, Document, Path, StoryRef};
+use localwriter_doc::table::{Cell, Table};
+use localwriter_doc::{Block, Document, Path, StoryRef};
 
 use crate::{Services, WordApp};
 
@@ -23,7 +23,7 @@ pub(crate) fn big_table_doc(rows: usize, cols: usize) -> Document {
 }
 
 fn harness(doc: Document) -> egui_kittest::Harness<'static, WordApp> {
-    let a = WordApp::new(localoffice_engine::Session::new(doc), Services::default());
+    let a = WordApp::new(localwriter_engine::Session::new(doc), Services::default());
     egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
         |ui, app: &mut WordApp| {
             let ctx = ui.ctx().clone();
@@ -46,16 +46,16 @@ fn wheel(h: &mut egui_kittest::Harness<'static, WordApp>, dy: f32) {
     });
 }
 
-/// `cargo test -p localoffice-ui-egui --release big_table_scroll_bench -- --ignored --nocapture`
-/// (`LOCALOFFICE_BENCH_DOCX=path` times that file instead of the synthetic table).
+/// `cargo test -p localwriter-ui-egui --release big_table_scroll_bench -- --ignored --nocapture`
+/// (`LOCALWRITER_BENCH_DOCX=path` times that file instead of the synthetic table).
 #[test]
 #[ignore]
 fn big_table_scroll_bench() {
-    let doc = match std::env::var("LOCALOFFICE_BENCH_DOCX") {
-        Ok(p) => localoffice_engine::io::open_path(std::path::Path::new(&p)).unwrap(),
+    let doc = match std::env::var("LOCALWRITER_BENCH_DOCX") {
+        Ok(p) => localwriter_engine::io::open_path(std::path::Path::new(&p)).unwrap(),
         Err(_) => big_table_doc(2000, 8),
     };
-    let mut s = localoffice_engine::Session::new(doc.clone());
+    let mut s = localwriter_engine::Session::new(doc.clone());
     let t = Instant::now();
     let l = s.layout();
     eprintln!("layout: {:.1} ms, {} pages", t.elapsed().as_secs_f64() * 1e3, l.pages.len());
@@ -64,7 +64,7 @@ fn big_table_scroll_bench() {
     eprintln!("export_layout: {:.1} ms", t.elapsed().as_secs_f64() * 1e3);
     if let Some(p) = l.pages.get(1) {
         let t = Instant::now();
-        let _ = localoffice_render::render_page(&s.doc, p, 1.5, &crate::canvas::screen_render_options());
+        let _ = localwriter_render::render_page(&s.doc, p, 1.5, &crate::canvas::screen_render_options());
         eprintln!("render_page: {:.1} ms", t.elapsed().as_secs_f64() * 1e3);
     }
     let mut h = harness(doc);

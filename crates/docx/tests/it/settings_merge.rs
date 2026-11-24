@@ -61,8 +61,8 @@ fn package(body: &str, doc_rels: &[(&str, &str, &str)], root_rels: &[(&str, &str
     zip(&entries)
 }
 
-fn save(doc: &localoffice_doc::Document) -> BTreeMap<String, Vec<u8>> {
-    unzip(&localoffice_docx::write(doc).expect("write"))
+fn save(doc: &localwriter_doc::Document) -> BTreeMap<String, Vec<u8>> {
+    unzip(&localwriter_docx::write(doc).expect("write"))
 }
 
 const SETTINGS: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -78,7 +78,7 @@ fn pos(s: &str, needle: &str) -> usize {
 
 #[test]
 fn unmodelled_settings_survive_a_save_and_owned_ones_follow_the_model() {
-    let mut doc = localoffice_docx::read(&with_settings(SETTINGS)).unwrap();
+    let mut doc = localwriter_docx::read(&with_settings(SETTINGS)).unwrap();
     assert!(doc.settings.track_changes);
     doc.settings.track_changes = false;
     let files = save(&doc);
@@ -122,15 +122,15 @@ fn unmodelled_settings_survive_a_save_and_owned_ones_follow_the_model() {
     let p = text(&save(&private), "word/settings.xml");
     assert!(!p.contains("removePersonalInformation") && !p.contains("removeDateAndTime"), "{p}");
     // A second generation is identical.
-    let again = localoffice_docx::read(&localoffice_docx::write(&doc).unwrap()).unwrap();
+    let again = localwriter_docx::read(&localwriter_docx::write(&doc).unwrap()).unwrap();
     assert_eq!(text(&save(&again), "word/settings.xml"), s);
 }
 
 #[test]
-fn settings_written_by_localoffice_keep_no_original() {
-    let doc = localoffice_doc::Document::new();
-    let back = localoffice_docx::read(&localoffice_docx::write(&doc).unwrap()).unwrap();
-    assert!(!back.passthrough.contains_key("localoffice:settings.orig"), "{:?}", back.passthrough.keys());
+fn settings_written_by_localwriter_keep_no_original() {
+    let doc = localwriter_doc::Document::new();
+    let back = localwriter_docx::read(&localwriter_docx::write(&doc).unwrap()).unwrap();
+    assert!(!back.passthrough.contains_key("localwriter:settings.orig"), "{:?}", back.passthrough.keys());
     assert_eq!(text(&save(&back), "word/settings.xml"), text(&save(&doc), "word/settings.xml"));
 }
 
@@ -140,7 +140,7 @@ fn settings_written_by_localoffice_keep_no_original() {
 #[test]
 fn do_not_track_moves_round_trips() {
     let original = SETTINGS.replace("<w:trackRevisions/>", "<w:trackRevisions/><w:doNotTrackMoves/>");
-    let mut doc = localoffice_docx::read(&with_settings(&original)).unwrap();
+    let mut doc = localwriter_docx::read(&with_settings(&original)).unwrap();
     assert!(!doc.settings.track_moves);
     let s = text(&save(&doc), "word/settings.xml");
     assert_eq!(s.matches("<w:doNotTrackMoves/>").count(), 1, "{s}");
@@ -152,14 +152,14 @@ fn do_not_track_moves_round_trips() {
 
     // `w:val="false"` keeps moves tracked.
     let off = SETTINGS.replace("<w:trackRevisions/>", r#"<w:trackRevisions/><w:doNotTrackMoves w:val="false"/>"#);
-    assert!(localoffice_docx::read(&with_settings(&off)).unwrap().settings.track_moves);
+    assert!(localwriter_docx::read(&with_settings(&off)).unwrap().settings.track_moves);
 
     // A document of our own: absent by default, written when off, and read back.
-    let mut doc = localoffice_doc::Document::new();
+    let mut doc = localwriter_doc::Document::new();
     assert!(doc.settings.track_moves);
     assert!(!text(&save(&doc), "word/settings.xml").contains("doNotTrackMoves"));
     doc.settings.track_moves = false;
     let s = text(&save(&doc), "word/settings.xml");
     assert!(s.contains("<w:doNotTrackMoves/>"), "{s}");
-    assert!(!localoffice_docx::read(&localoffice_docx::write(&doc).unwrap()).unwrap().settings.track_moves);
+    assert!(!localwriter_docx::read(&localwriter_docx::write(&doc).unwrap()).unwrap().settings.track_moves);
 }

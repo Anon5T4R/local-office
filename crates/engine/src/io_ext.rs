@@ -1,23 +1,23 @@
 //! Format crates registered with the I/O dispatcher.
 
-use localoffice_doc::Document;
+use localwriter_doc::Document;
 
 /// Open a format other than plain text / JSON; files that give no page size (Markdown, HTML)
 /// start on `page`.
-pub fn open(ext: &str, bytes: &[u8], page: &localoffice_doc::SectionProps) -> Option<Result<Document, String>> {
+pub fn open(ext: &str, bytes: &[u8], page: &localwriter_doc::SectionProps) -> Option<Result<Document, String>> {
     // A text file that holds a ZIP (a `.docx` renamed `.md`, say) opens as the document it is,
     // not as markdown/plain text showing the raw bytes. Only text extensions: `.odt` and other
     // ZIP-based formats have their own readers and start with the same `PK` signature.
     if matches!(ext, "md" | "markdown" | "txt" | "text" | "tex" | "latex" | "ltx" | "html" | "htm") && bytes.starts_with(b"PK\x03\x04") {
-        return Some(localoffice_docx::read(bytes).map_err(|e| e.to_string()));
+        return Some(localwriter_docx::read(bytes).map_err(|e| e.to_string()));
     }
     match ext {
-        "docx" | "docm" | "dotx" | "dotm" => Some(localoffice_docx::read(bytes).map_err(|e| e.to_string())),
-        "doc" | "dot" => Some(localoffice_docbin::read(bytes).map_err(|e| e.to_string())),
+        "docx" | "docm" | "dotx" | "dotm" => Some(localwriter_docx::read(bytes).map_err(|e| e.to_string())),
+        "doc" | "dot" => Some(localwriter_docbin::read(bytes).map_err(|e| e.to_string())),
         // Word XML Document (Flat OPC) or Word 2003 XML, told apart by the root element.
-        "xml" => Some(localoffice_docx::read_xml(bytes).map_err(|e| e.to_string())),
+        "xml" => Some(localwriter_docx::read_xml(bytes).map_err(|e| e.to_string())),
         // HTML, Markdown, ODT, RTF…: pictures fit the text width (see `io::fit_pictures`).
-        other => localoffice_formats::import_on(other, bytes, page).map(|r| {
+        other => localwriter_formats::import_on(other, bytes, page).map(|r| {
             r.map(|mut doc| {
                 crate::io::fit_pictures(&mut doc);
                 doc
@@ -29,32 +29,32 @@ pub fn open(ext: &str, bytes: &[u8], page: &localoffice_doc::SectionProps) -> Op
 /// Save to a format other than plain text / JSON.
 pub fn save(ext: &str, doc: &Document, opts: &crate::io::ExportOptions) -> Option<Result<Vec<u8>, String>> {
     // .docx/.docm/.dotx/.dotm: the extension picks the package flavour Word expects.
-    if let Some(flavor) = localoffice_docx::Flavor::from_ext(ext) {
-        return Some(localoffice_docx::write_as(doc, flavor).map_err(|e| e.to_string()));
+    if let Some(flavor) = localwriter_docx::Flavor::from_ext(ext) {
+        return Some(localwriter_docx::write_as(doc, flavor).map_err(|e| e.to_string()));
     }
     match ext {
-        "xml" if opts.word2003 => Some(localoffice_docx::write_wordml2003(doc).map_err(|e| e.to_string())),
-        "xml" => Some(localoffice_docx::write_flat(doc).map_err(|e| e.to_string())),
+        "xml" if opts.word2003 => Some(localwriter_docx::write_wordml2003(doc).map_err(|e| e.to_string())),
+        "xml" => Some(localwriter_docx::write_flat(doc).map_err(|e| e.to_string())),
         "png" => Some(render_png(doc, 0, 2.0, opts)),
         "pdf" => {
-            let pdf = localoffice_pdf::PdfOptions {
+            let pdf = localwriter_pdf::PdfOptions {
                 include_markup: opts.markup,
                 comments: opts.markup && opts.comments,
                 numeral: opts.numeral,
                 ..Default::default()
             };
-            Some(localoffice_pdf::export(doc, &pdf).map_err(|e| e.to_string()))
+            Some(localwriter_pdf::export(doc, &pdf).map_err(|e| e.to_string()))
         }
-        other => localoffice_formats::export_with(other, doc, &localoffice_formats::ExportOptions { comments: opts.markup && opts.comments }),
+        other => localwriter_formats::export_with(other, doc, &localwriter_formats::ExportOptions { comments: opts.markup && opts.comments }),
     }
 }
 
 /// Render page `page` as PNG at `scale` px/pt. With Print Markup's comments the page has its
 /// markup area with the comments in balloons (page images always show tracked changes).
 pub fn render_png(doc: &Document, page: usize, scale: f32, opts: &crate::io::ExportOptions) -> Result<Vec<u8>, String> {
-    let lo = localoffice_layout::LayoutOptions { comment_balloons: opts.markup && opts.comments, numeral: opts.numeral, ..Default::default() };
-    let l = localoffice_layout::layout(doc, &mut localoffice_layout::LayoutCache::new(), &lo);
+    let lo = localwriter_layout::LayoutOptions { comment_balloons: opts.markup && opts.comments, numeral: opts.numeral, ..Default::default() };
+    let l = localwriter_layout::layout(doc, &mut localwriter_layout::LayoutCache::new(), &lo);
     let p = l.pages.get(page).ok_or_else(|| format!("no page {}", page + 1))?;
-    let img = localoffice_render::render_page(doc, p, scale, &Default::default());
+    let img = localwriter_render::render_page(doc, p, scale, &Default::default());
     Ok(img.to_png())
 }

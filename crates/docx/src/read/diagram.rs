@@ -1,9 +1,9 @@
 //! SmartArt diagrams: the ready-made drawing (`dsp:drawing`) Word keeps beside the diagram data,
 //! converted to [`GraphicItem`]s. The diagram's layout isn't run; the saved drawing is the picture.
 
-use localoffice_doc::graphic::{GraphicItem, PathSeg, TextAlign};
-use localoffice_doc::para::ShapeKind;
-use localoffice_doc::props::Rgb;
+use localwriter_doc::graphic::{GraphicItem, PathSeg, TextAlign};
+use localwriter_doc::para::ShapeKind;
+use localwriter_doc::props::Rgb;
 
 use super::Reader;
 use super::chart::text_w;
@@ -528,9 +528,9 @@ impl Reader<'_> {
         rels.by_id(&id).is_some_and(|r| !r.external && rel_is(&r.kind, rt::DIAGRAM_DRAWING)).then_some(id)
     }
 
-    /// The SmartArt model of a diagram LocalOffice wrote (its data part exactly as LocalOffice writes
+    /// The SmartArt model of a diagram LocalWriter wrote (its data part exactly as LocalWriter writes
     /// it); `None` for any other.
-    pub(super) fn smart_art_spec(&mut self, gd: &El, rels: &Rels) -> Option<localoffice_doc::smart_art::SmartArtSpec> {
+    pub(super) fn smart_art_spec(&mut self, gd: &El, rels: &Rels) -> Option<localwriter_doc::smart_art::SmartArtSpec> {
         let dm = gd.child("dgm:relIds")?.attr("r:dm")?;
         let data = super::part_of(rels, dm, rt::DIAGRAM_DATA)?;
         crate::smart_art::spec_of(self.graphic_part(&data)?.as_ref())
@@ -549,7 +549,7 @@ impl Reader<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use localoffice_doc::THEME_COLORS;
+    use localwriter_doc::THEME_COLORS;
 
     const NS: &str = r#"xmlns:dsp="http://schemas.microsoft.com/office/drawing/2008/diagram" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships""#;
 

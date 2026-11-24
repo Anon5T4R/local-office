@@ -6,7 +6,7 @@
 
 use std::collections::HashSet;
 
-use localoffice_doc::Document;
+use localwriter_doc::Document;
 
 use crate::package::{EMBEDDED_PARTS, EmbeddedManifest, FONT_TABLE_PART};
 

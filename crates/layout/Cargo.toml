@@ -1,20 +1,20 @@
 [package]
-name = "localoffice-layout"
+name = "localwriter-layout"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word layout: shaping, line breaking, tabs, lists, tables, pagination, headers/footers, hit testing"
+description = "Local Writer layout: shaping, line breaking, tabs, lists, tables, pagination, headers/footers, hit testing"
 
 [lints]
 workspace = true
 
 [dependencies]
-localoffice-geom = { workspace = true, features = ["image"] }
-localoffice-doc = { workspace = true }
-localoffice-fonts = { workspace = true }
-localoffice-proof = { workspace = true }
-localoffice-metafile = { workspace = true }
+localwriter-geom = { workspace = true, features = ["image"] }
+localwriter-doc = { workspace = true }
+localwriter-fonts = { workspace = true }
+localwriter-proof = { workspace = true }
+localwriter-metafile = { workspace = true }
 kurbo = { workspace = true }
 unicode-bidi = { workspace = true }
 unicode-linebreak = { workspace = true }

@@ -21,8 +21,8 @@ thread_local! {
 /// Remember the process-wide names drawn this frame could have come from.
 fn note_global_names() {
     GLOBAL_NAMES.with_borrow_mut(|seen| {
-        seen.extend(localoffice_fonts::FontDb::global().families());
-        seen.extend(localoffice_engine::proof::user_dictionary());
+        seen.extend(localwriter_fonts::FontDb::global().families());
+        seen.extend(localwriter_engine::proof::user_dictionary());
     });
 }
 
@@ -96,10 +96,10 @@ fn ribbon_controls(ctx: &egui::Context) -> Vec<egui::Pos2> {
 
 fn fresh_app(ctx: &egui::Context) -> WordApp {
     ctx.all_styles_mut(|s| s.interaction.tooltip_delay = 0.0);
-    let mut app = WordApp::new(localoffice_engine::Session::new(localoffice_engine::sample::sample_document()), Default::default());
+    let mut app = WordApp::new(localwriter_engine::Session::new(localwriter_engine::sample::sample_document()), Default::default());
     // Read Aloud holds each sentence instead of starting the system's speech engine: no sound on
     // machines that have one, and no worker thread failing at its own pace on machines that don't.
-    app.session.read_aloud.backend = localoffice_engine::speech::Backend::Hold;
+    app.session.read_aloud.backend = localwriter_engine::speech::Backend::Hold;
     // Fonts install over the first frames.
     for _ in 0..2 {
         frame(ctx, &mut app);
@@ -149,18 +149,18 @@ impl<'a> Exempt<'a> {
         let mut names: std::collections::HashSet<String> = GLOBAL_NAMES.with_borrow(Clone::clone);
         names.extend(app.session.doc.styles.styles.iter().map(|s| s.name.clone()));
         // Fonts a document asks for, installed or not (Aptos is drawn with a substitute).
-        names.extend([localoffice_doc::styles::BODY_FONT, localoffice_doc::styles::HEADING_FONT].map(str::to_string));
+        names.extend([localwriter_doc::styles::BODY_FONT, localwriter_doc::styles::HEADING_FONT].map(str::to_string));
         // The selected SmartArt graphic's items (the Text Pane): document content.
-        if let Some(g) = localoffice_engine::cmd::smart_art::selected_smart_art(&app.session) {
+        if let Some(g) = localwriter_engine::cmd::smart_art::selected_smart_art(&app.session) {
             names.extend(g.items.iter().map(|i| i.text.clone()));
         }
         // The accessibility checker's findings: like command messages, they answer scripts and
         // MCP too, so they stay English for now.
-        for i in localoffice_engine::cmd::accessibility::check(&app.session.doc) {
+        for i in localwriter_engine::cmd::accessibility::check(&app.session.doc) {
             names.extend(["issue", "fix"].iter().filter_map(|k| i[*k].as_str()).map(str::to_string));
         }
         // The selected chart's data (Edit Data's grid): document content.
-        if let Some(c) = localoffice_engine::cmd::chart::selected_chart(&app.session) {
+        if let Some(c) = localwriter_engine::cmd::chart::selected_chart(&app.session) {
             names.extend(c.categories.iter().cloned());
             names.extend(c.series.iter().map(|s| s.name.clone()));
         }
@@ -177,12 +177,12 @@ impl<'a> Exempt<'a> {
         if let Some(c) = app.ai.connection() {
             names.insert(c.label.clone());
             names.insert(c.model.clone());
-            if let Some(p) = localoffice_ai::provider(&c.provider) {
+            if let Some(p) = localwriter_ai::provider(&c.provider) {
                 names.insert(p.label.to_owned());
             }
         }
-        names.extend(localoffice_ai::PROVIDERS.iter().map(|p| p.label.to_owned()));
-        Exempt { body: app.session.doc.plain_text(localoffice_doc::StoryRef::Body), names, math: math_placeholders }
+        names.extend(localwriter_ai::PROVIDERS.iter().map(|p| p.label.to_owned()));
+        Exempt { body: app.session.doc.plain_text(localwriter_doc::StoryRef::Body), names, math: math_placeholders }
     }
 
     /// Whitelists text that is not interface wording: shortcuts and punctuation, status and Read
@@ -203,7 +203,7 @@ impl<'a> Exempt<'a> {
         let initials = plain.chars().count() == 2 && plain.chars().all(|c| c.is_ascii_uppercase());
         // Math tiles fall back to UnicodeMath syntax while their preview loads. These are
         // language-independent commands, and only names in the real symbol table qualify.
-        let math_symbol = plain.strip_prefix('\\').is_some_and(|name| localoffice_doc::math_symbols::symbol(name).is_some());
+        let math_symbol = plain.strip_prefix('\\').is_some_and(|name| localwriter_doc::math_symbols::symbol(name).is_some());
         icon_lettering // drawn inside icons
             || initials // the account button
             || math_symbol
@@ -216,7 +216,7 @@ impl<'a> Exempt<'a> {
             || plain.starts_with('@') // contributor handles
             || plain.starts_with("Style") || plain.starts_with("Table Style ") // a new style's default name
             || plain.contains('┬') || plain.contains('\u{2061}') // equation input (UnicodeMath), drawn as math
-            || matches!(plain, "Local Word" | "Local Word User" | "https://" | "auto" | "I. II. III." | "i. ii. iii." | "I, II, III, …" | "i, ii, iii, …")
+            || matches!(plain, "Local Writer" | "Local Writer User" | "https://" | "auto" | "I. II. III." | "i. ii. iii." | "I, II, III, …" | "i, ii, iii, …")
             || plain == "CONFIDENTIAL" // the watermark dialog's text: document content, kept as typed
             || plain == "Figure 1" // the caption dialog's sample: the label goes into the document as is
     }
@@ -264,7 +264,7 @@ fn untranslated_interface_text() {
         let drawn = frame(&ctx, &mut app);
         record(&app, &format!("File › {page}"), drawn);
     }
-    for pane in localoffice_engine::cmd::options::PANES {
+    for pane in localwriter_engine::cmd::options::PANES {
         let _ = app.run("ui.backstage", json!({"value": true, "page": "options", "pane": pane}));
         let drawn = frame(&ctx, &mut app);
         record(&app, &format!("File › Options › {pane}"), drawn);
@@ -405,7 +405,7 @@ fn untranslated_interface_text() {
 /// a command gives for being off (#2678) and the equation gallery's labels (shown in menus the
 /// audit doesn't open one by one). Numbered style names go through a template.
 fn report_catalog_gaps(mut keys: std::collections::BTreeSet<String>) {
-    use localoffice_engine::math_gallery::{BUILT_INS, STRUCTURES, SYMBOL_SETS};
+    use localwriter_engine::math_gallery::{BUILT_INS, STRUCTURES, SYMBOL_SETS};
     if super::CRAFT_I18N.is_empty() {
         eprintln!("missing-translation report skipped: built without craft-i18n (set CRAFT_I18N_DIR to a craft-i18n checkout)");
         return;
@@ -420,8 +420,8 @@ fn report_catalog_gaps(mut keys: std::collections::BTreeSet<String>) {
     keys.extend(disabled_reasons());
     // Reasons the UI itself gives (`widgets.rs::tooltip`), which the engine's checks never reach.
     keys.insert("Open a document first".to_string());
-    for doc in [localoffice_doc::Document::new(), localoffice_engine::sample::sample_document()] {
-        let session = localoffice_engine::Session::new(doc);
+    for doc in [localwriter_doc::Document::new(), localwriter_engine::sample::sample_document()] {
+        let session = localwriter_engine::Session::new(doc);
         for spec in session.registry.all() {
             keys.extend(std::iter::once(spec.label).chain(spec.location.split(" › ")).filter(|s| !s.is_empty()).map(String::from));
             keys.extend((spec.enabled)(&session).map(String::from));

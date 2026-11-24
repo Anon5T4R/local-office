@@ -1,10 +1,10 @@
 [package]
-name = "localoffice-geom"
+name = "localwriter-geom"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word geometry and units: points, twips, EMU, inches, centimetres; rectangles; measurement parsing"
+description = "Local Writer geometry and units: points, twips, EMU, inches, centimetres; rectangles; measurement parsing"
 
 [lints]
 workspace = true

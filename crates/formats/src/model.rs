@@ -4,14 +4,14 @@
 
 use std::sync::Arc;
 
-use localoffice_doc::numbering::{AbstractNum, Level, ListKind, Num, levels_for};
-use localoffice_doc::para::{InlineObject, OBJ, PAGE_BREAK, RubyAlign, Run, ruby_raise};
-use localoffice_doc::props::{
+use localwriter_doc::numbering::{AbstractNum, Level, ListKind, Num, levels_for};
+use localwriter_doc::para::{InlineObject, OBJ, PAGE_BREAK, RubyAlign, Run, ruby_raise};
+use localwriter_doc::props::{
     Border, BorderStyle, Borders, CellProps, CharProps, NumRef, ParaProps, PropChange, RowProps, TextColor, Underline, VAlign, VMerge, VertAlign,
 };
-use localoffice_doc::section::NumFormat;
-use localoffice_doc::styles::{Style, StyleKind};
-use localoffice_doc::{Align, Block, Blocks, Document, Paragraph, Revision, RevisionKind, Rgb, Table, para_block};
+use localwriter_doc::section::NumFormat;
+use localwriter_doc::styles::{Style, StyleKind};
+use localwriter_doc::{Align, Block, Blocks, Document, Paragraph, Revision, RevisionKind, Rgb, Table, para_block};
 
 /// Font used for code spans and code blocks.
 pub const MONO_FONT: &str = "Courier New";
@@ -165,7 +165,7 @@ pub enum Inline {
     /// A chart or diagram known here only by its alt text: written where alt text has a place
     /// (an HTML or Markdown image), left out of editable formats so it never turns into body text.
     Figure(String),
-    /// An equation in the linear format LocalOffice keeps them in (`x=(-b±√(b^2-4ac))/2a`). Formats
+    /// An equation in the linear format LocalWriter keeps them in (`x=(-b±√(b^2-4ac))/2a`). Formats
     /// without equations write `linear` as text.
     Equation {
         linear: String,
@@ -230,7 +230,7 @@ pub struct ListInfo {
 pub struct Spacing {
     pub before: Option<f32>,
     pub after: Option<f32>,
-    pub line: Option<localoffice_doc::props::LineSpacing>,
+    pub line: Option<localwriter_doc::props::LineSpacing>,
     pub left: Option<f32>,
     pub right: Option<f32>,
     /// First-line indent; negative = hanging.
@@ -248,9 +248,9 @@ pub struct Para {
     pub inlines: Vec<Inline>,
     pub spacing: Spacing,
     /// Borders the source puts on the paragraph itself (RTF `\brdrb`…).
-    pub borders: Option<localoffice_doc::props::Borders>,
+    pub borders: Option<localwriter_doc::props::Borders>,
     /// The section this paragraph ends (RTF `\sect`), as the document's last paragraph of it.
-    pub section: Option<Box<localoffice_doc::SectionProps>>,
+    pub section: Option<Box<localwriter_doc::SectionProps>>,
     /// Tracked insertion of the paragraph mark.
     pub mark_ins: Option<Box<RevMark>>,
     /// Tracked deletion of the paragraph mark (only [`from_doc_tracked`] and formats that keep
@@ -291,14 +291,14 @@ impl Para {
         s
     }
     /// [`Self::text`] as it reads on screen: text set in a symbol font (Symbol, Wingdings…) as
-    /// its Unicode equivalents ([`localoffice_doc::symbol_fonts`]), for plain-text export.
+    /// its Unicode equivalents ([`localwriter_doc::symbol_fonts`]), for plain-text export.
     pub fn shown_text(&self) -> String {
         let mut s = String::new();
         for i in &self.inlines {
             match i {
                 Inline::Text(t, f) => match f.font.as_deref() {
-                    Some(font) if localoffice_doc::symbol_fonts::is_symbol_font(font) => {
-                        s.push_str(&localoffice_doc::symbol_fonts::map_text(font, t))
+                    Some(font) if localwriter_doc::symbol_fonts::is_symbol_font(font) => {
+                        s.push_str(&localwriter_doc::symbol_fonts::map_text(font, t))
                     }
                     _ => s.push_str(t),
                 },
@@ -352,7 +352,7 @@ pub struct Cell {
     pub header: bool,
     pub shading: Option<Rgb>,
     /// The cell's own borders (RTF `\clbrdr…`), drawn whatever the table's style.
-    pub borders: Option<localoffice_doc::props::Borders>,
+    pub borders: Option<localwriter_doc::props::Borders>,
     pub valign: Option<VAlign>,
 }
 
@@ -829,11 +829,11 @@ impl<'a> Builder<'a> {
     }
 
     fn table(&mut self, t: &FTable, depth: usize) -> Option<Table> {
-        let rows: Vec<&Vec<Cell>> = t.rows.iter().filter(|r| !r.is_empty()).take(localoffice_doc::table::MAX_ROWS).collect();
+        let rows: Vec<&Vec<Cell>> = t.rows.iter().filter(|r| !r.is_empty()).take(localwriter_doc::table::MAX_ROWS).collect();
         if rows.is_empty() {
             return None;
         }
-        let cols = t.cols().clamp(1, localoffice_doc::table::MAX_COLS);
+        let cols = t.cols().clamp(1, localwriter_doc::table::MAX_COLS);
         let width = self.doc.last_section.text_width().max(72.0);
         // One template row for the grid widths and props; the real rows are built below. Sizing it
         // to `rows.len()` would allocate a full rows × cols cell grid only to clear it, which a
@@ -847,10 +847,10 @@ impl<'a> Builder<'a> {
         }
         tb.rows.clear();
         for r in rows {
-            let mut row = localoffice_doc::Row { props: RowProps::default(), cells: Vec::new(), controls: Default::default() };
+            let mut row = localwriter_doc::Row { props: RowProps::default(), cells: Vec::new(), controls: Default::default() };
             row.props.header = !r.is_empty() && r.iter().all(|c| c.header);
             let mut g = 0usize;
-            for c in r.iter().take(localoffice_doc::table::MAX_COLS) {
+            for c in r.iter().take(localwriter_doc::table::MAX_COLS) {
                 let span = (c.colspan.clamp(1, 63) as usize).min(cols.saturating_sub(g).max(1));
                 let w: f32 = tb.grid.get(g..(g + span).min(tb.grid.len())).map(|s| s.iter().sum()).unwrap_or(72.0);
                 g += span;
@@ -865,7 +865,7 @@ impl<'a> Builder<'a> {
                 } else {
                     VMerge::None
                 };
-                row.cells.push(localoffice_doc::Cell {
+                row.cells.push(localwriter_doc::Cell {
                     props: CellProps {
                         width: Some(w),
                         span: span as u32,
@@ -880,7 +880,7 @@ impl<'a> Builder<'a> {
                 });
             }
             if row.cells.is_empty() {
-                row.cells.push(localoffice_doc::Cell::empty());
+                row.cells.push(localwriter_doc::Cell::empty());
             }
             tb.rows.push(row);
         }
@@ -894,11 +894,11 @@ fn finite_or(v: f32, d: f32) -> f32 {
 
 /// Build a document from a flow.
 pub fn to_doc(flow: &Flow) -> Document {
-    to_doc_in(flow, localoffice_doc::SectionProps::default())
+    to_doc_in(flow, localwriter_doc::SectionProps::default())
 }
 
 /// [`to_doc`] on a page of the source's own size and margins (`section`), which tables size to.
-pub fn to_doc_in(flow: &Flow, section: localoffice_doc::SectionProps) -> Document {
+pub fn to_doc_in(flow: &Flow, section: localwriter_doc::SectionProps) -> Document {
     let mut doc = Document::new();
     doc.last_section = section;
     doc.numbering = Default::default();
@@ -1159,7 +1159,7 @@ fn flow_paras_in(doc: &Document, p: &Paragraph, tracked: bool) -> Vec<Para> {
                     }
                     // The linear format is the shared form; an equation known only by its
                     // structure gets it from there.
-                    let linear = if linear.is_empty() { localoffice_doc::math::to_linear(&math.nodes) } else { linear.clone() };
+                    let linear = if linear.is_empty() { localwriter_doc::math::to_linear(&math.nodes) } else { linear.clone() };
                     out.inlines.push(Inline::Equation { linear, display: *display });
                 }
                 Some(InlineObject::Ruby { base, ruby, .. }) => {
@@ -1250,7 +1250,7 @@ fn flow_table(doc: &Document, t: &Table, depth: usize, tracked: bool) -> FTable 
         rows.push(cells);
     }
     // Without a table style and without visible table or cell borders the table shows no grid.
-    let visible = |b: &Option<localoffice_doc::props::Borders>| b.as_ref().is_some_and(|b| b.any_visible());
+    let visible = |b: &Option<localwriter_doc::props::Borders>| b.as_ref().is_some_and(|b| b.any_visible());
     let borderless =
         t.props.style.is_none() && !visible(&t.props.borders) && t.rows.iter().flat_map(|r| &r.cells).all(|c| !visible(&c.props.borders));
     FTable { rows, widths: t.grid.clone(), borderless }
@@ -1306,7 +1306,7 @@ pub fn image_px(data: &[u8]) -> Option<(u32, u32)> {
 /// declares huge dimensions can't exhaust memory when a picture is re-encoded on export. `None`
 /// when it would be too large or doesn't decode.
 pub fn decode_bounded(data: &[u8]) -> Option<image::DynamicImage> {
-    localoffice_geom::picture::decode(data, localoffice_geom::MAX_DECODED_BYTES).ok()
+    localwriter_geom::picture::decode(data, localwriter_geom::MAX_DECODED_BYTES).ok()
 }
 
 /// A picture from bytes with an optional display size (points); the natural size (96 dpi) is
@@ -1459,8 +1459,8 @@ impl ListCounter {
         }
         match li.level % 3 {
             0 => format!("{n}."),
-            1 => format!("{}.", localoffice_doc::section::letters(n)),
-            _ => format!("{}.", localoffice_doc::section::roman(n)),
+            1 => format!("{}.", localwriter_doc::section::letters(n)),
+            _ => format!("{}.", localwriter_doc::section::roman(n)),
         }
     }
 }

@@ -3,8 +3,8 @@
 //! (`list.define`, `review.trackingOptions`), so agents get the same result without the dialog.
 
 use egui::{Sense, Ui, vec2};
-use localoffice_doc::section::NumFormat;
-use localoffice_engine::cmd::lists::{LEVELS, caret_list, level_json, levels_of};
+use localwriter_doc::section::NumFormat;
+use localwriter_engine::cmd::lists::{LEVELS, caret_list, level_json, levels_of};
 use serde::Serialize;
 use serde_json::{Value, json};
 
@@ -116,14 +116,14 @@ impl ListForm {
         let s = &app.session;
         let levels = caret_list(s)
             .and_then(|n| levels_of(s, n))
-            .unwrap_or_else(|| localoffice_doc::numbering::levels_for(localoffice_doc::ListKind::Numbered));
+            .unwrap_or_else(|| localwriter_doc::numbering::levels_for(localwriter_doc::ListKind::Numbered));
         let levels = (0..LEVELS).map(|i| LevelForm::read(i, &levels.get(i).map(level_json).unwrap_or(Value::Null))).collect();
         let mut styles: Vec<(String, String)> = s
             .doc
             .styles
             .styles
             .iter()
-            .filter(|st| st.kind == localoffice_doc::StyleKind::Paragraph && !st.hidden)
+            .filter(|st| st.kind == localwriter_doc::StyleKind::Paragraph && !st.hidden)
             .map(|st| (st.id.clone(), st.name.clone()))
             .collect();
         styles.sort_by(|a, b| a.1.cmp(&b.1));
@@ -165,7 +165,7 @@ impl ListForm {
 /// Define New Multilevel List. Returns true to close.
 pub fn define_list(app: &mut WordApp, ui: &mut Ui, f: &mut ListForm) -> bool {
     let unit = crate::options::unit();
-    fn len(v: &mut f32, unit: localoffice_geom::Unit) -> egui::DragValue<'_> {
+    fn len(v: &mut f32, unit: localwriter_geom::Unit) -> egui::DragValue<'_> {
         egui::DragValue::new(v).speed(0.01).range(-10.0..=22.0).measure(unit).max_decimals(2)
     }
     let heading = |ui: &mut Ui, s: &str| {
@@ -379,9 +379,9 @@ pub struct TrackForm {
 
 impl TrackForm {
     pub fn read(app: &WordApp) -> TrackForm {
-        let v = localoffice_engine::cmd::review::tracking_json(&app.session.prefs.markup);
+        let v = localwriter_engine::cmd::review::tracking_json(&app.session.prefs.markup);
         let s = |k: &str| v.get(k).and_then(Value::as_str).unwrap_or("").to_string();
-        let c = |k: &str| localoffice_doc::Rgb::parse(&s(k)).map(|c| c.hex()).unwrap_or_default();
+        let c = |k: &str| localwriter_doc::Rgb::parse(&s(k)).map(|c| c.hex()).unwrap_or_default();
         let b = |k: &str| v.get(k).and_then(Value::as_bool).unwrap_or(true);
         TrackForm {
             comments: b("comments"),
@@ -441,11 +441,11 @@ fn choice(ui: &mut Ui, id: &str, value: &mut String, options: &[(&str, &str)]) {
 
 /// A colour: `none_label` (by author, or `auto` when given) or a colour from the grid. `value` is
 /// hex.
-fn color(ui: &mut Ui, theme: &[localoffice_doc::Rgb], value: &mut String, none_label: &str, auto: Option<localoffice_doc::Rgb>) {
+fn color(ui: &mut Ui, theme: &[localwriter_doc::Rgb], value: &mut String, none_label: &str, auto: Option<localwriter_doc::Rgb>) {
     ui.horizontal(|ui| {
         let id = ui.scope_id().with("colorField");
         crate::colors::take_field(ui.ctx(), id, value);
-        let c = localoffice_doc::Rgb::parse(value);
+        let c = localwriter_doc::Rgb::parse(value);
         let (r, _) = ui.allocate_exact_size(vec2(16.0, 16.0), Sense::hover());
         let t = Tokens::get(ui.ctx());
         match c.or(auto) {
@@ -457,7 +457,7 @@ fn color(ui: &mut Ui, theme: &[localoffice_doc::Rgb], value: &mut String, none_l
                 for (k, a) in [0u32, 1, 2].iter().enumerate() {
                     let w = r.width() / 3.0;
                     let part = egui::Rect::from_min_size(r.min + vec2(w * k as f32, 0.0), vec2(w, r.height()));
-                    ui.painter().rect_filled(part, 0.0, crate::theme::c32(localoffice_layout::display::revision_color(*a)));
+                    ui.painter().rect_filled(part, 0.0, crate::theme::c32(localwriter_layout::display::revision_color(*a)));
                 }
             }
         }
@@ -559,7 +559,7 @@ pub fn track_options(app: &mut WordApp, ui: &mut Ui, f: &mut TrackForm) -> bool 
                 &mut f.changed_lines,
                 &[("outside", "Outside border"), ("left", "Left border"), ("right", "Right border"), ("none", "None")],
             );
-            color(ui, &theme, &mut f.changed_lines_color, "Automatic", Some(localoffice_layout::display::CHANGE_BAR));
+            color(ui, &theme, &mut f.changed_lines_color, "Automatic", Some(localwriter_layout::display::CHANGE_BAR));
             ui.end_row();
         });
         heading(ui, "Moves");
@@ -585,14 +585,14 @@ pub fn track_options(app: &mut WordApp, ui: &mut Ui, f: &mut TrackForm) -> bool 
 
 #[cfg(test)]
 mod tests {
-    use localoffice_engine::Session;
+    use localwriter_engine::Session;
     use serde_json::json;
 
     use crate::dialogs::Dialog;
     use crate::{Services, WordApp};
 
     fn app() -> WordApp {
-        WordApp::new(Session::new(localoffice_doc::Document::new()), Services::default())
+        WordApp::new(Session::new(localwriter_doc::Document::new()), Services::default())
     }
 
     /// #328: the ribbon opens Define New Multilevel List; OK defines the list and numbers the
@@ -639,14 +639,14 @@ mod tests {
         a.dialog = None;
         a.run("review.trackingOptions", params).unwrap();
         let m = &a.session.prefs.markup;
-        assert_eq!(m.insert_mark, localoffice_layout::display::InsertMark::DoubleUnderline);
-        assert_eq!(m.comment_display, localoffice_layout::display::CommentDisplay::Selected);
-        assert_eq!(m.changed_lines_color, Some(localoffice_doc::Rgb(0xFF, 0, 0)));
+        assert_eq!(m.insert_mark, localwriter_layout::display::InsertMark::DoubleUnderline);
+        assert_eq!(m.comment_display, localwriter_layout::display::CommentDisplay::Selected);
+        assert_eq!(m.changed_lines_color, Some(localwriter_doc::Rgb(0xFF, 0, 0)));
         // Saved and restored with the preferences.
         let saved = a.prefs();
         let mut b = app();
         b.apply_prefs(saved);
-        assert_eq!(b.session.prefs.markup.changed_lines, localoffice_layout::display::ChangeBar::Right);
+        assert_eq!(b.session.prefs.markup.changed_lines, localwriter_layout::display::ChangeBar::Right);
     }
 
     /// Gap #5: the Moves rows (Moved from / Moved to: mark and colour) start at green double
@@ -654,7 +654,7 @@ mod tests {
     /// checkbox (as in Word for Mac), so OK leaves the document's setting alone.
     #[test]
     fn track_changes_options_moves_rows_apply_marks_and_colours() {
-        use localoffice_layout::display::{DeleteMark, InsertMark, MOVE_COLOR};
+        use localwriter_layout::display::{DeleteMark, InsertMark, MOVE_COLOR};
         let mut a = app();
         a.session.run("review.trackingOptions", &json!({"trackMoves": false})).unwrap();
         a.run("review.trackingOptions", json!({})).unwrap();
@@ -672,7 +672,7 @@ mod tests {
         a.dialog = None;
         a.run("review.trackingOptions", params).unwrap();
         let m = &a.session.prefs.markup;
-        assert_eq!((m.move_from_mark, m.move_from_color), (DeleteMark::Strikethrough, Some(localoffice_doc::Rgb(0xFF, 0, 0))));
+        assert_eq!((m.move_from_mark, m.move_from_color), (DeleteMark::Strikethrough, Some(localwriter_doc::Rgb(0xFF, 0, 0))));
         assert_eq!((m.move_to_mark, m.move_to_color), (InsertMark::Bold, None), "empty = by author");
         assert!(!a.session.doc.settings.track_moves, "the document setting is untouched");
     }
@@ -681,7 +681,7 @@ mod tests {
     /// Moved to list, in Word's order; every choice is one `review.trackingOptions` takes.
     #[test]
     fn track_changes_options_mark_lists_follow_word() {
-        use localoffice_layout::display::{DeleteMark, InsertMark};
+        use localwriter_layout::display::{DeleteMark, InsertMark};
         let values = |l: &[(&str, &str)]| l.iter().map(|(v, _)| v.to_string()).collect::<Vec<_>>();
         assert_eq!(
             values(super::DELETE_MARKS),

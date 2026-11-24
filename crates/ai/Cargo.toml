@@ -1,15 +1,16 @@
 [package]
-name = "localoffice-ai"
+name = "localwriter-ai"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
-repository = "https://github.com/Anon5T4R/local-office"
-description = "BYOK AI for Local Word: OpenAI-compatible providers, OS-keychain keys, models list and chat"
+repository = "https://github.com/Styx-Studios/Local-Writer"
+description = "BYOK AI for Local Writer: OpenAI-compatible providers, OS-keychain keys, models list and chat"
 publish.workspace = true
 
 [dependencies]
 local-ai = { workspace = true }
+log = { workspace = true }
 serde = { workspace = true }
 
 [dev-dependencies]

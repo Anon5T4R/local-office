@@ -1,8 +1,8 @@
 use super::*;
-use localoffice_doc::fill::Fill;
-use localoffice_doc::para::InlineObject;
-use localoffice_doc::props::{Align, Border, BorderStyle, Borders, ParaProps, TextDirection};
-use localoffice_doc::{Pos, Table};
+use localwriter_doc::fill::Fill;
+use localwriter_doc::para::InlineObject;
+use localwriter_doc::props::{Align, Border, BorderStyle, Borders, ParaProps, TextDirection};
+use localwriter_doc::{Pos, Table};
 
 const WRAP_TEST_FONT: &str = "Source Sans 3";
 
@@ -19,7 +19,7 @@ pub(super) fn pagination_fixture_document(text: &str) -> Document {
     doc.styles.default_chr.size = Some(12.0);
     for block in &mut doc.body {
         if let Block::Para(para) = Arc::make_mut(block) {
-            para.props.line_spacing = Some(localoffice_doc::props::LineSpacing::Exactly(14.0));
+            para.props.line_spacing = Some(localwriter_doc::props::LineSpacing::Exactly(14.0));
             para.props.space_before = Some(0.0);
             para.props.space_after = Some(8.0);
         }
@@ -124,7 +124,7 @@ fn pagination_write_line_rows(out: &mut String, para: &ParaLayout, l0: usize, l1
 fn pagination_write_styles(out: &mut String, para: &ParaLayout) {
     use std::fmt::Write as _;
     for (si, st) in para.styles.iter().enumerate().filter(|(i, _)| *i == 0 || para.clusters.iter().any(|c| c.style as usize == *i)).take(4) {
-        let (asc, desc) = localoffice_fonts::word::line_metrics(&st.face);
+        let (asc, desc) = localwriter_fonts::word::line_metrics(&st.face);
         let raw_height = (asc + desc) * f64::from(st.size) / st.face.upem;
         let _ = writeln!(
             out,
@@ -218,18 +218,18 @@ fn legacy_table_gap(mode: u32, allow: bool, location: SpacingLocation) -> f32 {
     let mut d = Document::new();
     d.settings.compat_mode = mode;
     d.settings.allow_space_of_same_style_in_table = allow;
-    let chr = localoffice_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() };
-    let mut a = localoffice_doc::Paragraph::with_text("Alpha probe", chr.clone());
+    let chr = localwriter_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() };
+    let mut a = localwriter_doc::Paragraph::with_text("Alpha probe", chr.clone());
     a.props = ParaProps {
         space_before: Some(0.0),
         space_after: Some(12.0),
-        line_spacing: Some(localoffice_doc::props::LineSpacing::Exactly(24.0)),
+        line_spacing: Some(localwriter_doc::props::LineSpacing::Exactly(24.0)),
         contextual_spacing: Some(true),
         ..Default::default()
     };
-    let mut b = localoffice_doc::Paragraph::with_text("Beta probe", chr);
+    let mut b = localwriter_doc::Paragraph::with_text("Beta probe", chr);
     b.props = ParaProps { space_after: Some(0.0), ..a.props.clone() };
-    let blocks = vec![localoffice_doc::para_block(a), localoffice_doc::para_block(b)];
+    let blocks = vec![localwriter_doc::para_block(a), localwriter_doc::para_block(b)];
     match location {
         SpacingLocation::Cell => {
             let mut table = Table::new(1, 1, 468.0);
@@ -237,11 +237,11 @@ fn legacy_table_gap(mode: u32, allow: bool, location: SpacingLocation) -> f32 {
             table.props.style = None;
             table.props.cell_margins = Some([0.0; 4]);
             table.rows[0].cells[0].blocks = blocks;
-            d.body = vec![std::sync::Arc::new(localoffice_doc::Block::Table(table))];
+            d.body = vec![std::sync::Arc::new(localwriter_doc::Block::Table(table))];
         }
         SpacingLocation::Body => d.body = blocks,
         SpacingLocation::Header => {
-            let id = d.add_part(localoffice_doc::PartKind::Header, blocks);
+            let id = d.add_part(localwriter_doc::PartKind::Header, blocks);
             d.last_section.headers.default = Some(id);
         }
     }
@@ -281,12 +281,12 @@ fn legacy_table_contextual_spacing_flag_is_scoped_to_cells_and_legacy_mode() {
 }
 
 fn contextual_gap(after: f32, before: f32, first: bool, second: bool, different_style: bool, header: bool) -> f32 {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     let mut d = Document::new();
     for id in ["SpacingA", "SpacingB"] {
-        d.styles.upsert(localoffice_doc::Style { id: id.into(), name: id.into(), ..Default::default() });
+        d.styles.upsert(localwriter_doc::Style { id: id.into(), name: id.into(), ..Default::default() });
     }
-    let chr = localoffice_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() };
+    let chr = localwriter_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() };
     let props = ParaProps {
         style: Some("SpacingA".into()),
         space_before: Some(0.0),
@@ -294,18 +294,18 @@ fn contextual_gap(after: f32, before: f32, first: bool, second: bool, different_
         line_spacing: Some(LineSpacing::Exactly(24.0)),
         ..Default::default()
     };
-    let mut a = localoffice_doc::Paragraph::with_text("Alpha probe", chr.clone());
+    let mut a = localwriter_doc::Paragraph::with_text("Alpha probe", chr.clone());
     a.props = ParaProps { space_after: Some(after), contextual_spacing: Some(first), ..props.clone() };
-    let mut b = localoffice_doc::Paragraph::with_text("Beta probe", chr);
+    let mut b = localwriter_doc::Paragraph::with_text("Beta probe", chr);
     b.props = ParaProps {
         style: Some(if different_style { "SpacingB" } else { "SpacingA" }.into()),
         space_before: Some(before),
         contextual_spacing: Some(second),
         ..props
     };
-    let paragraphs = vec![localoffice_doc::para_block(a), localoffice_doc::para_block(b)];
+    let paragraphs = vec![localwriter_doc::para_block(a), localwriter_doc::para_block(b)];
     if header {
-        let id = d.add_part(localoffice_doc::PartKind::Header, paragraphs);
+        let id = d.add_part(localwriter_doc::PartKind::Header, paragraphs);
         d.last_section.headers.default = Some(id);
     } else {
         d.body = paragraphs;
@@ -357,16 +357,16 @@ fn contextual_spacing_preserves_each_side_and_style_identity() {
 
 #[test]
 fn contextual_spacing_removes_every_gap_in_a_four_paragraph_run() {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     for table in [false, true] {
         let mut doc = Document::new();
-        doc.styles.upsert(localoffice_doc::Style { id: "SpacingA".into(), name: "SpacingA".into(), ..Default::default() });
+        doc.styles.upsert(localwriter_doc::Style { id: "SpacingA".into(), name: "SpacingA".into(), ..Default::default() });
         let paragraphs = ["One", "Two", "Three", "Four"]
             .into_iter()
             .map(|text| {
-                let mut p = localoffice_doc::Paragraph::with_text(
+                let mut p = localwriter_doc::Paragraph::with_text(
                     text,
-                    localoffice_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() },
+                    localwriter_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() },
                 );
                 p.props = ParaProps {
                     style: Some("SpacingA".into()),
@@ -376,7 +376,7 @@ fn contextual_spacing_removes_every_gap_in_a_four_paragraph_run() {
                     line_spacing: Some(LineSpacing::Exactly(24.0)),
                     ..Default::default()
                 };
-                localoffice_doc::para_block(p)
+                localwriter_doc::para_block(p)
             })
             .collect::<Vec<_>>();
         if table {
@@ -406,14 +406,14 @@ fn contextual_spacing_removes_every_gap_in_a_four_paragraph_run() {
 // Contextual and automatic list spacing can suppress the same after-space only once.
 #[test]
 fn contextual_automatic_lists_do_not_subtract_the_gap_twice() {
-    use localoffice_doc::props::{LineSpacing, NumRef};
+    use localwriter_doc::props::{LineSpacing, NumRef};
     for table in [false, true] {
         let mut doc = Document::new();
-        let num = doc.numbering.add_list(localoffice_doc::ListKind::Numbered);
+        let num = doc.numbering.add_list(localwriter_doc::ListKind::Numbered);
         let paragraphs = ["First", "Second", "Third"]
             .into_iter()
             .map(|text| {
-                let mut p = localoffice_doc::Paragraph::with_text(text, Default::default());
+                let mut p = localwriter_doc::Paragraph::with_text(text, Default::default());
                 p.props = ParaProps {
                     contextual_spacing: Some(true),
                     space_before_auto: Some(true),
@@ -422,7 +422,7 @@ fn contextual_automatic_lists_do_not_subtract_the_gap_twice() {
                     line_spacing: Some(LineSpacing::Exactly(24.0)),
                     ..Default::default()
                 };
-                localoffice_doc::para_block(p)
+                localwriter_doc::para_block(p)
             })
             .collect::<Vec<_>>();
         if table {
@@ -467,13 +467,13 @@ fn empty_doc_has_one_page() {
 #[test]
 fn hidden_marks_take_no_space() {
     let mut d = Document::new();
-    d.body = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Before", Default::default()))];
+    d.body = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Before", Default::default()))];
     for _ in 0..20 {
-        let mut p = localoffice_doc::Paragraph::new();
+        let mut p = localwriter_doc::Paragraph::new();
         p.mark.hidden = Some(true);
-        d.body.push(localoffice_doc::para_block(p));
+        d.body.push(localwriter_doc::para_block(p));
     }
-    d.body.push(localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("After", Default::default())));
+    d.body.push(localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("After", Default::default())));
     let l = lay(&d);
     let y = |block: usize| {
         l.pages
@@ -487,8 +487,8 @@ fn hidden_marks_take_no_space() {
     };
     let mut plain = Document::new();
     plain.body = vec![
-        localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Before", Default::default())),
-        localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("After", Default::default())),
+        localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Before", Default::default())),
+        localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("After", Default::default())),
     ];
     let plain_layout = lay(&plain);
     let plain_after = plain_layout.pages[0]
@@ -551,7 +551,7 @@ fn reading_layout_reflows_into_viewport_height_pages_without_changing_print_layo
 
 #[test]
 fn hit_and_caret_agree() {
-    let d = Document::from_text("Hello world, this is LocalOffice.\nSecond paragraph here.");
+    let d = Document::from_text("Hello world, this is LocalWriter.\nSecond paragraph here.");
     let l = lay(&d);
     for off in [0, 5, 12, 31] {
         let pos = Pos::body(0, off);
@@ -572,7 +572,7 @@ fn selection_bar_finds_the_line_beside_the_pointer() {
     // #856: the left margin beside a line is Word's selection bar.
     let text = format!("{}\nShort.", "The quick brown fox jumps over the lazy dog. ".repeat(8));
     let mut d = Document::from_text(&text);
-    d.insert_block(StoryRef::Body, &Path::top(2), localoffice_doc::Block::Table(Table::new(1, 1, 468.0))).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(2), localwriter_doc::Block::Table(Table::new(1, 1, 468.0))).unwrap();
     let l = lay(&d);
     let p = &l.pages[0];
     let c = l.caret(&Pos::body(0, 0)).unwrap();
@@ -791,7 +791,7 @@ pub(crate) fn layout_time_ratio(doc: impl Fn(usize) -> Document, n: usize, opts:
 /// object: the word is wider than the span the object leaves, so the measurement that asks
 /// whether it would fit the full line runs for every line the word takes.
 fn long_word_beside_a_float(n: usize) -> Document {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut d = Document::from_text(&"a".repeat(n));
     let f = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, dist: 9.0, ..Default::default() };
     d.insert_object(&Pos::body(0, 0), rect_shape(144.0, 100.0, f), &Default::default()).unwrap();
@@ -836,7 +836,7 @@ fn a_word_a_negative_advance_narrows_still_fits() {
     // The same word in a document: a font that pulls one glyph back takes the width off the
     // rest of the word too, and the strip a floating object leaves is the row's only span, so
     // the word is measured against it.
-    use localoffice_doc::para::{Anchor, Float, ShapeKind, Wrap};
+    use localwriter_doc::para::{Anchor, Float, ShapeKind, Wrap};
     // Twelve characters, the sixth of them pulled back by thirty points.
     let word = |pull: f32| {
         let mut d = Document::from_text(&"a".repeat(12));
@@ -1002,15 +1002,15 @@ fn a_word_is_measured_by_the_sum_of_its_advances() {
 /// The word is wider than the line it is laid out on, so it takes a line per few characters, and
 /// measuring it must not walk it again for every one of those lines.
 fn long_word_with_alternating_advances_beside_a_float(n: usize) -> Document {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut d = Document::from_text(&"a".repeat(n));
     // One run per block of characters, alternating the spacing: half the glyphs are pulled back.
     let block = 64;
     let p = d.para_mut(StoryRef::Body, &Path::top(0)).unwrap();
     p.runs = (0..n.div_ceil(block))
-        .map(|i| localoffice_doc::Run {
+        .map(|i| localwriter_doc::Run {
             len: block.min(n - i * block),
-            props: localoffice_doc::CharProps { spacing: Some(if i % 2 == 0 { 50.0 } else { -50.0 }), ..Default::default() },
+            props: localwriter_doc::CharProps { spacing: Some(if i % 2 == 0 { 50.0 } else { -50.0 }), ..Default::default() },
         })
         .collect();
     let f = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, dist: 9.0, ..Default::default() };
@@ -1070,10 +1070,10 @@ fn many_hidden_float_anchors_lay_out_in_linear_time() {
     // n square-wrapped shapes, each anchored in its own hidden run (bold alternating, so runs do not
     // merge), markup on: finding each anchor's formatting once rescanned the runs from the start.
     let doc = |n: usize| {
-        let float = localoffice_doc::para::Float {
-            wrap: localoffice_doc::para::Wrap::Square,
-            h_rel: localoffice_doc::para::Anchor::Column,
-            v_rel: localoffice_doc::para::Anchor::Paragraph,
+        let float = localwriter_doc::para::Float {
+            wrap: localwriter_doc::para::Wrap::Square,
+            h_rel: localwriter_doc::para::Anchor::Column,
+            v_rel: localwriter_doc::para::Anchor::Paragraph,
             x: 0.0,
             y: 0.0,
             dist: 9.0,
@@ -1082,7 +1082,7 @@ fn many_hidden_float_anchors_lay_out_in_linear_time() {
             ..Default::default()
         };
         let shape = InlineObject::Shape {
-            kind: localoffice_doc::para::ShapeKind::Rectangle,
+            kind: localwriter_doc::para::ShapeKind::Rectangle,
             w: 20.0,
             h: 20.0,
             fill: None,
@@ -1094,18 +1094,18 @@ fn many_hidden_float_anchors_lay_out_in_linear_time() {
             effects: Default::default(),
             extra: Default::default(),
         };
-        let obj = localoffice_doc::para::OBJ.to_string();
-        let mut p = localoffice_doc::Paragraph::with_text("Text ", Default::default());
+        let obj = localwriter_doc::para::OBJ.to_string();
+        let mut p = localwriter_doc::Paragraph::with_text("Text ", Default::default());
         p.text.push_str(&obj.repeat(n));
         p.objects = vec![shape; n];
-        p.runs = std::iter::once(localoffice_doc::Run { len: 5, props: Default::default() })
-            .chain((0..n).map(|i| localoffice_doc::Run {
+        p.runs = std::iter::once(localwriter_doc::Run { len: 5, props: Default::default() })
+            .chain((0..n).map(|i| localwriter_doc::Run {
                 len: obj.len(),
-                props: localoffice_doc::CharProps { hidden: Some(true), bold: Some(i % 2 == 0), ..Default::default() },
+                props: localwriter_doc::CharProps { hidden: Some(true), bold: Some(i % 2 == 0), ..Default::default() },
             }))
             .collect();
         let mut d = Document::from_text("");
-        d.body = vec![localoffice_doc::para_block(p)];
+        d.body = vec![localwriter_doc::para_block(p)];
         d
     };
     // Correct first: hidden anchors place no shape, shown ones do.
@@ -1138,9 +1138,9 @@ fn fragmented_hidden_text_lays_out_like_the_visible_text() {
         let at = text.len();
         text.push('é');
         let n = d.para(StoryRef::Body, &Path::top(0)).unwrap().len();
-        let bold = localoffice_doc::CharProps { bold: Some(i % 2 == 0), ..Default::default() };
+        let bold = localwriter_doc::CharProps { bold: Some(i % 2 == 0), ..Default::default() };
         d.insert_text(&Pos::body(0, n), &c.to_string(), &bold).unwrap();
-        let hidden = localoffice_doc::CharProps { hidden: Some(true), bold: Some(i % 2 == 1), ..Default::default() };
+        let hidden = localwriter_doc::CharProps { hidden: Some(true), bold: Some(i % 2 == 1), ..Default::default() };
         d.insert_text(&Pos::body(0, at), "é", &hidden).unwrap();
         let n = plain.para(StoryRef::Body, &Path::top(0)).unwrap().len();
         plain.insert_text(&Pos::body(0, n), &c.to_string(), &bold).unwrap();
@@ -1238,15 +1238,15 @@ fn legacy_form_fields_are_drawn() {
         let mut d = Document::from_text("ab");
         d.insert_object(&Pos::body(0, 1), o, &Default::default()).unwrap();
         let l = lay(&d);
-        let b_x = l.caret(&Pos::body(0, 1 + localoffice_doc::para::OBJ.len_utf8())).unwrap().x;
+        let b_x = l.caret(&Pos::body(0, 1 + localwriter_doc::para::OBJ.len_utf8())).unwrap().x;
         let a_x = l.caret(&Pos::body(0, 1)).unwrap().x;
         (display::page_display(&d, &l.pages[0], &display::DisplayOptions::default()), b_x - a_x)
     };
-    let squares = |items: &[display::Draw]| -> Vec<localoffice_geom::Rect> {
+    let squares = |items: &[display::Draw]| -> Vec<localwriter_geom::Rect> {
         items
             .iter()
             .filter_map(|i| {
-                if let display::Draw::Shape { rect, kind: localoffice_doc::para::ShapeKind::Rectangle, stroke: Some(_), .. } = i {
+                if let display::Draw::Shape { rect, kind: localwriter_doc::para::ShapeKind::Rectangle, stroke: Some(_), .. } = i {
                     Some(*rect)
                 } else {
                     None
@@ -1298,7 +1298,7 @@ fn a_missing_roman_font_is_drawn_as_word_draws_it() {
         let first = para.clusters.first().expect("a cluster");
         para.styles[first.style as usize].face
     };
-    let cambria = localoffice_fonts::word::resolve("Cambria", false, false).face;
+    let cambria = localwriter_fonts::word::resolve("Cambria", false, false).face;
     assert_eq!(face(true), cambria);
     assert_ne!(face(false), cambria);
 }
@@ -1314,12 +1314,12 @@ fn a_missing_roman_font_with_its_own_substitute_keeps_it() {
     let l = lay(&d);
     let Some(Placed::Lines { para, .. }) = l.pages[0].items.iter().find(|i| matches!(i, Placed::Lines { .. })) else { panic!("no text") };
     let first = para.clusters.first().expect("a cluster");
-    assert_eq!(para.styles[first.style as usize].face, localoffice_fonts::word::resolve("Times New Roman", false, false).face);
+    assert_eq!(para.styles[first.style as usize].face, localwriter_fonts::word::resolve("Times New Roman", false, false).face);
 }
 
 #[test]
 fn an_empty_section_mark_stays_on_a_full_page() {
-    use localoffice_doc::section::SectionProps;
+    use localwriter_doc::section::SectionProps;
     // Measured in Word: a page filled to the bottom, then an empty paragraph carrying a next-page
     // section break, makes no page for the mark; the next section starts on page 2. A plain empty
     // paragraph moves on as usual.
@@ -1364,7 +1364,7 @@ fn a_bookmark_after_a_page_break_takes_no_line() {
 
 #[test]
 fn a_page_break_then_a_new_page_makes_one_page() {
-    use localoffice_doc::section::SectionProps;
+    use localwriter_doc::section::SectionProps;
     // "Before", a paragraph of only a page break, then "After" starting a page by itself: a page
     // break before, or a next-page section break carried by the break's own paragraph. Word's
     // output for a report: the break's mark stays on the old page, and "After" starts the next.
@@ -1439,7 +1439,7 @@ fn right_tab_aligns_text_end() {
     let mut d = Document::from_text("left\tright");
     d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| {
         p.tabs =
-            Some(vec![localoffice_doc::props::TabStop { pos: 400.0, align: localoffice_doc::props::TabAlign::Right, leader: Default::default() }])
+            Some(vec![localwriter_doc::props::TabStop { pos: 400.0, align: localwriter_doc::props::TabAlign::Right, leader: Default::default() }])
     })
     .unwrap();
     let l = lay(&d);
@@ -1454,7 +1454,7 @@ fn ptab_doc(before: &str, after: &str, ptab: InlineObject, indents: (f32, f32)) 
     d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| {
         p.indent_left = Some(indents.0);
         p.indent_right = Some(indents.1);
-        p.tabs = Some(vec![localoffice_doc::props::TabStop { pos: 50.0, align: Default::default(), leader: Default::default() }]);
+        p.tabs = Some(vec![localwriter_doc::props::TabStop { pos: 50.0, align: Default::default(), leader: Default::default() }]);
     })
     .unwrap();
     d.insert_object(&Pos::body(0, before.len()), ptab, &Default::default()).unwrap();
@@ -1462,9 +1462,9 @@ fn ptab_doc(before: &str, after: &str, ptab: InlineObject, indents: (f32, f32)) 
 }
 
 fn ptab(
-    align: localoffice_doc::para::PTabAlign,
-    relative_to: localoffice_doc::para::PTabBase,
-    leader: localoffice_doc::props::TabLeader,
+    align: localwriter_doc::para::PTabAlign,
+    relative_to: localwriter_doc::para::PTabBase,
+    leader: localwriter_doc::props::TabLeader,
 ) -> InlineObject {
     InlineObject::PositionalTab { align, relative_to, leader }
 }
@@ -1474,23 +1474,23 @@ fn ptab(
 /// the gap.
 #[test]
 fn right_positional_tab_ends_text_on_the_right_margin() {
-    use localoffice_doc::para::{PTabAlign, PTabBase};
-    let d = ptab_doc("Left", "Right", ptab(PTabAlign::Right, PTabBase::Margin, localoffice_doc::props::TabLeader::Dot), (0.0, 36.0));
+    use localwriter_doc::para::{PTabAlign, PTabBase};
+    let d = ptab_doc("Left", "Right", ptab(PTabAlign::Right, PTabBase::Margin, localwriter_doc::props::TabLeader::Dot), (0.0, 36.0));
     let l = lay(&d);
     let end = l.caret(&Pos::body(0, d.body[0].as_para().unwrap().len())).unwrap().x;
     assert!((end - 540.0).abs() < 1.0, "end of the text after the tab: {end}");
     let para = l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { Some(para) } else { None }).unwrap();
-    assert!(para.lines[0].leaders.iter().any(|(_, ld)| *ld == localoffice_doc::props::TabLeader::Dot), "{:?}", para.lines[0].leaders);
+    assert!(para.lines[0].leaders.iter().any(|(_, ld)| *ld == localwriter_doc::props::TabLeader::Dot), "{:?}", para.lines[0].leaders);
 }
 
 /// Relative to the indents, a centre positional tab centres the text after it between the left
 /// and right indents, not between the margins.
 #[test]
 fn center_positional_tab_relative_to_indents_centres_between_them() {
-    use localoffice_doc::para::{PTabAlign, PTabBase};
-    let d = ptab_doc("a", "Mid", ptab(PTabAlign::Center, PTabBase::Indent, localoffice_doc::props::TabLeader::None), (36.0, 108.0));
+    use localwriter_doc::para::{PTabAlign, PTabBase};
+    let d = ptab_doc("a", "Mid", ptab(PTabAlign::Center, PTabBase::Indent, localwriter_doc::props::TabLeader::None), (36.0, 108.0));
     let l = lay(&d);
-    let from = l.caret(&Pos::body(0, 1 + localoffice_doc::para::OBJ.len_utf8())).unwrap().x;
+    let from = l.caret(&Pos::body(0, 1 + localwriter_doc::para::OBJ.len_utf8())).unwrap().x;
     let to = l.caret(&Pos::body(0, d.body[0].as_para().unwrap().len())).unwrap().x;
     // Indents at 36 and 468 - 108 = 360 from the margin: centre 198, page x 270.
     assert!(((from + to) / 2.0 - 270.0).abs() < 1.0, "centre of the text after the tab: {}", (from + to) / 2.0);
@@ -1500,12 +1500,12 @@ fn center_positional_tab_relative_to_indents_centres_between_them() {
 /// that place.
 #[test]
 fn positional_tab_behind_the_text_moves_to_the_next_line() {
-    use localoffice_doc::para::{PTabAlign, PTabBase};
+    use localwriter_doc::para::{PTabAlign, PTabBase};
     let before = "word ".repeat(14);
-    let d = ptab_doc(&before, "X", ptab(PTabAlign::Left, PTabBase::Margin, localoffice_doc::props::TabLeader::None), (0.0, 0.0));
+    let d = ptab_doc(&before, "X", ptab(PTabAlign::Left, PTabBase::Margin, localwriter_doc::props::TabLeader::None), (0.0, 0.0));
     let l = lay(&d);
     let first = l.caret(&Pos::body(0, 0)).unwrap();
-    let x = l.caret(&Pos::body(0, before.len() + localoffice_doc::para::OBJ.len_utf8())).unwrap();
+    let x = l.caret(&Pos::body(0, before.len() + localwriter_doc::para::OBJ.len_utf8())).unwrap();
     assert!(x.top > first.top + 1.0, "X on the next line: {} vs {}", x.top, first.top);
     assert!((x.x - 72.0).abs() < 0.5, "X at the left margin: {}", x.x);
 }
@@ -1514,23 +1514,23 @@ fn positional_tab_behind_the_text_moves_to_the_next_line() {
 /// doesn't leave it blank to go to the next line, even when its place is behind the indent.
 #[test]
 fn positional_tab_after_only_a_bookmark_stays_on_its_line() {
-    use localoffice_doc::para::{PTabAlign, PTabBase};
-    let mut d = ptab_doc("", "X", ptab(PTabAlign::Left, PTabBase::Margin, localoffice_doc::props::TabLeader::None), (36.0, 0.0));
+    use localwriter_doc::para::{PTabAlign, PTabBase};
+    let mut d = ptab_doc("", "X", ptab(PTabAlign::Left, PTabBase::Margin, localwriter_doc::props::TabLeader::None), (36.0, 0.0));
     d.insert_object(&Pos::body(0, 0), InlineObject::BookmarkStart { name: "top".into() }, &Default::default()).unwrap();
     let l = lay(&d);
     let para = l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { Some(para) } else { None }).unwrap();
     assert_eq!(para.lines.len(), 1);
-    let x = l.caret(&Pos::body(0, 2 * localoffice_doc::para::OBJ.len_utf8())).unwrap().x;
+    let x = l.caret(&Pos::body(0, 2 * localwriter_doc::para::OBJ.len_utf8())).unwrap().x;
     assert!((x - 108.0).abs() < 0.5, "X at the indent: {x}");
 }
 
 #[test]
 fn narrow_cells_keep_their_width() {
-    let mut p = localoffice_doc::Paragraph::with_text("WW", localoffice_doc::CharProps { size: Some(6.0), ..Default::default() });
+    let mut p = localwriter_doc::Paragraph::with_text("WW", localwriter_doc::CharProps { size: Some(6.0), ..Default::default() });
     p.props.space_before = Some(0.0);
     p.props.space_after = Some(0.0);
     let mut d = Document::new();
-    d.body = vec![localoffice_doc::para_block(p.clone())];
+    d.body = vec![localwriter_doc::para_block(p.clone())];
     let wide = lay(&d);
     let advance = wide.pages[0]
         .items
@@ -1547,7 +1547,7 @@ fn narrow_cells_keep_their_width() {
         table.props.style = None;
         table.props.fixed = true;
         table.props.cell_margins = Some([0.0; 4]);
-        table.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(p.clone())];
+        table.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(p.clone())];
         d.body = vec![std::sync::Arc::new(Block::Table(table))];
         let l = lay(&d);
         let lines = l.pages[0]
@@ -1568,7 +1568,7 @@ fn right_tab_whose_text_does_not_fit_moves_to_the_next_line_with_it() {
     // text's length, the number is on the tab's line and ends at the stop (or past it, inside the
     // margin). With the stop short of the margin, text can also end past the stop, where the next
     // default stop is past the margin: then the tab wraps too.
-    use localoffice_doc::props::{TabAlign, TabLeader, TabStop};
+    use localwriter_doc::props::{TabAlign, TabLeader, TabStop};
     for pos in [468.0, 400.0] {
         for m in 20..40 {
             for r in 0..4 {
@@ -1603,7 +1603,7 @@ fn right_tab_whose_text_does_not_fit_moves_to_the_next_line_with_it() {
 /// going to a line of its own.
 #[test]
 fn left_tab_past_the_right_indent_does_not_add_a_line() {
-    use localoffice_doc::props::{TabAlign, TabLeader, TabStop};
+    use localwriter_doc::props::{TabAlign, TabLeader, TabStop};
     let text = "Name\tPage";
     let mut d = Document::from_text(text);
     d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| {
@@ -1623,7 +1623,7 @@ fn left_tab_past_the_right_indent_does_not_add_a_line() {
 /// paragraph breaks as it does without the bookmark (no line holding only the bookmark).
 #[test]
 fn a_bookmark_before_a_left_tab_past_the_right_indent_is_not_a_line() {
-    use localoffice_doc::props::{TabAlign, TabLeader, TabStop};
+    use localwriter_doc::props::{TabAlign, TabLeader, TabStop};
     let lines = |mark: bool| {
         let mut d = Document::from_text("\tPage");
         d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| {
@@ -1676,8 +1676,8 @@ fn a_bookmark_is_no_line_break_opportunity() {
 #[test]
 fn lists_get_labels_and_indent() {
     let mut d = Document::from_text("one\ntwo\nthree");
-    let id = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
-    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(2, 5), &|p| p.numbering = Some(localoffice_doc::props::NumRef { num: id, level: 0 })).unwrap();
+    let id = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
+    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(2, 5), &|p| p.numbering = Some(localwriter_doc::props::NumRef { num: id, level: 0 })).unwrap();
     let l = lay(&d);
     let labels: Vec<String> = l.pages[0]
         .items
@@ -1691,12 +1691,12 @@ fn lists_get_labels_and_indent() {
 
 #[test]
 fn break_only_list_has_no_label() {
-    use localoffice_doc::ListKind;
+    use localwriter_doc::ListKind;
     for kind in [ListKind::Numbered, ListKind::Bullet] {
         let mut d = Document::from_text("First\n\u{000C}\nLast\n\nAfter");
         let id = d.numbering.add_list(kind);
         d.format_paragraphs(&Pos::body(0, 0), &Pos::body(4, 5), &|p| {
-            p.numbering = Some(localoffice_doc::props::NumRef { num: id, level: 0 });
+            p.numbering = Some(localwriter_doc::props::NumRef { num: id, level: 0 });
         })
         .unwrap();
         let l = lay(&d);
@@ -1730,10 +1730,10 @@ fn empty_list_paragraph_with_a_hidden_mark_counts_but_shows_nothing() {
             None => "Alpha\nBeta\nGamma".to_string(),
         };
         let mut d = Document::from_text(&text);
-        let id = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
+        let id = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
         let last = d.body.len() - 1;
         d.format_paragraphs(&Pos::body(0, 0), &Pos::body(last, 5), &|p| {
-            p.numbering = Some(localoffice_doc::props::NumRef { num: id, level: 0 });
+            p.numbering = Some(localwriter_doc::props::NumRef { num: id, level: 0 });
         })
         .unwrap();
         if let Some(item) = hidden {
@@ -1782,8 +1782,8 @@ fn a_numbered_heading_opening_with_a_page_break_takes_its_number_along() {
     // "Before", then a numbered paragraph whose text opens with a page break: Word draws its
     // number on the next page with the text, not alone at the bottom of the first.
     let mut d = Document::from_text("Before\n\u{000C}Heading");
-    let id = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
-    d.format_paragraphs(&Pos::body(1, 0), &Pos::body(1, 1), &|p| p.numbering = Some(localoffice_doc::props::NumRef { num: id, level: 0 })).unwrap();
+    let id = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
+    d.format_paragraphs(&Pos::body(1, 0), &Pos::body(1, 1), &|p| p.numbering = Some(localwriter_doc::props::NumRef { num: id, level: 0 })).unwrap();
     let l = lay(&d);
     let label_pages: Vec<usize> = l
         .pages
@@ -1800,16 +1800,16 @@ fn a_numbered_heading_opening_with_a_page_break_takes_its_number_along() {
 #[test]
 fn russian_letter_list_labels_draw_cyrillic() {
     // russianLower labelled items 1, 2, 3 instead of а), б), в).
-    use localoffice_doc::section::NumFormat;
+    use localwriter_doc::section::NumFormat;
     let mut d = Document::from_text("один\nдва\nтри");
-    let id = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
+    let id = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
     for a in &mut d.numbering.abstracts {
         if let Some(l) = a.levels.first_mut() {
             l.format = NumFormat::RussianLower;
             l.text = "%1)".into();
         }
     }
-    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(2, 3), &|p| p.numbering = Some(localoffice_doc::props::NumRef { num: id, level: 0 })).unwrap();
+    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(2, 3), &|p| p.numbering = Some(localwriter_doc::props::NumRef { num: id, level: 0 })).unwrap();
     let l = lay(&d);
     let labels: Vec<(String, bool)> = l.pages[0]
         .items
@@ -1831,16 +1831,16 @@ fn russian_letter_list_labels_draw_cyrillic() {
 #[test]
 fn chinese_counting_list_labels_and_their_font_runs() {
     // Issue #534: a "一、" list showed digits, drawn with glyph ids of another font.
-    use localoffice_doc::section::NumFormat;
+    use localwriter_doc::section::NumFormat;
     let mut d = Document::from_text("甲\n乙\n丙");
-    let id = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
+    let id = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
     for a in &mut d.numbering.abstracts {
         if let Some(l) = a.levels.first_mut() {
             l.format = NumFormat::ChineseCounting;
             l.text = "%1、".into();
         }
     }
-    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(2, 3), &|p| p.numbering = Some(localoffice_doc::props::NumRef { num: id, level: 0 })).unwrap();
+    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(2, 3), &|p| p.numbering = Some(localwriter_doc::props::NumRef { num: id, level: 0 })).unwrap();
     let labels = |d: &Document| -> Vec<(String, Vec<(String, bool)>)> {
         let l = lay(d);
         l.pages[0]
@@ -1881,13 +1881,13 @@ fn chinese_counting_list_labels_and_their_font_runs() {
 fn symbol_font_bullet_without_the_font_draws_a_bullet() {
     // Word's default bullet: U+F0B7 in Symbol.
     let mut d = Document::from_text("one");
-    let id = d.numbering.add_list(localoffice_doc::ListKind::BulletChar('\u{F0B7}'));
+    let id = d.numbering.add_list(localwriter_doc::ListKind::BulletChar('\u{F0B7}'));
     for a in &mut d.numbering.abstracts {
         if let Some(l) = a.levels.first_mut() {
             l.chr.font = Some("Symbol".into());
         }
     }
-    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| p.numbering = Some(localoffice_doc::props::NumRef { num: id, level: 0 })).unwrap();
+    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| p.numbering = Some(localwriter_doc::props::NumRef { num: id, level: 0 })).unwrap();
     let l = lay(&d);
     let label = l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { para.label.clone() } else { None }).unwrap();
     // The label reads as the Unicode bullet (drawn from a real Symbol font where one is installed).
@@ -1900,13 +1900,13 @@ fn symbol_font_bullet_without_the_font_draws_a_bullet() {
 fn bullet_first_line(label_font: Option<&str>) -> (f32, f32, f32, f32) {
     let mut d = Document::from_text("one");
     if let Some(label_font) = label_font {
-        let id = d.numbering.add_list(localoffice_doc::ListKind::BulletChar('\u{F0B7}'));
+        let id = d.numbering.add_list(localwriter_doc::ListKind::BulletChar('\u{F0B7}'));
         for a in &mut d.numbering.abstracts {
             if let Some(l) = a.levels.first_mut() {
                 l.chr.font = Some(label_font.into());
             }
         }
-        d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| p.numbering = Some(localoffice_doc::props::NumRef { num: id, level: 0 }))
+        d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| p.numbering = Some(localwriter_doc::props::NumRef { num: id, level: 0 }))
             .unwrap();
     }
     let l = lay(&d);
@@ -1920,7 +1920,7 @@ fn a_symbol_bullet_sizes_its_line_by_the_symbol_font() {
     // Measured in Word: a Symbol bullet makes its line taller than the text alone (Calibri 11 pt
     // at 1.08 spacing: 15.1 pt, not 14.5 pt), the extra ascent added unscaled. Symbol isn't an open
     // font; without it the bullet is drawn from another face but its line keeps Symbol's height.
-    if !localoffice_fonts::word::resolve("Symbol", false, false).substituted {
+    if !localwriter_fonts::word::resolve("Symbol", false, false).substituted {
         return;
     }
     let (ascent, size, height, text_asc) = bullet_first_line(Some("Symbol"));
@@ -1956,14 +1956,14 @@ fn private_use_bullet_no_font_draws_shows_the_levels_default_bullet() {
     // #1683: a level-2 bullet stored as a private-use code in a font that isn't installed was
     // drawn from an installed icon font (U+F081 is the Twitter logo in Font Awesome).
     let mut d = Document::from_text("one");
-    let id = d.numbering.add_list(localoffice_doc::ListKind::Bullet);
+    let id = d.numbering.add_list(localwriter_doc::ListKind::Bullet);
     for a in &mut d.numbering.abstracts {
         if let Some(l) = a.levels.get_mut(1) {
             l.text = "\u{F081}".into();
-            l.chr.font = Some("LocalOffice Missing Font 1683".into());
+            l.chr.font = Some("LocalWriter Missing Font 1683".into());
         }
     }
-    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| p.numbering = Some(localoffice_doc::props::NumRef { num: id, level: 1 })).unwrap();
+    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| p.numbering = Some(localwriter_doc::props::NumRef { num: id, level: 1 })).unwrap();
     let l = lay(&d);
     let label = l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { para.label.clone() } else { None }).unwrap();
     assert_eq!(label.text, "\u{25CB}");
@@ -1984,7 +1984,7 @@ fn wingdings_text_draws_and_reads_as_its_unicode_symbols() {
     assert_eq!(d.plain_text(StoryRef::Body), "Hi J\u{F0FC} ok");
     // Without Wingdings, each symbol is drawn from a face that has its Unicode character (never
     // the substitute's "J" or a missing glyph).
-    if localoffice_fonts::word::resolve("Wingdings", false, false).substituted {
+    if localwriter_fonts::word::resolve("Wingdings", false, false).substituted {
         for want in ['\u{263A}', '\u{2713}'] {
             let run = items.iter().find_map(|i| match i {
                 display::Draw::Glyphs { face, glyphs, text, .. } if text.contains(want) => Some((*face, glyphs.clone())),
@@ -2005,8 +2005,8 @@ fn wingdings_text_draws_and_reads_as_its_unicode_symbols() {
 fn tables_lay_out_cells() {
     let mut d = Document::from_text("before\nafter");
     let mut t = Table::new(2, 3, 468.0);
-    t.rows[0].cells[1].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("cell text", Default::default()))];
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    t.rows[0].cells[1].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("cell text", Default::default()))];
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let pos = Pos { story: StoryRef::Body, path: Path(vec![1, 0, 1, 0]), off: 0 };
     let c = l.caret(&pos).unwrap();
@@ -2024,9 +2024,9 @@ fn tables_lay_out_cells() {
 fn a_vertical_merge_lays_out_as_one_cell() {
     let mut d = Document::from_text("before\nafter");
     let mut t = Table::new(3, 2, 468.0);
-    t.rows[0].cells[0].props.vmerge = localoffice_doc::props::VMerge::Restart;
-    t.rows[1].cells[0].props.vmerge = localoffice_doc::props::VMerge::Continue;
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    t.rows[0].cells[0].props.vmerge = localwriter_doc::props::VMerge::Restart;
+    t.rows[1].cells[0].props.vmerge = localwriter_doc::props::VMerge::Continue;
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let cells: Vec<_> = l.pages[0]
         .items
@@ -2045,14 +2045,14 @@ fn a_vertical_merge_lays_out_as_one_cell() {
 fn turned_table(dir: TextDirection, text: &str, row: Option<f32>) -> Document {
     let mut d = Document::from_text("before\nafter");
     let mut t = Table::new(1, 3, 468.0);
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("plain", Default::default()))];
-    t.rows[0].cells[1].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()))];
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("plain", Default::default()))];
+    t.rows[0].cells[1].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()))];
     t.rows[0].cells[1].props.text_direction = dir;
     if let Some(h) = row {
         t.rows[0].props.height = Some(h);
-        t.rows[0].props.height_rule = localoffice_doc::props::HeightRule::Exact;
+        t.rows[0].props.height_rule = localwriter_doc::props::HeightRule::Exact;
     }
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     d
 }
 
@@ -2165,7 +2165,7 @@ fn table_style_borders_survive_empty_tbl_borders() {
             c.props.borders = Some(Borders::default());
         }
     }
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     assert!(rules_on_page0(&l).len() >= 8, "rules {:?}", rules_on_page0(&l));
 }
@@ -2182,7 +2182,7 @@ fn table_border_corners_close() {
             c.props.borders = Some(Borders { top: thick, left: thick, bottom: thick, right: thick, ..Borders::default() });
         }
     }
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let (mut h_left, mut v_left) = (f32::MAX, f32::MAX);
     for it in &l.pages[0].items {
@@ -2204,7 +2204,7 @@ fn grid_before_row_starts_after_skipped_columns() {
     let mut t = Table::new(2, 3, 468.0);
     t.rows[1].cells.remove(0);
     t.rows[1].props.grid_before = 1;
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let x_of = |r: usize, c: usize| {
         l.pages[0].items.iter().find_map(|i| match i {
@@ -2217,7 +2217,7 @@ fn grid_before_row_starts_after_skipped_columns() {
 }
 
 /// The area of cell `c` of row `r` of the table on page `page`.
-fn cell_rect(l: &DocLayout, page: usize, r: usize, c: usize) -> Option<localoffice_geom::Rect> {
+fn cell_rect(l: &DocLayout, page: usize, r: usize, c: usize) -> Option<localwriter_geom::Rect> {
     l.pages.get(page)?.items.iter().find_map(|i| match i {
         Placed::Cell { rect, row, cell, .. } if *row == r && *cell == c => Some(*rect),
         _ => None,
@@ -2242,19 +2242,19 @@ fn grid_before_and_after_rows_keep_their_columns_and_merges() {
             c.props.span = span;
             c.props.width = None;
         }
-        row.cells[1] = localoffice_doc::Cell::with_text("Middle cell, wide enough for a few words on a line.");
+        row.cells[1] = localwriter_doc::Cell::with_text("Middle cell, wide enough for a few words on a line.");
         row.cells[2].props.span = 2;
-        row.cells[2].props.vmerge = if ri == 0 { localoffice_doc::props::VMerge::Restart } else { localoffice_doc::props::VMerge::Continue };
+        row.cells[2].props.vmerge = if ri == 0 { localwriter_doc::props::VMerge::Restart } else { localwriter_doc::props::VMerge::Continue };
     }
     // A row without the gap, and one skipping the last column instead.
     t.rows[1].props = Default::default();
-    t.rows[1].cells.insert(0, localoffice_doc::Cell::empty());
+    t.rows[1].cells.insert(0, localwriter_doc::Cell::empty());
     t.rows[2].props.grid_before = 0;
     t.rows[2].props.grid_after = 1;
     t.rows[2].cells[0].props.span = 3;
     t.rows[2].cells[2].props.span = 1;
     let colx = |g: usize| grid[..g].iter().sum::<f32>();
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let rect = |r, c| cell_rect(&l, 0, r, c).unwrap();
     let x0 = rect(1, 0).x;
@@ -2281,7 +2281,7 @@ fn skipped_columns_put_the_side_borders_on_the_rows_cells() {
     t.rows[1].props.grid_before = 1;
     t.rows[2].cells.pop();
     t.rows[2].props.grid_after = 1;
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let rect = |r, c| cell_rect(&l, 0, r, c).unwrap();
     let vertical_at = |x: f32, y: f32| {
@@ -2300,13 +2300,13 @@ fn autofit_gives_skipped_columns_their_width() {
     t.props.style = None;
     for row in &mut t.rows {
         for c in &mut row.cells {
-            *c = localoffice_doc::Cell::with_text("A");
+            *c = localwriter_doc::Cell::with_text("A");
         }
     }
     t.rows[1].cells.remove(0);
     t.rows[1].props.grid_before = 1;
     t.rows[1].props.w_before = Some(150.0);
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let gap = cell_rect(&l, 0, 1, 0).unwrap().x - cell_rect(&l, 0, 0, 0).unwrap().x;
     assert!((gap - 150.0).abs() < 0.01, "skipped column {gap} wide");
@@ -2322,7 +2322,7 @@ fn grid_before_rows_stay_shifted_across_pages() {
         row.cells.remove(0);
         row.props.grid_before = 1;
     }
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     assert!(l.pages.len() >= 2, "pages {}", l.pages.len());
     let column1 = cell_rect(&l, 0, 0, 1).unwrap().x;
@@ -2343,7 +2343,7 @@ fn table_own_border_overrides_only_that_side() {
     let mut d = Document::from_text("before\nafter");
     let mut t = Table::new(2, 2, 468.0);
     t.props.borders = Some(Borders { top: Some(Border::single(2.0)), ..Default::default() });
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let w = rules_on_page0(&l);
     assert!(w.contains(&2.0), "own top missing: {w:?}");
@@ -2355,7 +2355,7 @@ fn table_nil_border_hides_style_side() {
     let mut d = Document::from_text("before\nafter");
     let mut t = Table::new(1, 1, 468.0); // 1×1: no inside edges
     t.props.borders = Some(Borders::all(Border { style: BorderStyle::None, width: 0.0, color: None, space: 0.0 }));
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     assert!(rules_on_page0(&lay(&d)).is_empty());
 }
 
@@ -2365,21 +2365,21 @@ fn table_without_style_stays_borderless() {
     let mut t = Table::new(2, 2, 468.0);
     t.props.style = None;
     t.props.borders = Some(Borders::default());
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     assert!(rules_on_page0(&lay(&d)).is_empty());
 }
 
 #[test]
 fn headers_and_page_fields() {
     let mut d = Document::from_text(&"para\n".repeat(120));
-    let mut hp = localoffice_doc::Paragraph::new();
+    let mut hp = localwriter_doc::Paragraph::new();
     hp.insert_object(
         0,
         InlineObject::Field { instr: "PAGE".into(), result: String::new(), locked: false, dirty: false, code: false, form: String::new() },
         &Default::default(),
     )
     .unwrap();
-    let id = d.add_part(localoffice_doc::PartKind::Footer, vec![localoffice_doc::para_block(hp)]);
+    let id = d.add_part(localwriter_doc::PartKind::Footer, vec![localwriter_doc::para_block(hp)]);
     d.last_section.footers.default = Some(id);
     let l = lay(&d);
     assert!(l.pages.len() >= 2);
@@ -2402,13 +2402,13 @@ fn caret_after_hanging_spaces_stays_at_the_margin() {
     for header in [false, true] {
         for text in [spaces.clone(), format!("{spaces}b")] {
             let mut d = Document::new();
-            let p = localoffice_doc::Paragraph::with_text(&text, Default::default());
+            let p = localwriter_doc::Paragraph::with_text(&text, Default::default());
             let pos = if header {
-                let id = d.add_part(localoffice_doc::PartKind::Header, vec![localoffice_doc::para_block(p)]);
+                let id = d.add_part(localwriter_doc::PartKind::Header, vec![localwriter_doc::para_block(p)]);
                 d.last_section.headers.default = Some(id);
                 Pos { story: StoryRef::Part(id), path: Path::top(0), off: text.len() }
             } else {
-                d.body = vec![localoffice_doc::para_block(p)];
+                d.body = vec![localwriter_doc::para_block(p)];
                 Pos::body(0, text.len())
             };
             let right = d.last_section.page_w - d.last_section.margin_right;
@@ -2429,8 +2429,8 @@ fn caret_after_hanging_spaces_stays_at_the_margin() {
 #[test]
 fn tall_first_page_header_pushes_body_down() {
     let mut d = Document::from_text(&"para\n".repeat(120));
-    let tall: Vec<_> = (0..12).map(|_| localoffice_doc::para_block(localoffice_doc::Paragraph::new())).collect();
-    let id = d.add_part(localoffice_doc::PartKind::Header, tall);
+    let tall: Vec<_> = (0..12).map(|_| localwriter_doc::para_block(localwriter_doc::Paragraph::new())).collect();
+    let id = d.add_part(localwriter_doc::PartKind::Header, tall);
     d.last_section.headers.first = Some(id);
     d.last_section.title_page = true;
     let l = lay(&d);
@@ -2463,11 +2463,11 @@ fn cache_keeps_one_layout_per_table_cell() {
     let mut t = Table::new(4, 3, 468.0);
     for (r, row) in t.rows.iter_mut().enumerate() {
         for (k, cell) in row.cells.iter_mut().enumerate() {
-            cell.blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&format!("row {r} cell {k}"), Default::default()))];
+            cell.blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&format!("row {r} cell {k}"), Default::default()))];
         }
     }
     assert!(!t.props.fixed);
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let mut c = LayoutCache::new();
     layout(&d, &mut c, &LayoutOptions::default());
     assert_eq!(c.len(), 2 + 12);
@@ -2503,7 +2503,7 @@ fn column_segments_take_the_same_x_range_on_every_line() {
 #[test]
 fn display_has_glyphs_and_marks() {
     let mut d = Document::from_text("Hello\tworld");
-    d.format_range(&Pos::body(0, 0), &Pos::body(0, 5), &|c| c.underline = Some(localoffice_doc::props::Underline::Single)).unwrap();
+    d.format_range(&Pos::body(0, 0), &Pos::body(0, 5), &|c| c.underline = Some(localwriter_doc::props::Underline::Single)).unwrap();
     let l = lay(&d);
     let items = display::page_display(&d, &l.pages[0], &display::DisplayOptions { marks: true, ..Default::default() });
     assert!(items.iter().any(|i| matches!(i, display::Draw::Glyphs { .. })));
@@ -2515,15 +2515,15 @@ fn display_has_glyphs_and_marks() {
 #[test]
 fn a_tracked_paragraph_mark_shows_in_its_authors_colour() {
     let mut d = Document::from_text("Split\nhere");
-    d.revisions.push(localoffice_doc::Revision {
-        kind: localoffice_doc::RevisionKind::Insert,
+    d.revisions.push(localwriter_doc::Revision {
+        kind: localwriter_doc::RevisionKind::Insert,
         author: "Ana".into(),
         date: String::new(),
         move_name: None,
     });
-    d.para_mut(localoffice_doc::StoryRef::Body, &localoffice_doc::Path::top(0)).unwrap().mark.ins = Some(0);
+    d.para_mut(localwriter_doc::StoryRef::Body, &localwriter_doc::Path::top(0)).unwrap().mark.ins = Some(0);
     let l = lay(&d);
-    let marks = |markup: bool| -> Vec<Option<localoffice_doc::props::Rgb>> {
+    let marks = |markup: bool| -> Vec<Option<localwriter_doc::props::Rgb>> {
         display::page_display(&d, &l.pages[0], &display::DisplayOptions { marks: true, markup, ..Default::default() })
             .into_iter()
             .filter_map(|i| if let display::Draw::Mark { ch: '¶', color, .. } = i { Some(color) } else { None })
@@ -2535,11 +2535,11 @@ fn a_tracked_paragraph_mark_shows_in_its_authors_colour() {
 
 #[test]
 fn section_breaks_show_with_formatting_marks() {
-    use localoffice_doc::section::{SectionProps, SectionStart};
+    use localwriter_doc::section::{SectionProps, SectionStart};
     // Two sections: "One" ends the first; the second starts as `start`.
     let doc = |start: SectionStart| {
         let mut d = Document::from_text("One\nTwo");
-        d.para_mut(localoffice_doc::StoryRef::Body, &localoffice_doc::Path::top(0)).unwrap().section = Some(Box::new(SectionProps::default()));
+        d.para_mut(localwriter_doc::StoryRef::Body, &localwriter_doc::Path::top(0)).unwrap().section = Some(Box::new(SectionProps::default()));
         d.last_section.start = start;
         d
     };
@@ -2565,7 +2565,7 @@ fn section_breaks_show_with_formatting_marks() {
 /// moves to the next page whole rather than splitting.
 #[test]
 fn a_kept_together_paragraph_counts_its_border_room() {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     let plain = ParaProps { space_before: Some(0.0), space_after: Some(0.0), line_spacing: Some(LineSpacing::Exactly(12.0)), ..Default::default() };
     let doc = |filler: f32| {
         let mut d = Document::from_text(&format!("Filler\n{}", "word ".repeat(200)));
@@ -2597,7 +2597,7 @@ fn a_kept_together_paragraph_counts_its_border_room() {
 /// that page: the next page starts with the next paragraph at the top.
 #[test]
 fn a_bottom_border_stays_with_a_closing_page_break() {
-    let brk = localoffice_doc::para::PAGE_BREAK;
+    let brk = localwriter_doc::para::PAGE_BREAK;
     let top = |border: bool| {
         let mut d = Document::from_text(&format!("First{brk}\nNext"));
         if border {
@@ -2641,7 +2641,7 @@ fn outline_view_makes_room_for_paragraph_borders() {
 /// first, with its top border) is a box of its own (Word).
 #[test]
 fn paragraphs_with_the_same_borders_join_in_one_shaded_box() {
-    let fill = localoffice_doc::props::Rgb(0xFF, 0xF2, 0xCC);
+    let fill = localwriter_doc::props::Rgb(0xFF, 0xF2, 0xCC);
     let bar = Some(Border { width: 2.5, space: 8.0, ..Border::single(2.5) });
     let top = Some(Border { color: Some(fill), space: 6.0, ..Border::single(0.25) });
     let mut d = Document::from_text("Before\nTitle\nOne\nTwo\nAfter");
@@ -2674,7 +2674,7 @@ fn space_between_paragraphs_is_the_larger_of_after_and_before() {
     let gap = |after: f32, before: f32, contextual: bool| -> f32 {
         let mut d = Document::from_text("One\nTwo");
         for (i, (a, b)) in [(after, 0.0), (0.0, before)].into_iter().enumerate() {
-            let p = d.para_mut(localoffice_doc::StoryRef::Body, &localoffice_doc::Path::top(i)).unwrap();
+            let p = d.para_mut(localwriter_doc::StoryRef::Body, &localwriter_doc::Path::top(i)).unwrap();
             (p.props.space_after, p.props.space_before, p.props.contextual_spacing) = (Some(a), Some(b), Some(contextual));
         }
         let l = lay(&d);
@@ -2705,7 +2705,7 @@ fn space_between_paragraphs_is_their_sum_when_html_auto_spacing_is_off() {
         }
         let mut t = Table::new(1, 1, 468.0);
         t.rows[0].cells[0].blocks = d.body.clone();
-        d.insert_block(StoryRef::Body, &Path::top(2), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(2), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         let tops = |cell: bool| -> Vec<(f32, f32)> {
             l.pages[0]
@@ -2733,12 +2733,12 @@ fn space_between_paragraphs_in_a_cell_follows_the_body_rule() {
         let mut t = Table::new(1, 1, 468.0);
         t.rows[0].cells[0].blocks = (0..3)
             .map(|k| {
-                let mut p = localoffice_doc::Paragraph::with_text(&format!("p{k}"), Default::default());
+                let mut p = localwriter_doc::Paragraph::with_text(&format!("p{k}"), Default::default());
                 (p.props.space_after, p.props.space_before, p.props.contextual_spacing) = (Some(6.0), Some(6.0), Some(contextual));
-                localoffice_doc::para_block(p)
+                localwriter_doc::para_block(p)
             })
             .collect();
-        d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         let mut ys: Vec<(u32, f32, f32)> = l.pages[0]
             .items
@@ -2760,11 +2760,11 @@ fn space_between_paragraphs_in_a_cell_follows_the_body_rule() {
 
 #[test]
 fn sections_land_on_the_side_their_break_and_numbering_ask_for() {
-    use localoffice_doc::section::{SectionProps, SectionStart};
+    use localwriter_doc::section::{SectionProps, SectionStart};
     // "One" ends the first section on page 1; the second section starts as `start`.
     let pages = |start: SectionStart, restart: Option<u32>, even_odd: bool| -> Vec<(usize, u32)> {
         let mut d = Document::from_text("One\nTwo");
-        d.para_mut(localoffice_doc::StoryRef::Body, &localoffice_doc::Path::top(0)).unwrap().section = Some(Box::new(SectionProps::default()));
+        d.para_mut(localwriter_doc::StoryRef::Body, &localwriter_doc::Path::top(0)).unwrap().section = Some(Box::new(SectionProps::default()));
         d.last_section.start = start;
         d.last_section.page_num_start = restart;
         d.settings.even_odd_headers = even_odd;
@@ -2827,7 +2827,7 @@ fn border_lines_in(d: &Document, l: &DocLayout) -> Vec<(f32, f32, f32, f32)> {
 
 #[test]
 fn character_border_draws_one_box_around_run() {
-    use localoffice_doc::props::Border;
+    use localwriter_doc::props::Border;
     let mut d = Document::from_text("Hello world");
     assert!(border_lines(&d).is_empty());
     d.format_range(&Pos::body(0, 0), &Pos::body(0, 5), &|c| c.border = Some(Border::single(0.5))).unwrap();
@@ -2848,7 +2848,7 @@ fn character_border_draws_one_box_around_run() {
 
 #[test]
 fn equal_adjacent_borders_share_a_box() {
-    use localoffice_doc::props::Border;
+    use localwriter_doc::props::Border;
     let mut d = Document::from_text("ab");
     d.format_range(&Pos::body(0, 0), &Pos::body(0, 2), &|c| c.border = Some(Border::single(0.5))).unwrap();
     d.format_range(&Pos::body(0, 1), &Pos::body(0, 2), &|c| c.bold = Some(true)).unwrap();
@@ -2859,7 +2859,7 @@ fn equal_adjacent_borders_share_a_box() {
 
 #[test]
 fn wrapped_border_boxes_each_line() {
-    use localoffice_doc::props::Border;
+    use localwriter_doc::props::Border;
     let text = "boxed ".repeat(20);
     let mut d = Document::from_text(text.trim_end());
     let n = d.para_at(&Pos::body(0, 0)).unwrap().len();
@@ -2871,7 +2871,7 @@ fn wrapped_border_boxes_each_line() {
 #[test]
 fn runs_differing_only_in_link_or_decoration_keep_their_own_style() {
     let mut d = Document::from_text("Alpha Beta Gamma Delta");
-    let set = |d: &mut Document, a: usize, b: usize, f: &dyn Fn(&mut localoffice_doc::props::CharProps)| {
+    let set = |d: &mut Document, a: usize, b: usize, f: &dyn Fn(&mut localwriter_doc::props::CharProps)| {
         d.format_range(&Pos::body(0, a), &Pos::body(0, b), f).unwrap();
     };
     set(&mut d, 0, 5, &|c| c.link = Some("https://a.example/".into()));
@@ -2889,11 +2889,11 @@ fn runs_differing_only_in_link_or_decoration_keep_their_own_style() {
     assert!(strokes.contains(&display::Stroke::Solid) && strokes.contains(&display::Stroke::Double), "{strokes:?}");
     // Underline colour is per run too.
     let mut d = Document::from_text("Red Blue");
-    let red = localoffice_doc::props::Rgb(0xFF, 0, 0);
-    let blue = localoffice_doc::props::Rgb(0, 0, 0xFF);
+    let red = localwriter_doc::props::Rgb(0xFF, 0, 0);
+    let blue = localwriter_doc::props::Rgb(0, 0, 0xFF);
     for (a, b, c) in [(0, 3, red), (4, 8, blue)] {
         d.format_range(&Pos::body(0, a), &Pos::body(0, b), &|p| {
-            p.underline = Some(localoffice_doc::props::Underline::Single);
+            p.underline = Some(localwriter_doc::props::Underline::Single);
             p.underline_color = Some(c);
         })
         .unwrap();
@@ -2955,22 +2955,22 @@ fn empty_center_tab_then_right_tab() {
 #[test]
 fn footnotes_sit_at_page_bottom() {
     let mut d = Document::from_text(&"Body text line.\n".repeat(30));
-    let mut note = localoffice_doc::Paragraph::with_text("The note text.", Default::default()).styled("FootnoteText");
+    let mut note = localwriter_doc::Paragraph::with_text("The note text.", Default::default()).styled("FootnoteText");
     note.props.space_after = Some(0.0);
-    let id = d.add_part(localoffice_doc::PartKind::Footnote, vec![localoffice_doc::para_block(note)]);
+    let id = d.add_part(localwriter_doc::PartKind::Footnote, vec![localwriter_doc::para_block(note)]);
     d.insert_object(
         &Pos::body(3, 4),
-        InlineObject::NoteRef { kind: localoffice_doc::para::NoteKind::Footnote, id, custom: String::new() },
+        InlineObject::NoteRef { kind: localwriter_doc::para::NoteKind::Footnote, id, custom: String::new() },
         &Default::default(),
     )
     .unwrap();
     let eid = d.add_part(
-        localoffice_doc::PartKind::Endnote,
-        vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("An endnote.", Default::default()))],
+        localwriter_doc::PartKind::Endnote,
+        vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("An endnote.", Default::default()))],
     );
     d.insert_object(
         &Pos::body(5, 2),
-        InlineObject::NoteRef { kind: localoffice_doc::para::NoteKind::Endnote, id: eid, custom: String::new() },
+        InlineObject::NoteRef { kind: localwriter_doc::para::NoteKind::Endnote, id: eid, custom: String::new() },
         &Default::default(),
     )
     .unwrap();
@@ -2989,22 +2989,22 @@ fn footnotes_sit_at_page_bottom() {
 
 #[test]
 fn deleted_note_anchors_take_no_number_and_print_no_note() {
-    use localoffice_doc::para::NoteKind;
+    use localwriter_doc::para::NoteKind;
     let mut d = Document::from_text("Alpha Beta Gamma");
     let mut ids = Vec::new();
     // Footnotes after "Alpha" and "Beta", an endnote after "Gamma" (inserted back to front).
     for (off, kind, part) in [
-        (16, NoteKind::Endnote, localoffice_doc::PartKind::Endnote),
-        (10, NoteKind::Footnote, localoffice_doc::PartKind::Footnote),
-        (5, NoteKind::Footnote, localoffice_doc::PartKind::Footnote),
+        (16, NoteKind::Endnote, localwriter_doc::PartKind::Endnote),
+        (10, NoteKind::Footnote, localwriter_doc::PartKind::Footnote),
+        (5, NoteKind::Footnote, localwriter_doc::PartKind::Footnote),
     ] {
-        let id = d.add_part(part, vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("A note.", Default::default()))]);
+        let id = d.add_part(part, vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("A note.", Default::default()))]);
         d.insert_object(&Pos::body(0, off), InlineObject::NoteRef { kind, id, custom: String::new() }, &Default::default()).unwrap();
         ids.push(id);
     }
     let [end_id, second, first] = ids[..] else { panic!() };
     // Track-delete the first footnote's anchor and the endnote's anchor.
-    let obj = localoffice_doc::para::OBJ.len_utf8();
+    let obj = localwriter_doc::para::OBJ.len_utf8();
     d.format_range(&Pos::body(0, 5), &Pos::body(0, 5 + obj), &|c| c.del = Some(0)).unwrap();
     let end = d.para(StoryRef::Body, &Path::top(0)).unwrap().len();
     d.format_range(&Pos::body(0, end - obj), &Pos::body(0, end), &|c| c.del = Some(0)).unwrap();
@@ -3037,21 +3037,21 @@ fn deleted_note_anchors_take_no_number_and_print_no_note() {
 fn hidden_note_anchors_keep_their_number_and_their_note() {
     // Measured in Word (hidden text not printed): a hidden footnote or endnote reference mark still
     // takes its number, so the visible footnote after it is 2, and both notes are still printed.
-    use localoffice_doc::para::NoteKind;
+    use localwriter_doc::para::NoteKind;
     let mut d = Document::from_text("Alpha Beta Gamma");
     let mut ids = Vec::new();
     for (off, kind, part) in [
-        (16, NoteKind::Endnote, localoffice_doc::PartKind::Endnote),
-        (10, NoteKind::Footnote, localoffice_doc::PartKind::Footnote),
-        (5, NoteKind::Footnote, localoffice_doc::PartKind::Footnote),
+        (16, NoteKind::Endnote, localwriter_doc::PartKind::Endnote),
+        (10, NoteKind::Footnote, localwriter_doc::PartKind::Footnote),
+        (5, NoteKind::Footnote, localwriter_doc::PartKind::Footnote),
     ] {
-        let id = d.add_part(part, vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("A note.", Default::default()))]);
+        let id = d.add_part(part, vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("A note.", Default::default()))]);
         d.insert_object(&Pos::body(0, off), InlineObject::NoteRef { kind, id, custom: String::new() }, &Default::default()).unwrap();
         ids.push(id);
     }
     let [end_id, second, first] = ids[..] else { panic!() };
     // Hide the first footnote's anchor and the endnote's anchor.
-    let obj = localoffice_doc::para::OBJ.len_utf8();
+    let obj = localwriter_doc::para::OBJ.len_utf8();
     d.format_range(&Pos::body(0, 5), &Pos::body(0, 5 + obj), &|c| c.hidden = Some(true)).unwrap();
     let end = d.para(StoryRef::Body, &Path::top(0)).unwrap().len();
     d.format_range(&Pos::body(0, end - obj), &Pos::body(0, end), &|c| c.hidden = Some(true)).unwrap();
@@ -3082,17 +3082,17 @@ fn hidden_note_anchors_keep_their_number_and_their_note() {
 #[test]
 fn text_wraps_around_square_float() {
     let mut d = Document::from_text(&"Words flow around the picture here. ".repeat(30));
-    let float = localoffice_doc::para::Float {
-        wrap: localoffice_doc::para::Wrap::Square,
-        h_rel: localoffice_doc::para::Anchor::Column,
-        v_rel: localoffice_doc::para::Anchor::Paragraph,
+    let float = localwriter_doc::para::Float {
+        wrap: localwriter_doc::para::Wrap::Square,
+        h_rel: localwriter_doc::para::Anchor::Column,
+        v_rel: localwriter_doc::para::Anchor::Paragraph,
         x: 0.0,
         y: 0.0,
         dist: 9.0,
         ..Default::default()
     };
     let shape = InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::Rectangle,
+        kind: localwriter_doc::para::ShapeKind::Rectangle,
         w: 144.0,
         h: 100.0,
         fill: None,
@@ -3117,11 +3117,11 @@ fn text_wraps_around_square_float() {
 
 #[test]
 fn freeform_arrow_end_draws_at_the_last_point() {
-    use localoffice_doc::connector::ShapeExtra;
-    use localoffice_doc::freeform::{FreePath, Freeform};
-    use localoffice_doc::graphic::PathSeg;
-    use localoffice_doc::para::{Float, ShapeKind};
-    use localoffice_doc::props::Rgb;
+    use localwriter_doc::connector::ShapeExtra;
+    use localwriter_doc::freeform::{FreePath, Freeform};
+    use localwriter_doc::graphic::PathSeg;
+    use localwriter_doc::para::{Float, ShapeKind};
+    use localwriter_doc::props::Rgb;
     use std::sync::Arc;
 
     let shape = InlineObject::Shape {
@@ -3165,14 +3165,14 @@ fn hidden_drawings_are_neither_drawn_nor_take_room() {
     // A hidden floating shape (VML `visibility:hidden`, `wp:docPr/@hidden`): no wrap area, nothing
     // drawn, as in Word for Windows. A hidden inline one takes no room in its line.
     let mut d = Document::from_text(&"Words flow around the picture here. ".repeat(30));
-    let float = localoffice_doc::para::Float {
-        wrap: localoffice_doc::para::Wrap::Square,
-        h_rel: localoffice_doc::para::Anchor::Column,
-        v_rel: localoffice_doc::para::Anchor::Paragraph,
+    let float = localwriter_doc::para::Float {
+        wrap: localwriter_doc::para::Wrap::Square,
+        h_rel: localwriter_doc::para::Anchor::Column,
+        v_rel: localwriter_doc::para::Anchor::Paragraph,
         hidden: true,
         ..Default::default()
     };
-    let inline = localoffice_doc::para::Float { hidden: true, ..Default::default() };
+    let inline = localwriter_doc::para::Float { hidden: true, ..Default::default() };
     d.insert_object(&Pos::body(0, 0), picture(200.0, 200.0, inline), &Default::default()).unwrap();
     d.insert_object(&Pos::body(0, 0), picture(144.0, 100.0, float), &Default::default()).unwrap();
     let l = lay(&d);
@@ -3190,10 +3190,10 @@ fn hidden_drawings_are_neither_drawn_nor_take_room() {
 
     // A group draws its members but a hidden one.
     let mut d = Document::from_text("");
-    let member = |hidden: bool, x: f32| localoffice_doc::para::GroupChild {
+    let member = |hidden: bool, x: f32| localwriter_doc::para::GroupChild {
         x,
         y: 0.0,
-        obj: picture(50.0, 50.0, localoffice_doc::para::Float { hidden, ..Default::default() }),
+        obj: picture(50.0, 50.0, localwriter_doc::para::Float { hidden, ..Default::default() }),
     };
     let group = InlineObject::Group {
         w: 100.0,
@@ -3215,10 +3215,10 @@ fn deleted_float_leaves_no_wrap_area_without_markup() {
     // A square-wrapped shape anchored at the start of the paragraph, its anchor track-deleted.
     let text = "Words flow around the picture here. ".repeat(30);
     let mut d = Document::from_text(&text);
-    let float = localoffice_doc::para::Float {
-        wrap: localoffice_doc::para::Wrap::Square,
-        h_rel: localoffice_doc::para::Anchor::Column,
-        v_rel: localoffice_doc::para::Anchor::Paragraph,
+    let float = localwriter_doc::para::Float {
+        wrap: localwriter_doc::para::Wrap::Square,
+        h_rel: localwriter_doc::para::Anchor::Column,
+        v_rel: localwriter_doc::para::Anchor::Paragraph,
         x: 0.0,
         y: 0.0,
         dist: 9.0,
@@ -3227,7 +3227,7 @@ fn deleted_float_leaves_no_wrap_area_without_markup() {
         ..Default::default()
     };
     let shape = InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::Rectangle,
+        kind: localwriter_doc::para::ShapeKind::Rectangle,
         w: 144.0,
         h: 100.0,
         fill: None,
@@ -3240,7 +3240,7 @@ fn deleted_float_leaves_no_wrap_area_without_markup() {
         extra: Default::default(),
     };
     d.insert_object(&Pos::body(0, 0), shape, &Default::default()).unwrap();
-    let obj = localoffice_doc::para::OBJ.len_utf8();
+    let obj = localwriter_doc::para::OBJ.len_utf8();
     d.format_range(&Pos::body(0, 0), &Pos::body(0, obj), &|c| c.del = Some(0)).unwrap();
     // Where the first line starts, and whether the shape is placed.
     let first = |hide_deleted: bool| {
@@ -3262,17 +3262,17 @@ fn hidden_float_leaves_no_wrap_area_when_hidden_text_is_not_shown() {
     // resolved formatting says so). Measured in Word: not printed, and the text runs full width.
     let text = "Words flow around the picture here. ".repeat(30);
     let mut d = Document::from_text(&text);
-    d.styles.upsert(localoffice_doc::Style {
+    d.styles.upsert(localwriter_doc::Style {
         id: "Secret".into(),
         name: "Secret".into(),
-        kind: localoffice_doc::StyleKind::Character,
-        chr: localoffice_doc::CharProps { hidden: Some(true), ..Default::default() },
+        kind: localwriter_doc::StyleKind::Character,
+        chr: localwriter_doc::CharProps { hidden: Some(true), ..Default::default() },
         ..Default::default()
     });
-    let float = localoffice_doc::para::Float {
-        wrap: localoffice_doc::para::Wrap::Square,
-        h_rel: localoffice_doc::para::Anchor::Column,
-        v_rel: localoffice_doc::para::Anchor::Paragraph,
+    let float = localwriter_doc::para::Float {
+        wrap: localwriter_doc::para::Wrap::Square,
+        h_rel: localwriter_doc::para::Anchor::Column,
+        v_rel: localwriter_doc::para::Anchor::Paragraph,
         x: 0.0,
         y: 0.0,
         dist: 9.0,
@@ -3281,7 +3281,7 @@ fn hidden_float_leaves_no_wrap_area_when_hidden_text_is_not_shown() {
         ..Default::default()
     };
     let shape = InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::Rectangle,
+        kind: localwriter_doc::para::ShapeKind::Rectangle,
         w: 144.0,
         h: 100.0,
         fill: None,
@@ -3294,7 +3294,7 @@ fn hidden_float_leaves_no_wrap_area_when_hidden_text_is_not_shown() {
         extra: Default::default(),
     };
     d.insert_object(&Pos::body(0, 0), shape, &Default::default()).unwrap();
-    let obj = localoffice_doc::para::OBJ.len_utf8();
+    let obj = localwriter_doc::para::OBJ.len_utf8();
     d.format_range(&Pos::body(0, 0), &Pos::body(0, obj), &|c| c.style = Some("Secret".into())).unwrap();
     // Where the first line starts, and whether the shape is placed.
     let first = |show_hidden: bool| {
@@ -3316,12 +3316,12 @@ fn hidden_float_leaves_no_wrap_area_when_hidden_text_is_not_shown() {
 fn extreme_page_and_line_number_starts_do_not_overflow() {
     let mut d = Document::from_text("one\ntwo\nthree");
     for b in d.body.iter_mut() {
-        if let localoffice_doc::Block::Para(p) = std::sync::Arc::make_mut(b) {
+        if let localwriter_doc::Block::Para(p) = std::sync::Arc::make_mut(b) {
             p.props.page_break_before = Some(true);
         }
     }
     d.last_section.page_num_start = Some(u32::MAX);
-    d.last_section.line_numbers = Some(localoffice_doc::section::LineNumbering { start: u32::MAX, ..Default::default() });
+    d.last_section.line_numbers = Some(localwriter_doc::section::LineNumbering { start: u32::MAX, ..Default::default() });
     let l = lay(&d);
     assert!(l.pages.len() >= 3, "{} pages", l.pages.len());
 }
@@ -3330,13 +3330,13 @@ fn extreme_page_and_line_number_starts_do_not_overflow() {
 fn line_numbers_borders_text_boxes() {
     let mut d = Document::from_text("one\ntwo\nthree");
     d.last_section.line_numbers = Some(Default::default());
-    d.last_section.page_borders = Some(localoffice_doc::props::Borders::box_(localoffice_doc::props::Border::single(1.0)));
+    d.last_section.page_borders = Some(localwriter_doc::props::Borders::box_(localwriter_doc::props::Border::single(1.0)));
     let id = d.add_part(
-        localoffice_doc::PartKind::TextBox,
-        vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("inside the box", Default::default()))],
+        localwriter_doc::PartKind::TextBox,
+        vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("inside the box", Default::default()))],
     );
     let tb = InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::TextBox,
+        kind: localwriter_doc::para::ShapeKind::TextBox,
         w: 144.0,
         h: 72.0,
         fill: None,
@@ -3362,8 +3362,8 @@ fn tall_rows_split_across_pages() {
     let mut d = Document::from_text("before\nafter");
     let mut t = Table::new(2, 2, 468.0);
     let long = "Row text that keeps going and going so the cell grows taller than a page. ".repeat(120);
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&long, Default::default()))];
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t.clone())).unwrap();
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&long, Default::default()))];
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t.clone())).unwrap();
     let l = lay(&d);
     assert!(l.pages.len() >= 2, "pages {}", l.pages.len());
     // The cell's lines start on page 1 (row split, not moved) and continue on page 2.
@@ -3396,7 +3396,7 @@ fn tall_rows_split_across_pages() {
     // "Can't split" rows move whole instead.
     let mut d2 = Document::from_text("before\nafter");
     t.rows[0].props.cant_split = true;
-    d2.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d2.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l2 = lay(&d2);
     assert!(l2.pages.len() >= 2);
 }
@@ -3406,7 +3406,7 @@ fn tall_rows_split_across_pages() {
 /// paragraph's lines per page.
 fn row_at_page_bottom(push: f32, paras: &[(&str, f32)], widow: bool) -> (DocLayout, Vec<Vec<usize>>) {
     let mut d = Document::from_text("Filler");
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.first_mut().map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.first_mut().map(std::sync::Arc::make_mut) {
         p.props.space_before = Some(push);
         p.props.space_after = Some(0.0);
     }
@@ -3415,14 +3415,14 @@ fn row_at_page_bottom(push: f32, paras: &[(&str, f32)], widow: bool) -> (DocLayo
     t.rows[0].cells[0].blocks = paras
         .iter()
         .map(|(text, after)| {
-            let mut p = localoffice_doc::Paragraph::with_text(text, Default::default());
+            let mut p = localwriter_doc::Paragraph::with_text(text, Default::default());
             p.props.space_before = Some(0.0);
             p.props.space_after = Some(*after);
             p.props.widow_control = Some(widow);
-            localoffice_doc::para_block(p)
+            localwriter_doc::para_block(p)
         })
         .collect();
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let per_page = (0..paras.len())
         .map(|i| {
@@ -3492,7 +3492,7 @@ fn a_split_row_keeps_its_bottom_margin_and_widow_control() {
 /// as usual.
 #[test]
 fn a_cell_emptied_by_widow_control_takes_its_row_to_the_next_page() {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     // Letter, 1 inch margins: 648 pt of text. `filler` lines of exactly 14 pt, then a row whose
     // second cell holds one paragraph of `lines` lines, 14 pt each.
     let pages_of = |filler: usize, lines: usize, widow: bool| {
@@ -3506,14 +3506,14 @@ fn a_cell_emptied_by_widow_control_takes_its_row_to_the_next_page() {
         let mut t = Table::new(1, 2, 400.0);
         t.props.cell_margins = Some([0.0, 5.4, 0.0, 5.4]);
         let cell_para = |s: &str| {
-            let mut p = localoffice_doc::Paragraph::with_text(s, Default::default());
+            let mut p = localwriter_doc::Paragraph::with_text(s, Default::default());
             p.props = ParaProps { widow_control: Some(widow), ..exact.clone() };
-            localoffice_doc::para_block(p)
+            localwriter_doc::para_block(p)
         };
         t.rows[0].cells[0].blocks = vec![cell_para("A1")];
         let b: Vec<String> = (1..=lines).map(|i| format!("B{i}")).collect();
-        t.rows[0].cells[1].blocks = vec![cell_para(&b.join(&localoffice_doc::para::LINE_BREAK.to_string()))];
-        d.insert_block(StoryRef::Body, &Path::top(filler), localoffice_doc::Block::Table(t)).unwrap();
+        t.rows[0].cells[1].blocks = vec![cell_para(&b.join(&localwriter_doc::para::LINE_BREAK.to_string()))];
+        d.insert_block(StoryRef::Body, &Path::top(filler), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         // Lines of each cell per page: (first cell, second cell).
         l.pages
@@ -3541,7 +3541,7 @@ fn a_cell_emptied_by_widow_control_takes_its_row_to_the_next_page() {
 
 // Use real paragraph and table layout to distinguish content from trailing spacing.
 fn row_content_pieces(text: &str, props: ParaProps, room: f32) -> Vec<(usize, usize)> {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
 
     let exact = ParaProps { line_spacing: Some(LineSpacing::Exactly(14.0)), space_before: Some(0.0), space_after: Some(0.0), ..Default::default() };
     let mut d = Document::from_text("Filler");
@@ -3549,7 +3549,7 @@ fn row_content_pieces(text: &str, props: ParaProps, room: f32) -> Vec<(usize, us
     let mut table = Table::new(1, 2, 400.0);
     table.props.style = None;
     table.props.cell_margins = Some([0.0; 4]);
-    let neighbor = ["First", "Second", "Third", "Fourth"].join(&localoffice_doc::para::LINE_BREAK.to_string());
+    let neighbor = ["First", "Second", "Third", "Fourth"].join(&localwriter_doc::para::LINE_BREAK.to_string());
     for (cell, text) in [text, neighbor.as_str()].into_iter().enumerate() {
         let mut p = Paragraph::with_text(text, Default::default());
         p.props = exact.clone();
@@ -3559,7 +3559,7 @@ fn row_content_pieces(text: &str, props: ParaProps, room: f32) -> Vec<(usize, us
         } else {
             p.props.widow_control = Some(false);
         }
-        table.rows[0].cells[cell].blocks = vec![localoffice_doc::para_block(p)];
+        table.rows[0].cells[cell].blocks = vec![localwriter_doc::para_block(p)];
     }
     d.body.push(std::sync::Arc::new(Block::Table(table)));
     lay(&d)
@@ -3582,7 +3582,7 @@ fn row_content_pieces(text: &str, props: ParaProps, room: f32) -> Vec<(usize, us
 
 #[test]
 fn row_split_ignores_afterspace() {
-    let two = ["Top", "Bottom"].join(&localoffice_doc::para::LINE_BREAK.to_string());
+    let two = ["Top", "Bottom"].join(&localwriter_doc::para::LINE_BREAK.to_string());
     for (text, room, expected) in [("Label", 18.0, vec![(0, 1), (1, 3)]), (two.as_str(), 32.0, vec![(0, 2), (2, 2)])] {
         let props = ParaProps { space_after: Some(8.0), widow_control: Some(true), ..Default::default() };
         assert_eq!(row_content_pieces(text, props, room), expected, "text={text:?}, room={room}");
@@ -3591,8 +3591,8 @@ fn row_split_ignores_afterspace() {
 
 #[test]
 fn row_split_respects_widows() {
-    let two = ["Top", "Bottom"].join(&localoffice_doc::para::LINE_BREAK.to_string());
-    let three = ["Top", "Middle", "Bottom"].join(&localoffice_doc::para::LINE_BREAK.to_string());
+    let two = ["Top", "Bottom"].join(&localwriter_doc::para::LINE_BREAK.to_string());
+    let three = ["Top", "Middle", "Bottom"].join(&localwriter_doc::para::LINE_BREAK.to_string());
     for (text, widow, room, expected) in [
         (two.as_str(), true, 18.0, vec![(0, 0), (2, 4)]),
         (two.as_str(), false, 18.0, vec![(1, 1), (1, 3)]),
@@ -3626,22 +3626,22 @@ fn split_row_cells_each_continue_at_the_top() {
     let text = "Dotted leader lines to fill in by hand later on. ".repeat(14);
     let row = |push: f32, singles: usize| {
         let mut d = Document::from_text("Filler");
-        if let Some(localoffice_doc::Block::Para(p)) = d.body.first_mut().map(std::sync::Arc::make_mut) {
+        if let Some(localwriter_doc::Block::Para(p)) = d.body.first_mut().map(std::sync::Arc::make_mut) {
             p.props.space_before = Some(push);
             p.props.space_after = Some(0.0);
         }
         let mut t = Table::new(1, 2, 400.0);
         t.props.cell_margins = Some([0.0, 5.4, 4.0, 5.4]);
         let para = |s: &str| {
-            let mut p = localoffice_doc::Paragraph::with_text(s, Default::default());
+            let mut p = localwriter_doc::Paragraph::with_text(s, Default::default());
             p.props.space_before = Some(0.0);
             p.props.space_after = Some(0.0);
             p.props.widow_control = Some(true);
-            localoffice_doc::para_block(p)
+            localwriter_doc::para_block(p)
         };
         t.rows[0].cells[0].blocks = vec![para(&text)];
         t.rows[0].cells[1].blocks = (0..singles).map(|i| para(&format!("Item {i}"))).collect();
-        d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
         lay(&d)
     };
     // The long paragraph's line bottoms with the row at the top of the page; the neighbour gets
@@ -3684,9 +3684,9 @@ fn split_row_cells_each_continue_at_the_top() {
 #[test]
 fn exact_rows_move_on_whole() {
     let text = "Dotted leader lines to fill in by hand later on. ".repeat(14);
-    let lay_row = |rule: localoffice_doc::props::HeightRule| {
+    let lay_row = |rule: localwriter_doc::props::HeightRule| {
         let mut d = Document::from_text("Filler");
-        if let Some(localoffice_doc::Block::Para(p)) = d.body.first_mut().map(std::sync::Arc::make_mut) {
+        if let Some(localwriter_doc::Block::Para(p)) = d.body.first_mut().map(std::sync::Arc::make_mut) {
             p.props.space_before = Some(560.0);
             p.props.space_after = Some(0.0);
         }
@@ -3694,10 +3694,10 @@ fn exact_rows_move_on_whole() {
         t.props.cell_margins = Some([0.0, 5.4, 4.0, 5.4]);
         t.rows[0].props.height = Some(120.0);
         t.rows[0].props.height_rule = rule;
-        let mut p = localoffice_doc::Paragraph::with_text(&text, Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text(&text, Default::default());
         p.props.space_after = Some(0.0);
-        t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(p)];
-        d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+        t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(p)];
+        d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         l.pages
             .iter()
@@ -3709,10 +3709,10 @@ fn exact_rows_move_on_whole() {
             })
             .collect::<Vec<usize>>()
     };
-    let exact = lay_row(localoffice_doc::props::HeightRule::Exact);
+    let exact = lay_row(localwriter_doc::props::HeightRule::Exact);
     assert_eq!(exact.len(), 2);
     assert_eq!(exact[0], 0, "the exact row moves on whole: {exact:?}");
-    let at_least = lay_row(localoffice_doc::props::HeightRule::AtLeast);
+    let at_least = lay_row(localwriter_doc::props::HeightRule::AtLeast);
     assert_eq!(at_least[0], 0, "less than the minimum height remains: {at_least:?}");
     assert!(at_least.get(1).is_some_and(|n| *n > 0), "the at-least row moves: {at_least:?}");
 }
@@ -3724,21 +3724,21 @@ fn exact_rows_move_on_whole() {
 #[test]
 fn a_nested_cell_cut_by_the_page_bottom_keeps_its_rest() {
     let mut d = Document::from_text("Filler");
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.first_mut().map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.first_mut().map(std::sync::Arc::make_mut) {
         p.props.space_before = Some(400.0);
         p.props.space_after = Some(0.0);
     }
     let mut inner = Table::new(1, 1, 150.0);
     inner.rows[0].props.height = Some(300.0);
-    inner.rows[0].props.height_rule = localoffice_doc::props::HeightRule::Exact;
+    inner.rows[0].props.height_rule = localwriter_doc::props::HeightRule::Exact;
     let mut t = Table::new(1, 2, 400.0);
     let text = "Dotted leader lines to fill in by hand later on. ".repeat(40);
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&text, Default::default()))];
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&text, Default::default()))];
     t.rows[0].cells[1].blocks = vec![
         std::sync::Arc::new(Block::Table(inner)),
-        localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("After", Default::default())),
+        localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("After", Default::default())),
     ];
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     assert!(l.pages.len() >= 2);
     let nested = |pg: usize| {
@@ -3775,10 +3775,10 @@ fn a_split_at_least_row_keeps_its_height() {
     let mut d = Document::from_text("Filler");
     let mut t = Table::new(1, 1, 400.0);
     t.rows[0].props.height = Some(1200.0);
-    t.rows[0].props.height_rule = localoffice_doc::props::HeightRule::AtLeast;
+    t.rows[0].props.height_rule = localwriter_doc::props::HeightRule::AtLeast;
     let text = "Dotted leader lines to fill in by hand later on. ".repeat(80);
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&text, Default::default()))];
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&text, Default::default()))];
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let parts: Vec<f32> = l
         .pages
@@ -3833,7 +3833,7 @@ fn repeated_header_is_followed_by_the_next_row_even_when_it_overflows() {
     // the table rows on each page, in order.
     let rows_per_page = |t: Table| -> Vec<Vec<usize>> {
         let mut d = Document::new();
-        d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         l.pages
             .iter()
@@ -3846,7 +3846,7 @@ fn repeated_header_is_followed_by_the_next_row_even_when_it_overflows() {
         t.rows[0].props.header = true;
         for (row, h) in t.rows.iter_mut().zip(std::iter::once(&header).chain(rows)) {
             row.props.height = Some(*h);
-            row.props.height_rule = localoffice_doc::props::HeightRule::AtLeast;
+            row.props.height_rule = localwriter_doc::props::HeightRule::AtLeast;
         }
         t
     };
@@ -3862,7 +3862,7 @@ fn repeated_header_is_followed_by_the_next_row_even_when_it_overflows() {
     // A row of text that is taller than the room under the header still splits across pages.
     let mut t = table(100.0, &[12.0]);
     let long = "Row text that keeps going and going so the cell grows taller than a page. ".repeat(120);
-    t.rows[1].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&long, Default::default()))];
+    t.rows[1].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&long, Default::default()))];
     let pages = rows_per_page(t);
     assert!(pages.len() >= 3, "{pages:?}");
     assert!(pages.iter().all(|p| p.first() == Some(&0) && p.contains(&1)), "{pages:?}");
@@ -3885,9 +3885,9 @@ fn repeated_header_moves_with_the_first_row_that_does_not_fit() {
         t.rows[0].props.header = true;
         for (row, h) in t.rows.iter_mut().zip([20.0, 40.0, 40.0]) {
             row.props.height = Some(h);
-            row.props.height_rule = localoffice_doc::props::HeightRule::AtLeast;
+            row.props.height_rule = localwriter_doc::props::HeightRule::AtLeast;
         }
-        d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
         lay(&d)
             .pages
             .iter()
@@ -3929,23 +3929,23 @@ fn a_repeated_header_is_never_left_alone_when_the_table_starts_mid_page() {
     let table_doc = |fillers: usize, geo: &Geo| -> Document {
         let mut d = Document::new();
         for i in 0..fillers {
-            let mut p = localoffice_doc::Paragraph::with_text(&format!("Filler {i}"), Default::default());
+            let mut p = localwriter_doc::Paragraph::with_text(&format!("Filler {i}"), Default::default());
             p.props.space_after = Some(0.0);
-            d.body.push(localoffice_doc::para_block(p));
+            d.body.push(localwriter_doc::para_block(p));
         }
         let mut t = Table::new(geo.header_rows + 2, 1, 468.0);
         for (ri, row) in t.rows.iter_mut().enumerate() {
             row.props.header = ri < geo.header_rows;
             row.props.height = Some(if ri < geo.header_rows { geo.header } else { geo.body });
-            row.props.height_rule = localoffice_doc::props::HeightRule::AtLeast;
+            row.props.height_rule = localwriter_doc::props::HeightRule::AtLeast;
             if ri >= geo.header_rows && geo.body_cant_split {
                 row.props.cant_split = true;
             }
             if ri >= geo.header_rows && geo.body_exact {
-                row.props.height_rule = localoffice_doc::props::HeightRule::Exact;
+                row.props.height_rule = localwriter_doc::props::HeightRule::Exact;
             }
         }
-        d.insert_block(StoryRef::Body, &Path::top(d.body.len()), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(d.body.len()), localwriter_doc::Block::Table(t)).unwrap();
         d
     };
     let pages_with = |fillers: usize, geo: &Geo| -> Vec<Vec<usize>> {
@@ -4027,11 +4027,11 @@ fn a_repeated_header_is_never_left_alone_when_the_table_starts_mid_page() {
 #[test]
 fn drop_cap_with_a_huge_font_lays_out() {
     for size in [999.0, 1000.0, 1001.0, 1638.0] {
-        let cp = localoffice_doc::CharProps { size: Some(size), ..Default::default() };
-        let mut p = localoffice_doc::Paragraph::with_text("Hello drop cap world", cp);
+        let cp = localwriter_doc::CharProps { size: Some(size), ..Default::default() };
+        let mut p = localwriter_doc::Paragraph::with_text("Hello drop cap world", cp);
         p.props.drop_cap = Some(3);
         let mut d = Document::from_text("x");
-        d.body = vec![localoffice_doc::para_block(p)];
+        d.body = vec![localwriter_doc::para_block(p)];
         let l = lay(&d);
         let Some(pl) = l.pages[0].items.iter().find_map(|i| if let Placed::Lines { para, .. } = i { Some(para.clone()) } else { None }) else {
             panic!("no lines at size {size}")
@@ -4044,10 +4044,10 @@ fn drop_cap_with_a_huge_font_lays_out() {
 #[test]
 fn drop_cap_indents_its_lines() {
     let mut p =
-        localoffice_doc::Paragraph::with_text(&"Every line of this paragraph wraps around a large first letter. ".repeat(6), Default::default());
+        localwriter_doc::Paragraph::with_text(&"Every line of this paragraph wraps around a large first letter. ".repeat(6), Default::default());
     p.props.drop_cap = Some(3);
     let mut d = Document::from_text("x");
-    d.body = vec![localoffice_doc::para_block(p)];
+    d.body = vec![localwriter_doc::para_block(p)];
     let l = lay(&d);
     let Some(pl) = l.pages[0].items.iter().find_map(|i| if let Placed::Lines { para, .. } = i { Some(para.clone()) } else { None }) else {
         panic!("no lines")
@@ -4070,13 +4070,13 @@ fn drop_cap_indents_its_lines() {
 }
 
 /// The first laid-out paragraph of a one-paragraph document with a drop cap set by `set`.
-fn drop_cap_layout(set: impl Fn(&mut localoffice_doc::props::ParaProps)) -> std::sync::Arc<crate::para::ParaLayout> {
+fn drop_cap_layout(set: impl Fn(&mut localwriter_doc::props::ParaProps)) -> std::sync::Arc<crate::para::ParaLayout> {
     let mut p =
-        localoffice_doc::Paragraph::with_text(&"Every line of this paragraph wraps around a large first letter. ".repeat(6), Default::default());
+        localwriter_doc::Paragraph::with_text(&"Every line of this paragraph wraps around a large first letter. ".repeat(6), Default::default());
     p.props.drop_cap = Some(3);
     set(&mut p.props);
     let mut d = Document::from_text("x");
-    d.body = vec![localoffice_doc::para_block(p)];
+    d.body = vec![localwriter_doc::para_block(p)];
     let l = lay(&d);
     let Some(pl) = l.pages[0].items.iter().find_map(|i| if let Placed::Lines { para, .. } = i { Some(para.clone()) } else { None }) else {
         panic!("no lines")
@@ -4185,10 +4185,10 @@ fn styled_table_doc(style: Option<&str>, rows: usize) -> Document {
     t.props.style = style.map(str::to_string);
     for (r, row) in t.rows.iter_mut().enumerate() {
         for (c, cell) in row.cells.iter_mut().enumerate() {
-            cell.blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&format!("R{r} C{c}"), Default::default()))];
+            cell.blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&format!("R{r} C{c}"), Default::default()))];
         }
     }
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     d
 }
 
@@ -4214,9 +4214,9 @@ fn table_style_paragraph_props_beat_document_defaults() {
     let plain = styled_table_doc(None, 3);
     let (lg, lp) = (lay(&d), lay(&plain));
     let p = cell_para(&lg, 1, 0);
-    assert_eq!((p.rp.space_after, p.rp.line_spacing), (0.0, localoffice_doc::props::LineSpacing::Multiple(1.0)));
+    assert_eq!((p.rp.space_after, p.rp.line_spacing), (0.0, localwriter_doc::props::LineSpacing::Multiple(1.0)));
     let q = cell_para(&lp, 1, 0);
-    assert_eq!((q.rp.space_after, q.rp.line_spacing), (8.0, localoffice_doc::props::LineSpacing::Multiple(1.15)));
+    assert_eq!((q.rp.space_after, q.rp.line_spacing), (8.0, localwriter_doc::props::LineSpacing::Multiple(1.15)));
     let (g, n) = (row_height(&lg, 1), row_height(&lp, 1));
     assert!(g + 8.0 < n, "Table Grid row {g}, unstyled row {n}");
     assert!(g < 18.0, "one 12 pt line, single spaced: {g}");
@@ -4227,10 +4227,10 @@ fn table_style_paragraph_props_beat_document_defaults() {
 /// first and third body rows shade.
 #[test]
 fn row_bands_shade_only_with_a_band_size() {
-    let band = localoffice_doc::props::Rgb(0xC1, 0xE4, 0xF5);
+    let band = localwriter_doc::props::Rgb(0xC1, 0xE4, 0xF5);
     let shaded_rows = |d: &Document| {
         let l = lay(d);
-        let cells: Vec<(usize, localoffice_geom::Rect)> =
+        let cells: Vec<(usize, localwriter_geom::Rect)> =
             l.pages[0].items.iter().filter_map(|i| if let Placed::Cell { rect, row, .. } = i { Some((*row, *rect)) } else { None }).collect();
         let mut rows: Vec<usize> = l.pages[0]
             .items
@@ -4258,7 +4258,7 @@ fn row_bands_shade_only_with_a_band_size() {
 #[test]
 fn paragraph_style_and_direct_formatting_beat_table_style() {
     let mut d = styled_table_doc(Some("TableGrid"), 3);
-    d.styles.upsert(localoffice_doc::Style {
+    d.styles.upsert(localwriter_doc::Style {
         id: "Spaced".into(),
         name: "Spaced".into(),
         based_on: Some("Normal".into()),
@@ -4280,7 +4280,7 @@ fn paragraph_style_and_direct_formatting_beat_table_style() {
     let l = lay(&d);
     let styled = cell_para(&l, 0, 0);
     assert_eq!(styled.rp.space_after, 12.0, "paragraph style");
-    assert_eq!(styled.rp.line_spacing, localoffice_doc::props::LineSpacing::Multiple(1.0), "unset by the style: from the table style");
+    assert_eq!(styled.rp.line_spacing, localwriter_doc::props::LineSpacing::Multiple(1.0), "unset by the style: from the table style");
     assert_eq!(cell_para(&l, 1, 0).rp.space_after, 3.0, "direct formatting");
     assert_eq!(cell_para(&l, 2, 0).rp.space_after, 0.0, "table style");
     // Normal setting its own spacing wins too, even where it equals nothing in the defaults.
@@ -4294,15 +4294,15 @@ fn paragraph_style_and_direct_formatting_beat_table_style() {
 /// adds its own run formatting and conditional formats.
 #[test]
 fn derived_table_style_merges_its_base() {
-    use localoffice_doc::styles::TableStyleParts;
-    let red = localoffice_doc::Rgb(0xC0, 0, 0);
+    use localwriter_doc::styles::TableStyleParts;
+    let red = localwriter_doc::Rgb(0xC0, 0, 0);
     let mut d = styled_table_doc(Some("RedGrid"), 3);
-    d.styles.upsert(localoffice_doc::Style {
+    d.styles.upsert(localwriter_doc::Style {
         id: "RedGrid".into(),
         name: "Red Grid".into(),
-        kind: localoffice_doc::StyleKind::Table,
+        kind: localwriter_doc::StyleKind::Table,
         based_on: Some("TableGrid".into()),
-        chr: CharProps { bold: Some(true), color: Some(localoffice_doc::TextColor::Rgb(red)), ..Default::default() },
+        chr: CharProps { bold: Some(true), color: Some(localwriter_doc::TextColor::Rgb(red)), ..Default::default() },
         table: Some(TableStyleParts { header_chr: CharProps { italic: Some(true), ..Default::default() }, ..Default::default() }),
         ..Default::default()
     });
@@ -4312,7 +4312,7 @@ fn derived_table_style_merges_its_base() {
     let body = cell_para(&l, 1, 1);
     let rc = &body.styles[0].rc;
     assert!(rc.bold && !rc.italic, "{rc:?}");
-    assert_eq!(rc.color, localoffice_doc::TextColor::Rgb(red));
+    assert_eq!(rc.color, localwriter_doc::TextColor::Rgb(red));
     assert_eq!(body.rp.space_after, 0.0, "Table Grid's paragraph formatting");
     let head = &cell_para(&l, 0, 0).styles[0].rc;
     assert!(head.bold && head.italic, "{head:?}");
@@ -4326,17 +4326,17 @@ fn derived_table_style_merges_its_base() {
     assert!(!cell_para(&lay(&d2), 2, 0).styles[0].rc.bold);
 }
 
-fn text_box(d: &mut Document, at: usize, text: &str, w: f32, h: f32, float: localoffice_doc::para::Float) -> u32 {
+fn text_box(d: &mut Document, at: usize, text: &str, w: f32, h: f32, float: localwriter_doc::para::Float) -> u32 {
     text_box_at(d, &Pos::body(0, at), text, w, h, float)
 }
 
-fn text_box_at(d: &mut Document, pos: &Pos, text: &str, w: f32, h: f32, float: localoffice_doc::para::Float) -> u32 {
+fn text_box_at(d: &mut Document, pos: &Pos, text: &str, w: f32, h: f32, float: localwriter_doc::para::Float) -> u32 {
     let id = d.add_part(
-        localoffice_doc::PartKind::TextBox,
-        vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()))],
+        localwriter_doc::PartKind::TextBox,
+        vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()))],
     );
     let shape = InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::TextBox,
+        kind: localwriter_doc::para::ShapeKind::TextBox,
         w,
         h,
         fill: None,
@@ -4352,7 +4352,7 @@ fn text_box_at(d: &mut Document, pos: &Pos, text: &str, w: f32, h: f32, float: l
     id
 }
 
-fn box_rect(l: &DocLayout, id: u32) -> localoffice_geom::Rect {
+fn box_rect(l: &DocLayout, id: u32) -> localwriter_geom::Rect {
     l.pages[0]
         .items
         .iter()
@@ -4380,16 +4380,16 @@ fn clicks_inside_a_text_box_hit_its_story() {
     assert_ne!(l.story_at(0, r.right() + 8.0, r.y + 10.0), Some(box_story));
     // The caret in the box sits inside it.
     let bc = l.caret(&Pos { story: box_story, path: Path::top(0), off: 0 }).unwrap();
-    assert!(r.contains(localoffice_geom::Point::new(bc.x, bc.top)), "{bc:?} outside {r:?}");
+    assert!(r.contains(localwriter_geom::Point::new(bc.x, bc.top)), "{bc:?} outside {r:?}");
 }
 
 #[test]
 fn body_text_wins_over_a_text_box_behind_it() {
     let mut d = Document::from_text("Hi");
-    let float = localoffice_doc::para::Float {
-        wrap: localoffice_doc::para::Wrap::BehindText,
-        h_rel: localoffice_doc::para::Anchor::Column,
-        v_rel: localoffice_doc::para::Anchor::Paragraph,
+    let float = localwriter_doc::para::Float {
+        wrap: localwriter_doc::para::Wrap::BehindText,
+        h_rel: localwriter_doc::para::Anchor::Column,
+        v_rel: localwriter_doc::para::Anchor::Paragraph,
         x: 0.0,
         y: 0.0,
         dist: 0.0,
@@ -4399,7 +4399,7 @@ fn body_text_wins_over_a_text_box_behind_it() {
     let l = lay(&d);
     let r = box_rect(&l, id);
     let c = l.caret(&Pos::body(0, 0)).unwrap();
-    assert!(r.contains(localoffice_geom::Point::new(c.x + 2.0, c.top + 2.0)), "box covers the text: {r:?} {c:?}");
+    assert!(r.contains(localwriter_geom::Point::new(c.x + 2.0, c.top + 2.0)), "box covers the text: {r:?} {c:?}");
     assert_eq!(l.story_at(0, c.x + 2.0, c.top + c.height / 2.0), Some(StoryRef::Body));
     assert_eq!(l.story_at(0, r.right() - 10.0, r.bottom() - 10.0), Some(StoryRef::Part(id)));
 }
@@ -4409,7 +4409,7 @@ fn presses_grab_pictures_anywhere_and_text_boxes_by_their_border() {
     let mut d = Document::from_text("Words before the objects.");
     let id = text_box(&mut d, 0, "Inside", 144.0, 72.0, Default::default());
     let shape = InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::Rectangle,
+        kind: localwriter_doc::para::ShapeKind::Rectangle,
         w: 60.0,
         h: 40.0,
         fill: None,
@@ -4440,7 +4440,7 @@ fn presses_grab_pictures_anywhere_and_text_boxes_by_their_border() {
 }
 
 /// (lines placed, lines laid out) of a text box's story, and its area.
-fn box_lines(l: &DocLayout, id: u32) -> (usize, usize, localoffice_geom::Rect) {
+fn box_lines(l: &DocLayout, id: u32) -> (usize, usize, localwriter_geom::Rect) {
     let mut shown = 0;
     let mut total = 0;
     for it in &l.pages[0].items {
@@ -4481,10 +4481,10 @@ fn text_box_hides_text_that_does_not_fit() {
 
 #[test]
 fn square_wrap_flows_text_on_both_sides() {
-    let float = |x: f32| localoffice_doc::para::Float {
-        wrap: localoffice_doc::para::Wrap::Square,
-        h_rel: localoffice_doc::para::Anchor::Column,
-        v_rel: localoffice_doc::para::Anchor::Paragraph,
+    let float = |x: f32| localwriter_doc::para::Float {
+        wrap: localwriter_doc::para::Wrap::Square,
+        h_rel: localwriter_doc::para::Anchor::Column,
+        v_rel: localwriter_doc::para::Anchor::Paragraph,
         x,
         y: 0.0,
         dist: 9.0,
@@ -4531,7 +4531,7 @@ fn square_wrap_flows_text_on_both_sides() {
 /// still use it, and a word wider than the whole line still breaks where it is.
 #[test]
 fn a_word_too_wide_for_the_strip_beside_a_float_moves_on_whole() {
-    use localoffice_doc::para::{Anchor, Float, ShapeKind, Wrap};
+    use localwriter_doc::para::{Anchor, Float, ShapeKind, Wrap};
     // A `w` x 150pt square at `x` in the 468pt column, leaving a 32pt strip on its right. Each
     // line: (top, left, beside the object's far side, ends inside a word, where its text ends).
     let lines = |text: &str, x: f32, w: f32| {
@@ -4593,19 +4593,19 @@ fn ink_end(pl: &ParaLayout, ln: &para::Line) -> f32 {
 
 fn footnote(d: &mut Document, pos: &Pos, text: &str) -> u32 {
     let id = d.add_part(
-        localoffice_doc::PartKind::Footnote,
-        vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()))],
+        localwriter_doc::PartKind::Footnote,
+        vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()))],
     );
-    d.insert_object(pos, InlineObject::NoteRef { kind: localoffice_doc::para::NoteKind::Footnote, id, custom: String::new() }, &Default::default())
+    d.insert_object(pos, InlineObject::NoteRef { kind: localwriter_doc::para::NoteKind::Footnote, id, custom: String::new() }, &Default::default())
         .unwrap();
     id
 }
 
-fn page_float(x: f32, y: f32) -> localoffice_doc::para::Float {
-    localoffice_doc::para::Float {
-        wrap: localoffice_doc::para::Wrap::InFrontOfText,
-        h_rel: localoffice_doc::para::Anchor::Page,
-        v_rel: localoffice_doc::para::Anchor::Page,
+fn page_float(x: f32, y: f32) -> localwriter_doc::para::Float {
+    localwriter_doc::para::Float {
+        wrap: localwriter_doc::para::Wrap::InFrontOfText,
+        h_rel: localwriter_doc::para::Anchor::Page,
+        v_rel: localwriter_doc::para::Anchor::Page,
         x,
         y,
         dist: 0.0,
@@ -4618,8 +4618,8 @@ fn text_boxes_show_in_headers_footers_cells_and_notes() {
     let mut d = Document::from_text(&"Body paragraph.\n".repeat(4));
     // Header: an inline box and a box placed on the page.
     let hid = d.add_part(
-        localoffice_doc::PartKind::Header,
-        vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Head", Default::default()))],
+        localwriter_doc::PartKind::Header,
+        vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Head", Default::default()))],
     );
     d.last_section.headers.default = Some(hid);
     let e = d.end_of(StoryRef::Part(hid));
@@ -4628,14 +4628,14 @@ fn text_boxes_show_in_headers_footers_cells_and_notes() {
     let placed = text_box_at(&mut d, &e, "On the page", 100.0, 40.0, page_float(400.0, 20.0));
     // Footer: a box placed on the page (the footer is laid out twice to find it).
     let fid = d.add_part(
-        localoffice_doc::PartKind::Footer,
-        vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Foot", Default::default()))],
+        localwriter_doc::PartKind::Footer,
+        vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Foot", Default::default()))],
     );
     d.last_section.footers.default = Some(fid);
     let e = d.end_of(StoryRef::Part(fid));
     let in_footer = text_box_at(&mut d, &e, "Footer box", 100.0, 30.0, page_float(300.0, 740.0));
     // A table cell and a footnote.
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(localoffice_doc::Table::new(1, 1, 300.0))).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(localwriter_doc::Table::new(1, 1, 300.0))).unwrap();
     let cell = Pos { story: StoryRef::Body, path: Path(vec![1, 0, 0, 0]), off: 0 };
     let in_cell = text_box_at(&mut d, &cell, "In a cell", 120.0, 30.0, Default::default());
     let note = footnote(&mut d, &Pos::body(0, 4), "Note: ");
@@ -4685,13 +4685,13 @@ fn box_fan_out(levels: usize, fan: usize) -> Document {
     let ids: Vec<u32> = (0..levels)
         .map(|k| {
             d.add_part(
-                localoffice_doc::PartKind::TextBox,
-                vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&format!("Level {k}"), Default::default()))],
+                localwriter_doc::PartKind::TextBox,
+                vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&format!("Level {k}"), Default::default()))],
             )
         })
         .collect();
     let shape = |story| InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::TextBox,
+        kind: localwriter_doc::para::ShapeKind::TextBox,
         w,
         h,
         fill: None,
@@ -4720,7 +4720,7 @@ fn self_showing_and_fanned_out_text_boxes_stay_bounded() {
     // Chains of boxes each showing the next 30 times (30^4 expansions unbounded).
     let d = box_fan_out(5, 30);
     let l = lay(&d);
-    assert!(l.text_boxes <= 1 + localoffice_doc::BoxBudget::MAX_NESTED, "{} boxes laid out", l.text_boxes);
+    assert!(l.text_boxes <= 1 + localwriter_doc::BoxBudget::MAX_NESTED, "{} boxes laid out", l.text_boxes);
     // Footnote numbering's walk is bounded the same way.
     let mut visits = 0usize;
     d.objects_in_reading_order(&mut |_| visits += 1);
@@ -4738,8 +4738,8 @@ fn many_text_boxes_and_a_header_box_all_show() {
     }
     let ids: Vec<u32> = (0..400).map(|k| text_box_at(&mut d, &Pos::body(k, 0), &format!("Box {k}"), 100.0, 30.0, Default::default())).collect();
     let hid = d.add_part(
-        localoffice_doc::PartKind::Header,
-        vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Head", Default::default()))],
+        localwriter_doc::PartKind::Header,
+        vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Head", Default::default()))],
     );
     d.last_section.headers.default = Some(hid);
     let e = d.end_of(StoryRef::Part(hid));
@@ -4766,9 +4766,9 @@ fn a_text_box_inside_a_text_box_still_shows_its_text() {
     assert!(l.caret(&d.start_of(StoryRef::Part(inner))).is_some(), "the inner box's text is laid out");
 }
 
-fn picture(w: f32, h: f32, float: localoffice_doc::para::Float) -> InlineObject {
+fn picture(w: f32, h: f32, float: localwriter_doc::para::Float) -> InlineObject {
     InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::Rectangle,
+        kind: localwriter_doc::para::ShapeKind::Rectangle,
         w,
         h,
         fill: None,
@@ -4784,9 +4784,9 @@ fn picture(w: f32, h: f32, float: localoffice_doc::para::Float) -> InlineObject 
 
 #[test]
 fn line_spacing_does_not_scale_pictures() {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     let mut d = Document::from_text("");
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
         p.props.line_spacing = Some(LineSpacing::Multiple(1.15));
         p.insert_object(0, picture(144.0, 144.0, Default::default()), &Default::default()).unwrap();
     }
@@ -4801,11 +4801,11 @@ fn line_spacing_does_not_scale_pictures() {
 
 #[test]
 fn multiple_line_spacing_adds_its_leading_below_the_text() {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     // (spacing, expected baseline below the line top as a share of the ascent)
     for (spacing, share) in [(LineSpacing::Multiple(1.15), 1.0), (LineSpacing::Multiple(2.0), 1.0), (LineSpacing::Multiple(0.8), 0.8)] {
         let mut d = Document::from_text(&"Several words wrap onto more lines. ".repeat(30));
-        if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
+        if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
             p.props.line_spacing = Some(spacing);
         }
         let l = lay(&d);
@@ -4824,7 +4824,7 @@ fn multiple_line_spacing_adds_its_leading_below_the_text() {
     }
     // Exact spacing still keeps the descent below the baseline.
     let mut d = Document::from_text("Exact");
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
         p.props.line_spacing = Some(LineSpacing::Exactly(30.0));
     }
     let l = lay(&d);
@@ -4835,10 +4835,10 @@ fn multiple_line_spacing_adds_its_leading_below_the_text() {
 
 #[test]
 fn list_label_does_not_inflate_an_inline_picture_floor() {
-    use localoffice_doc::props::{LineSpacing, NumRef};
+    use localwriter_doc::props::{LineSpacing, NumRef};
     for spacing in [LineSpacing::Multiple(1.25), LineSpacing::AtLeast(12.0)] {
         let mut d = Document::from_text("");
-        let id = d.numbering.add_list(localoffice_doc::ListKind::Bullet);
+        let id = d.numbering.add_list(localwriter_doc::ListKind::Bullet);
         d.numbering.abstracts[0].levels[0].chr.size = Some(24.0);
         let p = d.para_mut(StoryRef::Body, &Path::top(0)).unwrap();
         p.props.line_spacing = Some(spacing);
@@ -4856,10 +4856,10 @@ fn list_label_does_not_inflate_an_inline_picture_floor() {
 #[test]
 fn body_starts_right_below_a_tall_header() {
     let mut d = Document::from_text("Body");
-    let mut hp = localoffice_doc::Paragraph::with_text("", Default::default());
+    let mut hp = localwriter_doc::Paragraph::with_text("", Default::default());
     hp.insert_object(0, picture(100.0, 80.0, Default::default()), &Default::default()).unwrap();
     hp.props.space_after = Some(0.0);
-    let id = d.add_part(localoffice_doc::PartKind::Header, vec![localoffice_doc::para_block(hp)]);
+    let id = d.add_part(localwriter_doc::PartKind::Header, vec![localwriter_doc::para_block(hp)]);
     d.last_section.headers.default = Some(id);
     let l = lay(&d);
     let Some(Placed::Lines { para, y, .. }) = l.pages[0].header.iter().find(|i| matches!(i, Placed::Lines { .. })) else { panic!() };
@@ -4873,8 +4873,8 @@ fn body_starts_right_below_a_tall_header() {
 #[test]
 fn inline_picture_keeps_room_for_its_effects() {
     let mut d = Document::from_text("");
-    let shadow = localoffice_doc::para::Float { effect: [6.0, 12.0, 18.0, 27.0], ..Default::default() };
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
+    let shadow = localwriter_doc::para::Float { effect: [6.0, 12.0, 18.0, 27.0], ..Default::default() };
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
         p.insert_object(0, picture(100.0, 50.0, shadow.clone()), &Default::default()).unwrap();
     }
     let l = lay(&d);
@@ -4894,7 +4894,7 @@ fn line_tops(l: &DocLayout) -> Vec<f32> {
 
 #[test]
 fn at_least_rows_add_cell_margins_and_border_bands() {
-    use localoffice_doc::props::{Border, BorderStyle, Borders, HeightRule};
+    use localwriter_doc::props::{Border, BorderStyle, Borders, HeightRule};
     let mut d = Document::from_text("");
     let line = Some(Border { style: BorderStyle::Single, width: 0.5, color: None, space: 0.0 });
     let mut t = Table::new(2, 1, 200.0);
@@ -4903,9 +4903,9 @@ fn at_least_rows_add_cell_margins_and_border_bands() {
     for (r, text) in t.rows.iter_mut().zip(["one", "two"]) {
         r.props.height = Some(30.0);
         r.props.height_rule = HeightRule::AtLeast;
-        r.cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()))];
+        r.cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()))];
     }
-    d.body = vec![std::sync::Arc::new(localoffice_doc::Block::Table(t))];
+    d.body = vec![std::sync::Arc::new(localwriter_doc::Block::Table(t))];
     let tops = line_tops(&lay(&d));
     // Word: a 30pt at-least row with 5pt margins and 0.5pt borders steps 40.5pt, and the text
     // starts below the top border and the top margin.
@@ -4924,10 +4924,10 @@ fn a_row_shares_its_largest_top_and_bottom_margins() {
     t.rows[0].cells[1].props.margins = Some([2.0, 5.4, 7.0, 5.4]);
     for (ri, row) in t.rows.iter_mut().enumerate() {
         for (c, text) in row.cells.iter_mut().zip(["one", "two"]) {
-            c.blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&format!("{text}{ri}"), Default::default()))];
+            c.blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&format!("{text}{ri}"), Default::default()))];
         }
     }
-    d.body = vec![std::sync::Arc::new(localoffice_doc::Block::Table(t))];
+    d.body = vec![std::sync::Arc::new(localwriter_doc::Block::Table(t))];
     let tops = line_tops(&lay(&d));
     assert_eq!(tops.len(), 6, "{tops:?}");
     assert!((tops[0] - tops[1]).abs() < 0.01, "both cells start 6pt down: {tops:?}");
@@ -4942,16 +4942,16 @@ fn a_row_shares_its_largest_top_and_bottom_margins() {
 /// and bottom margins steps 39pt; the text starts 4pt below its top).
 #[test]
 fn exact_rows_add_only_the_bottom_margin() {
-    use localoffice_doc::props::HeightRule;
+    use localwriter_doc::props::HeightRule;
     let mut d = Document::from_text("");
     let mut t = Table::new(2, 1, 200.0);
     t.props.cell_margins = Some([4.0, 5.4, 4.0, 5.4]);
     for (r, text) in t.rows.iter_mut().zip(["one", "two"]) {
         r.props.height = Some(35.0);
         r.props.height_rule = HeightRule::Exact;
-        r.cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()))];
+        r.cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()))];
     }
-    d.body = vec![std::sync::Arc::new(localoffice_doc::Block::Table(t))];
+    d.body = vec![std::sync::Arc::new(localwriter_doc::Block::Table(t))];
     let tops = line_tops(&lay(&d));
     assert!((tops[1] - tops[0] - 39.0).abs() < 0.01, "row pitch {}", tops[1] - tops[0]);
     assert!((tops[0] - (72.0 + 0.5 + 4.0)).abs() < 0.01, "first cell text at {}", tops[0]);
@@ -4961,21 +4961,21 @@ fn exact_rows_add_only_the_bottom_margin() {
 /// 90 pt.
 #[test]
 fn exact_row_moves_whole() {
-    use localoffice_doc::props::HeightRule;
+    use localwriter_doc::props::HeightRule;
     let mut t = Table::new(1, 1, 400.0);
     t.rows[0].props.height = Some(63.6);
     t.rows[0].props.height_rule = HeightRule::Exact;
     for height in [40.0, 50.0] {
-        let mut p = localoffice_doc::Paragraph::with_text("", Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text("", Default::default());
         p.insert_object(0, picture(30.0, height, Default::default()), &Default::default()).unwrap();
-        t.rows[0].cells[0].blocks.push(localoffice_doc::para_block(p));
+        t.rows[0].cells[0].blocks.push(localwriter_doc::para_block(p));
     }
     // The same intact row moves with only 50pt left, and stays when 90pt is available.
     for (room, expected_page) in [(50.0, 1), (90.0, 0)] {
         assert_eq!(room < 63.6, expected_page == 1);
         let mut d = pagination_filler_leaving(room);
         let end = d.body.len();
-        d.insert_block(StoryRef::Body, &Path::top(end), localoffice_doc::Block::Table(t.clone())).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(end), localwriter_doc::Block::Table(t.clone())).unwrap();
         let l = lay(&d);
         assert_pagination_fixture_font(&l);
         let row_pages: Vec<_> = l
@@ -5002,13 +5002,13 @@ fn cell_margins_are_where_cell_text_starts() {
     t.props.cell_margins = Some([0.0, 9.0, 0.0, 3.0]);
     t.rows[0].cells[1].props.margins = Some([0.0, 20.0, 0.0, 4.0]);
     for (c, text) in t.rows[0].cells.iter_mut().zip(["one", "two"]) {
-        c.blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()))];
+        c.blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()))];
     }
     assert_eq!(cell_margins(&d, &t, 0, 0), [0.0, 9.0, 0.0, 3.0]);
     assert_eq!(cell_margins(&d, &t, 0, 1), [0.0, 20.0, 0.0, 4.0]);
     assert_eq!(cell_margins(&d, &t, 5, 9), [0.0, 9.0, 0.0, 3.0], "no such cell: the table's");
     assert_eq!(cell_margins(&d, &Table::new(1, 1, 100.0), 0, 0), [0.0, 5.4, 0.0, 5.4], "Word's");
-    d.body = vec![std::sync::Arc::new(localoffice_doc::Block::Table(t.clone()))];
+    d.body = vec![std::sync::Arc::new(localwriter_doc::Block::Table(t.clone()))];
     let l = lay(&d);
     let items = &l.pages[0].items;
     for c in 0..2 {
@@ -5066,17 +5066,17 @@ fn justified_lines_shrink_spaces_in_word_2013_mode() {
 /// the right indent leaving room for N words plus one more that fits only if the spaces shrink):
 /// the spaces give up at most a quarter of their width, and a word with the space before it may
 /// overrun the line by at most 0.355 of its own width ("nn" fitted with its line's spaces 14.5%
-/// shrunk, "nnnn" with 25%). LocalOffice allowed 20% whatever the word, so long words wrapped too
+/// shrunk, "nnnn" with 25%). LocalWriter allowed 20% whatever the word, so long words wrapped too
 /// early and short ones too late.
 #[test]
 fn justified_spaces_shrink_a_quarter_at_most_and_by_the_word() {
-    let chr = localoffice_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() };
+    let chr = localwriter_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() };
     let para = |text: &str, align: Align, right: f32| {
         let mut d = Document::new();
         d.settings.compat_mode = 15;
-        let mut p = localoffice_doc::Paragraph::with_text(text, chr.clone());
+        let mut p = localwriter_doc::Paragraph::with_text(text, chr.clone());
         p.props = ParaProps { align: Some(align), indent_right: Some(right), ..Default::default() };
-        d.body = vec![localoffice_doc::para_block(p)];
+        d.body = vec![localwriter_doc::para_block(p)];
         d
     };
     // Words on the first line.
@@ -5124,9 +5124,9 @@ fn justified_line_ending_in_line_break_is_stretched() {
     let ends = |no_expand: bool| {
         let mut d = Document::from_text("");
         d.settings.do_not_expand_shift_return = no_expand;
-        let mut p = localoffice_doc::Paragraph::with_text(text, Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text(text, Default::default());
         p.props = ParaProps { align: Some(Align::Justify), ..Default::default() };
-        d.body = vec![localoffice_doc::para_block(p)];
+        d.body = vec![localwriter_doc::para_block(p)];
         let l = lay(&d);
         let mut out = Vec::new();
         for pg in &l.pages {
@@ -5163,9 +5163,9 @@ fn lines_with_tabs_never_shrink() {
     }
 }
 
-pub(super) fn rect_shape(w: f32, h: f32, float: localoffice_doc::para::Float) -> InlineObject {
+pub(super) fn rect_shape(w: f32, h: f32, float: localwriter_doc::para::Float) -> InlineObject {
     InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::Rectangle,
+        kind: localwriter_doc::para::ShapeKind::Rectangle,
         w,
         h,
         fill: None,
@@ -5190,7 +5190,7 @@ fn first_line_top(items: &[Placed]) -> f32 {
 
 #[test]
 fn floats_align_within_their_reference_area() {
-    use localoffice_doc::para::{Anchor, Float, FloatAlign, Wrap};
+    use localwriter_doc::para::{Anchor, Float, FloatAlign, Wrap};
     let mut d = Document::from_text("Some text beside the pictures.");
     let centred = Float { wrap: Wrap::InFrontOfText, h_rel: Anchor::Margin, h_align: Some(FloatAlign::Center), x: 999.0, ..Default::default() };
     let right = Float { wrap: Wrap::InFrontOfText, h_rel: Anchor::Page, h_align: Some(FloatAlign::End), ..Default::default() };
@@ -5211,7 +5211,7 @@ fn floats_align_within_their_reference_area() {
 
 #[test]
 fn top_and_bottom_float_pushes_its_own_first_line_down() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut d = Document::from_text(&"Text that starts below the picture. ".repeat(10));
     let f = Float { wrap: Wrap::TopAndBottom, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, dist_bottom: 6.0, ..Default::default() };
     d.insert_object(&Pos::body(0, 0), rect_shape(144.0, 100.0, f), &Default::default()).unwrap();
@@ -5226,11 +5226,11 @@ fn top_and_bottom_float_pushes_its_own_first_line_down() {
 
 #[test]
 fn float_follows_its_paragraph_to_the_next_page() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut d = Document::from_text(&format!("First page.\n{}", "Text beside the picture on page two. ".repeat(20)));
     let f = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, dist: 9.0, ..Default::default() };
     d.insert_object(&Pos::body(1, 0), rect_shape(144.0, 100.0, f), &Default::default()).unwrap();
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(1).map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(1).map(std::sync::Arc::make_mut) {
         p.props.page_break_before = Some(true);
     }
     let l = lay(&d);
@@ -5247,7 +5247,7 @@ fn float_follows_its_paragraph_to_the_next_page() {
 /// break and then the page-anchored text box with the title; the box stays on the cover.
 #[test]
 fn a_float_anchored_after_a_page_break_stays_on_its_paragraph_s_first_page() {
-    let mut d = Document::from_text(&format!("{}\nAfter the cover", localoffice_doc::para::PAGE_BREAK));
+    let mut d = Document::from_text(&format!("{}\nAfter the cover", localwriter_doc::para::PAGE_BREAK));
     d.insert_object(&Pos::body(0, 1), rect_shape(200.0, 100.0, page_float(100.0, 300.0)), &Default::default()).unwrap();
     let l = lay(&d);
     assert_eq!(l.pages.len(), 2);
@@ -5262,7 +5262,7 @@ fn a_float_anchored_after_a_page_break_stays_on_its_paragraph_s_first_page() {
 /// drawn first so the box stays visible over it. Objects without an order keep theirs.
 #[test]
 fn floats_are_drawn_in_their_stacking_order() {
-    let at = |x: f32, z: u32| rect_shape(50.0, 50.0, localoffice_doc::para::Float { z, ..page_float(x, 100.0) });
+    let at = |x: f32, z: u32| rect_shape(50.0, 50.0, localwriter_doc::para::Float { z, ..page_float(x, 100.0) });
     let mut d = Document::from_text("Text");
     for (x, z) in [(100.0, 30), (200.0, 10), (300.0, 20)] {
         d.insert_object(&Pos::body(0, 4), at(x, z), &Default::default()).unwrap();
@@ -5271,18 +5271,18 @@ fn floats_are_drawn_in_their_stacking_order() {
     assert_eq!(xs, [200.0, 300.0, 100.0], "lowest first");
     let mut d = Document::from_text("Text");
     for (i, x) in [100.0, 200.0].into_iter().enumerate() {
-        let off = 4 + i * localoffice_doc::para::OBJ.len_utf8();
+        let off = 4 + i * localwriter_doc::para::OBJ.len_utf8();
         d.insert_object(&Pos::body(0, off), at(x, 0), &Default::default()).unwrap();
     }
     let xs: Vec<f32> = shapes(&lay(&d).pages[0].items).iter().map(|r| r.x).collect();
     assert_eq!(xs, [100.0, 200.0], "no order: as anchored");
     // Behind the text too: the higher one comes first in the XML and stays on top.
     let behind = |x: f32, z: u32| {
-        rect_shape(50.0, 50.0, localoffice_doc::para::Float { z, wrap: localoffice_doc::para::Wrap::BehindText, ..page_float(x, 100.0) })
+        rect_shape(50.0, 50.0, localwriter_doc::para::Float { z, wrap: localwriter_doc::para::Wrap::BehindText, ..page_float(x, 100.0) })
     };
     let mut d = Document::from_text("Text");
     for (i, (x, z)) in [(100.0, 20), (200.0, 10)].into_iter().enumerate() {
-        let off = 4 + i * localoffice_doc::para::OBJ.len_utf8();
+        let off = 4 + i * localwriter_doc::para::OBJ.len_utf8();
         d.insert_object(&Pos::body(0, off), behind(x, z), &Default::default()).unwrap();
     }
     let xs: Vec<f32> = shapes(&lay(&d).pages[0].items).iter().map(|r| r.x).collect();
@@ -5290,7 +5290,7 @@ fn floats_are_drawn_in_their_stacking_order() {
     // One without an order, anchored after ordered ones, is drawn above them.
     let mut d = Document::from_text("Text");
     for (i, (x, z)) in [(100.0, 30), (200.0, 10), (300.0, 0)].into_iter().enumerate() {
-        let off = 4 + i * localoffice_doc::para::OBJ.len_utf8();
+        let off = 4 + i * localwriter_doc::para::OBJ.len_utf8();
         d.insert_object(&Pos::body(0, off), at(x, z), &Default::default()).unwrap();
     }
     let xs: Vec<f32> = shapes(&lay(&d).pages[0].items).iter().map(|r| r.x).collect();
@@ -5299,19 +5299,19 @@ fn floats_are_drawn_in_their_stacking_order() {
 
 #[test]
 fn floats_in_headers_and_table_cells_are_drawn() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut d = Document::from_text("Body text.");
     let logo = Float { wrap: Wrap::BehindText, h_rel: Anchor::Page, v_rel: Anchor::Page, x: 400.0, y: 20.0, ..Default::default() };
-    let mut hp = localoffice_doc::Paragraph::with_text("Header", Default::default());
+    let mut hp = localwriter_doc::Paragraph::with_text("Header", Default::default());
     hp.insert_object(0, rect_shape(120.0, 60.0, logo), &Default::default()).unwrap();
-    let id = d.add_part(localoffice_doc::PartKind::Header, vec![localoffice_doc::para_block(hp)]);
+    let id = d.add_part(localwriter_doc::PartKind::Header, vec![localwriter_doc::para_block(hp)]);
     d.last_section.headers.default = Some(id);
     let mut t = Table::new(1, 2, 468.0);
-    let mut cp = localoffice_doc::Paragraph::with_text("cell", Default::default());
+    let mut cp = localwriter_doc::Paragraph::with_text("cell", Default::default());
     let in_cell = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, x: 5.0, ..Default::default() };
     cp.insert_object(0, rect_shape(40.0, 20.0, in_cell), &Default::default()).unwrap();
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(cp)];
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(cp)];
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let h = shapes(&l.pages[0].header);
     assert_eq!(h.len(), 1, "header float drawn");
@@ -5325,7 +5325,7 @@ fn floats_in_headers_and_table_cells_are_drawn() {
 /// Paragraph anchors exclude space-before; line and frameless page/margin anchors retain it.
 #[test]
 fn box_float_origins_respect_vertical_anchor_with_space_before() {
-    use localoffice_doc::{
+    use localwriter_doc::{
         PartKind,
         para::{Anchor, Float, Wrap},
     };
@@ -5345,14 +5345,14 @@ fn box_float_origins_respect_vertical_anchor_with_space_before() {
             }
             let gap = |before| {
                 let mut d = Document::from_text("Body");
-                let mut p = localoffice_doc::Paragraph::with_text("Anchor", Default::default());
+                let mut p = localwriter_doc::Paragraph::with_text("Anchor", Default::default());
                 p.props.space_before = Some(before);
                 let float = Float { wrap: Wrap::BehindText, v_rel: anchor, y: 7.0, ..Default::default() };
                 p.insert_object(0, rect_shape(37.0, 9.0, float), &Default::default()).unwrap();
                 let story = match context {
                     "header" | "footer" => {
                         let kind = if context == "header" { PartKind::Header } else { PartKind::Footer };
-                        let id = d.add_part(kind, vec![localoffice_doc::para_block(p)]);
+                        let id = d.add_part(kind, vec![localwriter_doc::para_block(p)]);
                         if context == "header" {
                             d.last_section.headers.default = Some(id);
                         } else {
@@ -5362,13 +5362,13 @@ fn box_float_origins_respect_vertical_anchor_with_space_before() {
                     }
                     "cell" => {
                         let mut t = Table::new(1, 1, 468.0);
-                        t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(p)];
-                        d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+                        t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(p)];
+                        d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
                         StoryRef::Body
                     }
                     _ => {
                         let id = text_box(&mut d, 0, "", 200.0, 100.0, page_float(100.0, 200.0));
-                        d.parts.get_mut(&id).unwrap().blocks = vec![localoffice_doc::para_block(p)];
+                        d.parts.get_mut(&id).unwrap().blocks = vec![localwriter_doc::para_block(p)];
                         StoryRef::Part(id)
                     }
                 };
@@ -5405,9 +5405,9 @@ fn automatic_text_in_a_styled_text_box_takes_the_box_s_colour() {
         let id = text_box(&mut d, 4, "Auto", 200.0, 60.0, page_float(100.0, 300.0));
         if let Some(p) = d.parts.get_mut(&id) {
             p.body.auto_color = auto_color;
-            if let Some(localoffice_doc::Block::Para(q)) = p.blocks.first_mut().map(std::sync::Arc::make_mut) {
-                let mut own = localoffice_doc::Paragraph::with_text("Green", Default::default());
-                own.runs[0].props.color = Some(localoffice_doc::props::TextColor::Rgb(Rgb(0, 0x80, 0)));
+            if let Some(localwriter_doc::Block::Para(q)) = p.blocks.first_mut().map(std::sync::Arc::make_mut) {
+                let mut own = localwriter_doc::Paragraph::with_text("Green", Default::default());
+                own.runs[0].props.color = Some(localwriter_doc::props::TextColor::Rgb(Rgb(0, 0x80, 0)));
                 q.text.push_str(&own.text);
                 q.runs.extend(own.runs);
             }
@@ -5430,7 +5430,7 @@ fn automatic_text_in_a_styled_text_box_takes_the_box_s_colour() {
 /// stays there.
 #[test]
 fn header_cell_float_placed_on_the_page() {
-    use localoffice_doc::para::{Anchor, Float, FloatAlign, Wrap};
+    use localwriter_doc::para::{Anchor, Float, FloatAlign, Wrap};
     let mut d = Document::from_text(&"Body text of the contract. ".repeat(400));
     let wm = |outside_cell: bool| Float {
         wrap: Wrap::BehindText,
@@ -5443,12 +5443,12 @@ fn header_cell_float_placed_on_the_page() {
     };
     let header = |d: &mut Document, outside_cell: bool| {
         let mut t = Table::new(1, 2, 468.0);
-        let mut cp = localoffice_doc::Paragraph::with_text("Right cell", Default::default());
+        let mut cp = localwriter_doc::Paragraph::with_text("Right cell", Default::default());
         cp.insert_object(0, rect_shape(360.0, 288.0, wm(outside_cell)), &Default::default()).unwrap();
-        t.rows[0].cells[1].blocks = vec![localoffice_doc::para_block(cp)];
+        t.rows[0].cells[1].blocks = vec![localwriter_doc::para_block(cp)];
         let id = d.add_part(
-            localoffice_doc::PartKind::Header,
-            vec![std::sync::Arc::new(localoffice_doc::Block::Table(t)), localoffice_doc::para_block(Default::default())],
+            localwriter_doc::PartKind::Header,
+            vec![std::sync::Arc::new(localwriter_doc::Block::Table(t)), localwriter_doc::para_block(Default::default())],
         );
         d.last_section.headers.default = Some(id);
     };
@@ -5476,15 +5476,15 @@ fn header_cell_float_placed_on_the_page() {
 
 #[test]
 fn a_centred_float_in_a_cell_is_not_pushed_above_its_anchor_line() {
-    use localoffice_doc::para::{Anchor, Float, FloatAlign, Wrap};
+    use localwriter_doc::para::{Anchor, Float, FloatAlign, Wrap};
     for align in [FloatAlign::Center, FloatAlign::End] {
         let mut d = Document::from_text("Before.");
         let mut t = Table::new(1, 1, 468.0);
-        let mut cp = localoffice_doc::Paragraph::with_text("cell", Default::default());
+        let mut cp = localwriter_doc::Paragraph::with_text("cell", Default::default());
         let f = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Margin, v_align: Some(align), ..Default::default() };
         cp.insert_object(0, rect_shape(100.0, 200.0, f), &Default::default()).unwrap();
-        t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(cp)];
-        d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+        t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(cp)];
+        d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         let c = shapes(&l.pages[0].items);
         assert_eq!(c.len(), 1, "cell float drawn");
@@ -5495,7 +5495,7 @@ fn a_centred_float_in_a_cell_is_not_pushed_above_its_anchor_line() {
 
 #[test]
 fn wrap_area_uses_each_distance() {
-    use localoffice_doc::para::{Float, Wrap};
+    use localwriter_doc::para::{Float, Wrap};
     let f = Float { wrap: Wrap::Square, dist: 9.0, dist_top: 0.0, dist_bottom: 4.0, ..Default::default() };
     let (r, tb, ..) = wrap_area(Rect::new(10.0, 20.0, 100.0, 50.0), &f, None).unwrap();
     assert_eq!((r.x, r.y, r.w, r.h, tb), (1.0, 20.0, 118.0, 54.0, false));
@@ -5507,11 +5507,11 @@ fn wrap_area_uses_each_distance() {
 
 #[test]
 fn float_moved_to_a_new_page_sits_at_its_paragraph_top() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut d = Document::from_text(&format!("First page.\n{}", "Text beside the picture on page two. ".repeat(20)));
     let f = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, dist: 9.0, ..Default::default() };
     d.insert_object(&Pos::body(1, 0), rect_shape(144.0, 100.0, f), &Default::default()).unwrap();
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(1).map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(1).map(std::sync::Arc::make_mut) {
         p.props.page_break_before = Some(true);
         p.props.space_before = Some(24.0);
     }
@@ -5526,13 +5526,13 @@ fn float_moved_to_a_new_page_sits_at_its_paragraph_top() {
 
 #[test]
 fn page_relative_header_float_wraps_where_it_is_drawn() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let body_top = |wrap| {
         let mut d = Document::from_text("Body text.");
         let logo = Float { wrap, h_rel: Anchor::Page, v_rel: Anchor::Page, x: 72.0, y: 0.0, ..Default::default() };
-        let mut hp = localoffice_doc::Paragraph::with_text("Header", Default::default());
+        let mut hp = localwriter_doc::Paragraph::with_text("Header", Default::default());
         hp.insert_object(0, rect_shape(400.0, 20.0, logo), &Default::default()).unwrap();
-        let id = d.add_part(localoffice_doc::PartKind::Header, vec![localoffice_doc::para_block(hp)]);
+        let id = d.add_part(localwriter_doc::PartKind::Header, vec![localwriter_doc::para_block(hp)]);
         d.last_section.headers.default = Some(id);
         first_line_top(&lay(&d).pages[0].items)
     };
@@ -5547,7 +5547,7 @@ fn page_relative_header_float_wraps_where_it_is_drawn() {
 /// at the top margin and paginates exactly as without the box.
 #[test]
 fn floating_header_text_box_leaves_the_body_at_the_top_margin() {
-    use localoffice_doc::para::{Anchor, Float, ShapeKind, Wrap};
+    use localwriter_doc::para::{Anchor, Float, ShapeKind, Wrap};
     let body: Vec<String> = (1..=40).map(|i| format!("Body paragraph {i}: synthetic public test content.")).collect();
     let make = |float: Option<Float>| {
         let mut d = Document::from_text(&body.join("\n"));
@@ -5557,12 +5557,12 @@ fn floating_header_text_box_leaves_the_body_at_the_top_margin() {
         d.last_section.header = 18.0;
         // A label, then the paragraph the box is anchored to (empty in the control).
         let tight = ParaProps { space_before: Some(0.0), space_after: Some(0.0), ..Default::default() };
-        let mut label = localoffice_doc::Paragraph::with_text("Header label", Default::default());
+        let mut label = localwriter_doc::Paragraph::with_text("Header label", Default::default());
         label.props = tight.clone();
-        let mut anchor = localoffice_doc::Paragraph { props: tight, ..Default::default() };
+        let mut anchor = localwriter_doc::Paragraph { props: tight, ..Default::default() };
         if let Some(float) = float {
-            let text = localoffice_doc::Paragraph::with_text("WATERMARK", Default::default());
-            let story = d.add_part(localoffice_doc::PartKind::TextBox, vec![localoffice_doc::para_block(text)]);
+            let text = localwriter_doc::Paragraph::with_text("WATERMARK", Default::default());
+            let story = d.add_part(localwriter_doc::PartKind::TextBox, vec![localwriter_doc::para_block(text)]);
             let tb = InlineObject::Shape {
                 kind: ShapeKind::TextBox,
                 w: 405.0,
@@ -5578,7 +5578,7 @@ fn floating_header_text_box_leaves_the_body_at_the_top_margin() {
             };
             anchor.insert_object(0, tb, &Default::default()).unwrap();
         }
-        let id = d.add_part(localoffice_doc::PartKind::Header, vec![localoffice_doc::para_block(label), localoffice_doc::para_block(anchor)]);
+        let id = d.add_part(localwriter_doc::PartKind::Header, vec![localwriter_doc::para_block(label), localwriter_doc::para_block(anchor)]);
         d.last_section.headers.default = Some(id);
         let l = lay(&d);
         (l.pages.len(), first_line_top(&l.pages[0].items))
@@ -5604,13 +5604,13 @@ fn labels(l: &DocLayout) -> Vec<String> {
         .collect()
 }
 
-fn numbered(d: &mut Document, texts: &[&str], props: ParaProps) -> Vec<localoffice_doc::Paragraph> {
-    let num = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
+fn numbered(d: &mut Document, texts: &[&str], props: ParaProps) -> Vec<localwriter_doc::Paragraph> {
+    let num = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
     texts
         .iter()
         .map(|t| {
-            let mut p = localoffice_doc::Paragraph::with_text(t, Default::default());
-            p.props = ParaProps { numbering: Some(localoffice_doc::props::NumRef { num, level: 0 }), ..props.clone() };
+            let mut p = localwriter_doc::Paragraph::with_text(t, Default::default());
+            p.props = ParaProps { numbering: Some(localwriter_doc::props::NumRef { num, level: 0 }), ..props.clone() };
             p
         })
         .collect()
@@ -5624,7 +5624,7 @@ fn list_items_are_counted_once_when_laid_out_again() {
     let mut items = numbered(&mut d, &["one", "two", "three"], props);
     // A page break before moves the last item after its first layout.
     items[2].props.page_break_before = Some(true);
-    d.body = items.into_iter().map(localoffice_doc::para_block).collect();
+    d.body = items.into_iter().map(localwriter_doc::para_block).collect();
     let l = lay(&d);
     assert_eq!(l.pages.len(), 2);
     assert_eq!(labels(&l), ["1.", "2.", "3."]);
@@ -5632,29 +5632,29 @@ fn list_items_are_counted_once_when_laid_out_again() {
 
 #[test]
 fn list_items_beside_a_float_in_a_cell_are_counted_once() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut d = Document::from_text("Body.");
     let mut items = numbered(&mut d, &["first item", "second item", "third item"], ParaProps::default());
     // The float makes the cell's paragraphs wrap, so they are laid out a second time.
     let f = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, ..Default::default() };
     items[0].insert_object(0, rect_shape(40.0, 60.0, f), &Default::default()).unwrap();
     let mut t = Table::new(1, 1, 468.0);
-    t.rows[0].cells[0].blocks = items.into_iter().map(localoffice_doc::para_block).collect();
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    t.rows[0].cells[0].blocks = items.into_iter().map(localwriter_doc::para_block).collect();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     assert_eq!(labels(&lay(&d)), ["1.", "2.", "3."]);
 }
 
 #[test]
 fn compatibility_mode_decides_where_a_table_s_edge_sits() {
-    use localoffice_doc::props::{Border, BorderStyle, Borders};
+    use localwriter_doc::props::{Border, BorderStyle, Borders};
     let cell_text_x = |mode: u32| {
         let mut d = Document::from_text("");
         d.settings.compat_mode = mode;
         let line = Some(Border { style: BorderStyle::Single, width: 0.5, color: None, space: 0.0 });
         let mut t = Table::new(1, 1, 200.0);
         t.props.borders = Some(Borders { top: line, left: line, bottom: line, right: line, between: line, inside_v: line });
-        t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("cell", Default::default()))];
-        d.body = vec![std::sync::Arc::new(localoffice_doc::Block::Table(t))];
+        t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("cell", Default::default()))];
+        d.body = vec![std::sync::Arc::new(localwriter_doc::Block::Table(t))];
         let l = lay(&d);
         l.pages[0].items.iter().find_map(|i| if let Placed::Lines { x, .. } = i { Some(*x) } else { None }).unwrap()
     };
@@ -5666,11 +5666,11 @@ fn compatibility_mode_decides_where_a_table_s_edge_sits() {
 
 #[test]
 fn floating_tables_take_no_room_and_text_wraps_beside_them() {
-    use localoffice_doc::para::Anchor;
-    use localoffice_doc::props::TableFloat;
+    use localwriter_doc::para::Anchor;
+    use localwriter_doc::props::TableFloat;
     let mut d = Document::from_text("Body text beside the narrow table.");
     let cell = |t: &mut Table, text: &str| {
-        t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()))]
+        t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()))]
     };
     let mut wide = Table::new(1, 1, 468.0);
     cell(&mut wide, "Wide");
@@ -5679,8 +5679,8 @@ fn floating_tables_take_no_room_and_text_wraps_beside_them() {
     cell(&mut narrow, "Narrow");
     narrow.props.float =
         Some(TableFloat { h_rel: Anchor::Column, v_rel: Anchor::Paragraph, dist: [9.0, 0.0, 9.0, 0.0], overlap: false, ..Default::default() });
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(wide)).unwrap();
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(narrow)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(wide)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(narrow)).unwrap();
     let l = lay(&d);
     let lines: Vec<(f32, f32, f32)> = l.pages[0]
         .items
@@ -5703,16 +5703,16 @@ fn floating_tables_take_no_room_and_text_wraps_beside_them() {
 /// table row is drawn exactly once there.
 #[test]
 fn a_floating_table_ignores_a_paragraphs_empty_lines() {
-    use localoffice_doc::para::Anchor;
-    use localoffice_doc::props::TableFloat;
+    use localwriter_doc::para::Anchor;
+    use localwriter_doc::props::TableFloat;
 
     let mut doc = pagination_fixture_document(&[""; 9].join("\n"));
     // Visible's line breaks belong inside its paragraph, not separate body paragraphs.
-    doc.body.push(localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Visible\n\n\n", Default::default())));
-    doc.body.extend((0..14).map(|_| localoffice_doc::para_block(localoffice_doc::Paragraph::new())));
+    doc.body.push(localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Visible\n\n\n", Default::default())));
+    doc.body.extend((0..14).map(|_| localwriter_doc::para_block(localwriter_doc::Paragraph::new())));
     for block in &mut doc.body {
         if let Block::Para(para) = Arc::make_mut(block) {
-            para.props.line_spacing = Some(localoffice_doc::props::LineSpacing::Exactly(14.0));
+            para.props.line_spacing = Some(localwriter_doc::props::LineSpacing::Exactly(14.0));
             para.props.space_before = Some(0.0);
             para.props.space_after = Some(8.0);
         }
@@ -5737,11 +5737,11 @@ fn a_floating_table_ignores_a_paragraphs_empty_lines() {
     );
     let mut table = Table::new(12, 1, 300.0);
     for (i, row) in table.rows.iter_mut().enumerate() {
-        row.cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&format!("Approval {i}"), Default::default()))];
+        row.cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&format!("Approval {i}"), Default::default()))];
     }
     table.props.float = Some(TableFloat { h_rel: Anchor::Margin, v_rel: Anchor::Margin, x: 100.0, y: 50.0, ..Default::default() });
     let at = doc.body.len();
-    doc.insert_block(StoryRef::Body, &Path::top(at), localoffice_doc::Block::Table(table)).unwrap();
+    doc.insert_block(StoryRef::Body, &Path::top(at), localwriter_doc::Block::Table(table)).unwrap();
 
     let layout = lay(&doc);
     assert_pagination_fixture_font(&layout);
@@ -5776,15 +5776,15 @@ fn a_floating_table_ignores_a_paragraphs_empty_lines() {
 
 #[test]
 fn a_floating_table_taller_than_a_page_runs_across_pages() {
-    use localoffice_doc::para::Anchor;
-    use localoffice_doc::props::TableFloat;
+    use localwriter_doc::para::Anchor;
+    use localwriter_doc::props::TableFloat;
     let mut d = Document::from_text("After the table.");
     let mut t = Table::new(80, 1, 300.0);
     for (i, r) in t.rows.iter_mut().enumerate() {
-        r.cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&format!("Row {i}"), Default::default()))];
+        r.cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&format!("Row {i}"), Default::default()))];
     }
     t.props.float = Some(TableFloat { h_rel: Anchor::Margin, v_rel: Anchor::Paragraph, x: -30.0, overlap: false, ..Default::default() });
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     assert!(l.pages.len() >= 2, "{} page(s)", l.pages.len());
     // Every row is drawn on a page, none past a page's bottom margin, and all from the table's
@@ -5808,16 +5808,16 @@ fn a_floating_table_taller_than_a_page_runs_across_pages() {
 /// page full of text goes to the next page with it, like Word, instead of covering that text.
 #[test]
 fn a_page_anchored_floating_table_after_a_full_page_moves_to_the_next() {
-    use localoffice_doc::para::Anchor;
-    use localoffice_doc::props::TableFloat;
+    use localwriter_doc::para::Anchor;
+    use localwriter_doc::props::TableFloat;
     let text: Vec<String> = (0..24).map(|i| format!("Paragraph {i} before the table.")).collect();
     let mut d = Document::from_text(&(text.join("\n") + "\nAfter the table."));
     let mut t = Table::new(15, 1, 300.0);
     for (i, r) in t.rows.iter_mut().enumerate() {
-        r.cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&format!("Row {i}"), Default::default()))];
+        r.cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&format!("Row {i}"), Default::default()))];
     }
     t.props.float = Some(TableFloat { h_rel: Anchor::Page, v_rel: Anchor::Page, x: 70.0, y: 71.0, ..Default::default() });
-    d.insert_block(StoryRef::Body, &Path::top(24), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(24), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let page_of = |want: &dyn Fn(&Path) -> bool| -> Vec<usize> {
         l.pages
@@ -5838,12 +5838,12 @@ fn a_page_anchored_floating_table_after_a_full_page_moves_to_the_next() {
 /// on that page: no blank page between the two tables around it.
 #[test]
 fn a_page_break_at_the_bottom_of_a_full_page_leaves_no_blank_page() {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     let props = ParaProps { line_spacing: Some(LineSpacing::Exactly(24.0)), space_before: Some(0.0), space_after: Some(0.0), ..Default::default() };
     let para = |text: &str| {
-        let mut p = localoffice_doc::Paragraph::with_text(text, Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text(text, Default::default());
         p.props = props.clone();
-        localoffice_doc::para_block(p)
+        localwriter_doc::para_block(p)
     };
     let mut d = Document::from_text("");
     // 27 lines of 24pt fill the 648pt of text on a Letter page.
@@ -5859,13 +5859,13 @@ fn a_page_break_at_the_bottom_of_a_full_page_leaves_no_blank_page() {
 /// size and win over the indent in points.
 #[test]
 fn character_indents_use_the_paragraph_mark_size() {
-    let mut p = localoffice_doc::Paragraph::with_text(&"字".repeat(80), Default::default());
+    let mut p = localwriter_doc::Paragraph::with_text(&"字".repeat(80), Default::default());
     p.props.indent_first = Some(5.0);
     p.props.indent_first_chars = Some(2.0);
     p.props.indent_left_chars = Some(1.0);
     p.mark.size = Some(20.0);
     let mut d = Document::from_text("");
-    d.body = vec![localoffice_doc::para_block(p)];
+    d.body = vec![localwriter_doc::para_block(p)];
     let l = lay(&d);
     let para = l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { Some(para.clone()) } else { None }).unwrap();
     assert!((para.lines[0].left - 60.0).abs() < 0.01, "first line at {}", para.lines[0].left);
@@ -5899,20 +5899,20 @@ fn no_line_break_right_after_a_slash() {
 fn a_word_after_a_slash_wraps_whole() {
     let (head, slash, tail) = ("ЖСН енгізілмеген жағдайда толтырылады", " /", "заполняется в случае неприсвоения ИИН");
     let text = format!("{head}{slash}{tail}");
-    let italic = localoffice_doc::CharProps { italic: Some(true), ..Default::default() };
-    let mut p = localoffice_doc::Paragraph::new();
+    let italic = localwriter_doc::CharProps { italic: Some(true), ..Default::default() };
+    let mut p = localwriter_doc::Paragraph::new();
     p.text = text.clone();
     p.runs = vec![
-        localoffice_doc::Run { len: head.len(), props: italic.clone() },
-        localoffice_doc::Run { len: slash.len(), props: Default::default() },
-        localoffice_doc::Run { len: tail.len(), props: italic },
+        localwriter_doc::Run { len: head.len(), props: italic.clone() },
+        localwriter_doc::Run { len: slash.len(), props: Default::default() },
+        localwriter_doc::Run { len: tail.len(), props: italic },
     ];
     let mut wrapped = 0;
     // Down to the width where the longest word still fits on a line: from there on, a line may
     // only end at a space.
     for m in 100..=450 {
         let mut d = Document::from_text("");
-        d.body = vec![localoffice_doc::para_block(p.clone())];
+        d.body = vec![localwriter_doc::para_block(p.clone())];
         d.last_section.margin_right = m as f32;
         let l = lay(&d);
         let lines: Vec<String> = l.pages[0]
@@ -5943,13 +5943,13 @@ fn a_word_after_a_slash_wraps_whole() {
 fn a_word_after_a_slash_wraps_whole_in_a_fixed_cell() {
     let (head, slash, tail) = ("ЖСН енгізілмеген жағдайда толтырылады", " /", "заполняется в случае неприсвоения ИИН");
     let text = format!("{head}{slash}{tail}");
-    let italic = localoffice_doc::CharProps { italic: Some(true), ..Default::default() };
-    let mut p = localoffice_doc::Paragraph::new();
+    let italic = localwriter_doc::CharProps { italic: Some(true), ..Default::default() };
+    let mut p = localwriter_doc::Paragraph::new();
     p.text = text.clone();
     p.runs = vec![
-        localoffice_doc::Run { len: head.len(), props: italic.clone() },
-        localoffice_doc::Run { len: slash.len(), props: Default::default() },
-        localoffice_doc::Run { len: tail.len(), props: italic },
+        localwriter_doc::Run { len: head.len(), props: italic.clone() },
+        localwriter_doc::Run { len: slash.len(), props: Default::default() },
+        localwriter_doc::Run { len: tail.len(), props: italic },
     ];
     let mut wrapped = 0;
     // From the width where the longest word fits in the cell.
@@ -5958,7 +5958,7 @@ fn a_word_after_a_slash_wraps_whole_in_a_fixed_cell() {
         table.props.style = None;
         table.props.fixed = true;
         table.props.cell_margins = Some([0.0; 4]);
-        table.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(p.clone())];
+        table.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(p.clone())];
         let mut d = Document::new();
         d.body = vec![std::sync::Arc::new(Block::Table(table))];
         let l = lay(&d);
@@ -6019,16 +6019,16 @@ fn unequal_formats_lay_out_in_linear_time() {
     // Runs whose formats never compare equal (NaN spacing from a hostile file) each get a style;
     // finding a run's style must not compare it against every earlier one.
     let doc = |n: usize| {
-        let mut p = localoffice_doc::Paragraph::with_text("", Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text("", Default::default());
         p.text = "ab ".repeat(n);
         p.runs = (0..n)
-            .map(|i| localoffice_doc::Run {
+            .map(|i| localwriter_doc::Run {
                 len: 3,
-                props: localoffice_doc::CharProps { spacing: Some(f32::NAN), bold: Some(i % 2 == 0), ..Default::default() },
+                props: localwriter_doc::CharProps { spacing: Some(f32::NAN), bold: Some(i % 2 == 0), ..Default::default() },
             })
             .collect();
         let mut d = Document::from_text("");
-        d.body = vec![localoffice_doc::para_block(p)];
+        d.body = vec![localwriter_doc::para_block(p)];
         d
     };
     let (t1, tk, ratio) = layout_time_ratio(doc, 5_000, &LayoutOptions::default());
@@ -6041,17 +6041,17 @@ fn formats_past_65536_in_a_paragraph_keep_their_own_style() {
     // More distinct formats than a 16-bit index counts (the paragraph mark takes a style too): every
     // run past that limit still draws with its own link, deletion and size, not an earlier run's.
     let n = usize::from(u16::MAX) + 3;
-    let props = |i: usize| localoffice_doc::CharProps {
+    let props = |i: usize| localwriter_doc::CharProps {
         link: Some(format!("#r{i}")),
         del: (i % 2 == 1).then_some(0),
         size: Some(if i.is_multiple_of(3) { 9.0 } else { 11.0 }),
         ..Default::default()
     };
-    let mut p = localoffice_doc::Paragraph::with_text("", Default::default());
+    let mut p = localwriter_doc::Paragraph::with_text("", Default::default());
     p.text = "ab ".repeat(n);
-    p.runs = (0..n).map(|i| localoffice_doc::Run { len: 3, props: props(i) }).collect();
+    p.runs = (0..n).map(|i| localwriter_doc::Run { len: 3, props: props(i) }).collect();
     let mut d = Document::from_text("");
-    d.body = vec![localoffice_doc::para_block(p)];
+    d.body = vec![localwriter_doc::para_block(p)];
     let l = lay(&d);
     let Some(Placed::Lines { para, .. }) = l.pages.iter().flat_map(|pg| pg.items.iter()).find(|i| matches!(i, Placed::Lines { .. })) else {
         panic!("no lines")
@@ -6070,16 +6070,16 @@ fn formats_past_65536_in_a_paragraph_keep_their_own_style() {
 
 #[test]
 fn hidden_float_in_a_table_cell_takes_no_room() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     // A square-wrapped shape anchored in hidden text inside a table cell, beside wrapping text.
     let mut d = Document::from_text("Body text.");
     let mut t = Table::new(1, 2, 468.0);
-    let mut cp = localoffice_doc::Paragraph::with_text(&"Cell words wrap around it. ".repeat(8), Default::default());
+    let mut cp = localwriter_doc::Paragraph::with_text(&"Cell words wrap around it. ".repeat(8), Default::default());
     let f = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, dist: 9.0, ..Default::default() };
-    let hidden = localoffice_doc::CharProps { hidden: Some(true), ..Default::default() };
+    let hidden = localwriter_doc::CharProps { hidden: Some(true), ..Default::default() };
     cp.insert_object(0, rect_shape(60.0, 40.0, f), &hidden).unwrap();
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(cp)];
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(cp)];
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     // (shapes placed, the cell text's widest first-line indent)
     let run = |show_hidden: bool| {
         let l = layout(&d, &mut LayoutCache::new(), &LayoutOptions { show_hidden, ..Default::default() });
@@ -6098,10 +6098,10 @@ fn hidden_float_in_a_table_cell_takes_no_room() {
 #[test]
 fn objects_left_out_through_the_table_style_formatting() {
     // The table style's character formatting sits under the runs' own, as the cell is laid out.
-    let mut p = localoffice_doc::Paragraph::with_text("ab", Default::default());
+    let mut p = localwriter_doc::Paragraph::with_text("ab", Default::default());
     p.insert_object(1, rect_shape(10.0, 10.0, Default::default()), &Default::default()).unwrap();
     let d = Document::from_text("");
-    let hidden = localoffice_doc::CharProps { hidden: Some(true), ..Default::default() };
+    let hidden = localwriter_doc::CharProps { hidden: Some(true), ..Default::default() };
     assert!(!left_out_objects(&d, &p, None, false, HideDeleted::default())(0));
     assert!(left_out_objects(&d, &p, Some(&hidden), false, HideDeleted::default())(0));
     assert!(!left_out_objects(&d, &p, Some(&hidden), true, HideDeleted::default())(0), "hidden text shown");
@@ -6109,12 +6109,12 @@ fn objects_left_out_through_the_table_style_formatting() {
 
 #[test]
 fn hidden_float_in_a_text_box_is_not_placed() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     // A shape anchored in hidden text inside a text box: no drawing, no hit area.
     let mut d = Document::from_text("Body text.");
     let id = text_box(&mut d, 0, "Box words.", 200.0, 120.0, Default::default());
     let f = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, ..Default::default() };
-    let hidden = localoffice_doc::CharProps { hidden: Some(true), ..Default::default() };
+    let hidden = localwriter_doc::CharProps { hidden: Some(true), ..Default::default() };
     let at = Pos { story: StoryRef::Part(id), path: Path::top(0), off: 0 };
     d.insert_object(&at, rect_shape(30.0, 20.0, f), &hidden).unwrap();
     let count = |show_hidden: bool| {
@@ -6141,12 +6141,12 @@ fn inline_graphic_reserves_its_height() {
 
 #[test]
 fn graphic_items_draw_inside_the_object() {
-    use localoffice_doc::graphic::{Graphic, GraphicItem, GraphicKind, PathSeg, TextAlign};
-    use localoffice_doc::props::Rgb;
+    use localwriter_doc::graphic::{Graphic, GraphicItem, GraphicKind, PathSeg, TextAlign};
+    use localwriter_doc::props::Rgb;
     let items = vec![
         GraphicItem::Shape {
             rect: [10.0, 5.0, 20.0, 20.0],
-            kind: localoffice_doc::para::ShapeKind::Rectangle,
+            kind: localwriter_doc::para::ShapeKind::Rectangle,
             fill: Some(Rgb::BLACK),
             stroke: None,
             stroke_width: 0.0,
@@ -6184,8 +6184,8 @@ fn graphic_items_draw_inside_the_object() {
 
 #[test]
 fn graphic_text_in_a_degenerate_rectangle_is_not_drawn() {
-    use localoffice_doc::graphic::{Graphic, GraphicItem, GraphicKind, TextAlign};
-    use localoffice_doc::props::Rgb;
+    use localwriter_doc::graphic::{Graphic, GraphicItem, GraphicKind, TextAlign};
+    use localwriter_doc::props::Rgb;
     let text = |rect: [f32; 4], size: f32| GraphicItem::Text {
         rect,
         text: "Q1".into(),
@@ -6211,8 +6211,8 @@ fn flat(draws: Vec<display::Draw>) -> Vec<display::Draw> {
 
 #[test]
 fn inline_chart_is_a_figure_with_its_alt_text() {
-    use localoffice_doc::graphic::{Graphic, GraphicItem, GraphicKind, PathSeg};
-    use localoffice_doc::props::Rgb;
+    use localwriter_doc::graphic::{Graphic, GraphicItem, GraphicKind, PathSeg};
+    use localwriter_doc::props::Rgb;
     let items = vec![GraphicItem::Path {
         segs: vec![PathSeg::Move(1.0, 1.0), PathSeg::Line(2.0, 2.0)],
         fill: None,
@@ -6230,8 +6230,8 @@ fn inline_chart_is_a_figure_with_its_alt_text() {
 
 #[test]
 fn graphic_paths_drop_segments_that_cannot_be_drawn() {
-    use localoffice_doc::graphic::{Graphic, GraphicItem, GraphicKind, PathSeg};
-    use localoffice_doc::props::Rgb;
+    use localwriter_doc::graphic::{Graphic, GraphicItem, GraphicKind, PathSeg};
+    use localwriter_doc::props::Rgb;
     // The line before the first move, the move with a NaN, the infinite line and the line after the
     // close are all dropped.
     let segs = vec![
@@ -6256,12 +6256,12 @@ fn graphic_paths_drop_segments_that_cannot_be_drawn() {
 
 #[test]
 fn graphic_items_scale_with_their_frame() {
-    use localoffice_doc::graphic::{Graphic, GraphicItem, GraphicKind};
-    use localoffice_doc::props::Rgb;
+    use localwriter_doc::graphic::{Graphic, GraphicItem, GraphicKind};
+    use localwriter_doc::props::Rgb;
     // A chart drawn for 1000 x 500 pt in a 500 x 250 pt frame: its items and strokes scale by half.
     let items = vec![GraphicItem::Shape {
         rect: [0.0, 0.0, 1000.0, 500.0],
-        kind: localoffice_doc::para::ShapeKind::Rectangle,
+        kind: localwriter_doc::para::ShapeKind::Rectangle,
         fill: None,
         stroke: Some(Rgb::BLACK),
         stroke_width: 4.0,
@@ -6284,11 +6284,11 @@ fn inline_picture_wider_than_a_text_box_is_fitted_to_it() {
     // Text boxes don't clip what runs past their sides, so a 400 x 100 pt picture in a 144 pt box
     // is fitted to the box's 129.6 pt inside its margins instead of spilling over the page.
     let mut d = Document::from_text("Before");
-    let mut p = localoffice_doc::Paragraph::with_text("", Default::default());
+    let mut p = localwriter_doc::Paragraph::with_text("", Default::default());
     p.insert_object(0, picture(400.0, 100.0, Default::default()), &Default::default()).unwrap();
-    let id = d.add_part(localoffice_doc::PartKind::TextBox, vec![localoffice_doc::para_block(p)]);
+    let id = d.add_part(localwriter_doc::PartKind::TextBox, vec![localwriter_doc::para_block(p)]);
     let shape = InlineObject::Shape {
-        kind: localoffice_doc::para::ShapeKind::TextBox,
+        kind: localwriter_doc::para::ShapeKind::TextBox,
         w: 144.0,
         h: 72.0,
         fill: None,
@@ -6306,7 +6306,7 @@ fn inline_picture_wider_than_a_text_box_is_fitted_to_it() {
     let r = draws
         .iter()
         .find_map(|x| match x {
-            display::Draw::Shape { rect, kind: localoffice_doc::para::ShapeKind::Rectangle, .. } => Some(*rect),
+            display::Draw::Shape { rect, kind: localwriter_doc::para::ShapeKind::Rectangle, .. } => Some(*rect),
             _ => None,
         })
         .expect("the picture");
@@ -6318,7 +6318,7 @@ fn inline_picture_wider_than_the_text_keeps_its_size() {
     // A 1000 x 100 pt picture in 468 pt of text: Word draws it at its size, past the margin, and the
     // page edge clips it; the line is as tall as the picture (docxide-pdf's case179).
     let mut d = Document::from_text("");
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
         p.insert_object(0, picture(1000.0, 100.0, Default::default()), &Default::default()).unwrap();
     }
     let l = lay(&d);
@@ -6342,7 +6342,7 @@ fn a_float_anchor_does_not_push_a_wide_picture_to_a_second_line() {
             at = d.insert_object(&at, rect_shape(50.0, 30.0, page_float(300.0, 300.0)), &Default::default()).unwrap();
         }
         // 480 pt wide on a 468 pt line.
-        d.insert_object(&at, picture(480.0, 100.0, localoffice_doc::para::Float::default()), &Default::default()).unwrap();
+        d.insert_object(&at, picture(480.0, 100.0, localwriter_doc::para::Float::default()), &Default::default()).unwrap();
         let l = lay(&d);
         para_at(&l, &[0])[0].2
     };
@@ -6356,7 +6356,7 @@ fn a_picture_too_wide_after_a_content_control_start_stays_on_the_first_line() {
     // narrow for it): the control's start marker before it takes no room, so the picture is
     // still the line's first item and stays there instead of leaving an empty line above it.
     let mut d = Document::from_text("");
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
         p.insert_object(0, picture(500.0, 100.0, Default::default()), &Default::default()).unwrap();
         let start = InlineObject::ControlStart { control: Box::default() };
         p.insert_object(0, start, &Default::default()).unwrap();
@@ -6382,18 +6382,18 @@ fn para_at(l: &DocLayout, path: &[u32]) -> Vec<(f32, f32, usize)> {
 
 #[test]
 fn a_floating_table_in_a_cell_takes_no_room_and_the_cell_holds_it() {
-    use localoffice_doc::para::Anchor;
-    use localoffice_doc::props::TableFloat;
-    let text = |s: &str| localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(s, Default::default()));
+    use localwriter_doc::para::Anchor;
+    use localwriter_doc::props::TableFloat;
+    let text = |s: &str| localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(s, Default::default()));
     let mut inner = Table::new(3, 1, 200.0);
     for (i, r) in inner.rows.iter_mut().enumerate() {
         r.cells[0].blocks = vec![text(&format!("Inner {i}"))];
     }
     inner.props.float = Some(TableFloat { h_rel: Anchor::Margin, v_rel: Anchor::Paragraph, dist: [9.0, 0.0, 9.0, 0.0], ..Default::default() });
     let mut outer = Table::new(1, 1, 468.0);
-    outer.rows[0].cells[0].blocks = vec![std::sync::Arc::new(localoffice_doc::Block::Table(inner)), text("Beside")];
+    outer.rows[0].cells[0].blocks = vec![std::sync::Arc::new(localwriter_doc::Block::Table(inner)), text("Beside")];
     let mut d = Document::from_text("Below");
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(outer)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(outer)).unwrap();
     let l = lay(&d);
     let (&[(ix, iy, _)], &[(_, last_y, _)], &[(bx, by, _)], &[(_, below_y, _)]) =
         (&para_at(&l, &[0, 0, 0, 0, 0, 0, 0])[..], &para_at(&l, &[0, 0, 0, 0, 2, 0, 0])[..], &para_at(&l, &[0, 0, 0, 1])[..], &para_at(&l, &[1])[..])
@@ -6412,16 +6412,16 @@ fn a_floating_table_in_a_cell_takes_no_room_and_the_cell_holds_it() {
 /// whatever follows the table (#3108).
 #[test]
 fn a_floating_picture_in_a_cell_grows_the_row_to_hold_it() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut t = Table::new(1, 1, 468.0);
-    let mut cp = localoffice_doc::Paragraph::with_text("Caption", Default::default());
+    let mut cp = localwriter_doc::Paragraph::with_text("Caption", Default::default());
     // Short text alone would need one line (well under 100pt); the floated picture is much
     // taller than that, so only its own height should set the row's height.
     let picture = Float { wrap: Wrap::Square, h_rel: Anchor::Margin, v_rel: Anchor::Margin, x: 0.0, y: 0.0, ..Default::default() };
     cp.insert_object(0, rect_shape(200.0, 300.0, picture), &Default::default()).unwrap();
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(cp)];
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(cp)];
     let mut d = Document::from_text("Below the table");
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let [(_, row_y, _)] = para_at(&l, &[0, 0, 0, 0])[..] else { panic!("cell text line missing") };
     let [(_, below_y, _)] = para_at(&l, &[1])[..] else { panic!("line after the table missing") };
@@ -6430,17 +6430,17 @@ fn a_floating_picture_in_a_cell_grows_the_row_to_hold_it() {
 
 #[test]
 fn a_rotated_floating_picture_grows_the_row_by_its_rotated_extent() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut t = Table::new(1, 1, 468.0);
-    let mut cp = localoffice_doc::Paragraph::with_text("Caption", Default::default());
+    let mut cp = localwriter_doc::Paragraph::with_text("Caption", Default::default());
     // Unrotated this shape's own `rect.bottom()` is only 40pt down. Rotated 90° about its centre
     // (`Spin::bounds`: width and height swap), its drawn bottom moves to (w+h)/2 = 220pt down —
     // using the unrotated rect here would undergrow the row to a fraction of that.
     let picture = Float { wrap: Wrap::Square, h_rel: Anchor::Margin, v_rel: Anchor::Margin, x: 0.0, y: 0.0, rot: 90.0, ..Default::default() };
     cp.insert_object(0, rect_shape(400.0, 40.0, picture), &Default::default()).unwrap();
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(cp)];
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(cp)];
     let mut d = Document::from_text("Below the table");
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let [(_, row_y, _)] = para_at(&l, &[0, 0, 0, 0])[..] else { panic!("cell text line missing") };
     let [(_, below_y, _)] = para_at(&l, &[1])[..] else { panic!("line after the table missing") };
@@ -6455,15 +6455,15 @@ fn a_rotated_floating_picture_grows_the_row_by_its_rotated_extent() {
 /// in Word — a page-anchored logo or watermark behind a cell must not stretch its row.
 #[test]
 fn a_behind_or_in_front_of_text_picture_in_a_cell_leaves_the_row_alone() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let row_gap = |wrap: Wrap| {
         let mut t = Table::new(1, 1, 468.0);
-        let mut cp = localoffice_doc::Paragraph::with_text("Caption", Default::default());
+        let mut cp = localwriter_doc::Paragraph::with_text("Caption", Default::default());
         let picture = Float { wrap, h_rel: Anchor::Margin, v_rel: Anchor::Margin, x: 0.0, y: 0.0, ..Default::default() };
         cp.insert_object(0, rect_shape(200.0, 300.0, picture), &Default::default()).unwrap();
-        t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(cp)];
+        t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(cp)];
         let mut d = Document::from_text("Below the table");
-        d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         let [(_, row_y, _)] = para_at(&l, &[0, 0, 0, 0])[..] else { panic!("cell text line missing") };
         let [(_, below_y, _)] = para_at(&l, &[1])[..] else { panic!("line after the table missing") };
@@ -6477,14 +6477,14 @@ fn a_behind_or_in_front_of_text_picture_in_a_cell_leaves_the_row_alone() {
 
 #[test]
 fn autofit_sizes_columns_by_their_content() {
-    let text = |s: &str| localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(s, Default::default()));
+    let text = |s: &str| localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(s, Default::default()));
     // No width anywhere: the columns come from their content.
     let mut t = Table::new(1, 2, 468.0);
     t.rows[0].cells[0].blocks = vec![text("Short")];
     t.rows[0].cells[1].blocks = vec![text(&"A long cell that needs most of the width. ".repeat(4))];
     t.rows[0].cells.iter_mut().for_each(|c| c.props.width = None);
     let mut d = Document::from_text("After");
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let (&[(sx, _, _)], &[(lx, _, _)]) = (&para_at(&l, &[0, 0, 0, 0])[..], &para_at(&l, &[0, 0, 1, 0])[..]) else { panic!("lines missing") };
     assert!(lx - sx < 80.0, "the short column is {}pt wide", lx - sx);
@@ -6493,7 +6493,7 @@ fn autofit_sizes_columns_by_their_content() {
     t.grid = vec![400.0, 20.0, 48.0];
     t.rows[0].cells[1].blocks = vec![text("Unbreakable")];
     let mut d = Document::from_text("After");
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let [(_, _, n)] = para_at(&l, &[0, 0, 1, 0])[..] else { panic!("line missing") };
     assert_eq!(n, 1, "the word is broken over {n} lines");
@@ -6501,10 +6501,10 @@ fn autofit_sizes_columns_by_their_content() {
 
 #[test]
 fn autofit_handles_spanning_cells_long_words_and_empty_tables() {
-    let text = |s: &str| localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(s, Default::default()));
+    let text = |s: &str| localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(s, Default::default()));
     let table_x = |t: Table, path: &[u32]| {
         let mut d = Document::from_text("After");
-        d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
         para_at(&lay(&d), path)
     };
     let automatic = |rows: usize, cols: usize| {
@@ -6542,7 +6542,7 @@ fn autofit_handles_spanning_cells_long_words_and_empty_tables() {
 
 #[test]
 fn an_inherited_footer_sizes_its_percentage_table_by_its_own_section() {
-    use localoffice_doc::section::SectionProps;
+    use localwriter_doc::section::SectionProps;
     // Measured in Word: a 100%-wide footer table defined by a portrait section keeps that width on
     // a landscape page that inherits the footer, centred there; a landscape section naming the
     // same footer itself gets the landscape width.
@@ -6550,7 +6550,7 @@ fn an_inherited_footer_sizes_its_percentage_table_by_its_own_section() {
         let mut d = Document::from_text("Portrait\nLandscape");
         let mut t = Table::new(1, 2, 100.0);
         t.props.width_pct = Some(100.0);
-        let footer = d.add_part(localoffice_doc::PartKind::Footer, vec![std::sync::Arc::new(localoffice_doc::Block::Table(t))]);
+        let footer = d.add_part(localwriter_doc::PartKind::Footer, vec![std::sync::Arc::new(localwriter_doc::Block::Table(t))]);
         let mut portrait = SectionProps::default();
         portrait.footers.default = Some(footer);
         d.para_mut(StoryRef::Body, &Path::top(0)).unwrap().section = Some(Box::new(portrait.clone()));
@@ -6576,7 +6576,7 @@ fn an_inherited_footer_sizes_its_percentage_table_by_its_own_section() {
 /// remain.
 #[test]
 fn a_row_with_less_room_than_its_minimum_height_moves_on_whole() {
-    use localoffice_doc::props::HeightRule;
+    use localwriter_doc::props::HeightRule;
     // Exactly 50pt of measured room remains. The same eight paragraphs split without a minimum,
     // but an at-least height of 63.6pt moves the row to the next page whole.
     let first_row_line_page = |min: Option<f32>| {
@@ -6585,10 +6585,10 @@ fn a_row_with_less_room_than_its_minimum_height_moves_on_whole() {
         t.rows[0].props.height = min;
         t.rows[0].props.height_rule = HeightRule::AtLeast;
         t.rows[0].cells[0].blocks = (1..=8)
-            .map(|k| localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&format!("Row line {k}"), Default::default())))
+            .map(|k| localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&format!("Row line {k}"), Default::default())))
             .collect();
         let end = d.body.len();
-        d.insert_block(StoryRef::Body, &Path::top(end), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(end), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         assert_pagination_fixture_font(&l);
         let row_lines: Vec<_> = l
@@ -6645,7 +6645,7 @@ fn set_at_least_row_spacing(t: &mut Table) {
         for cell in &mut row.cells {
             for block in &mut cell.blocks {
                 if let Block::Para(para) = Arc::make_mut(block) {
-                    para.props.line_spacing = Some(localoffice_doc::props::LineSpacing::Exactly(14.0));
+                    para.props.line_spacing = Some(localwriter_doc::props::LineSpacing::Exactly(14.0));
                     para.props.space_before = Some(0.0);
                     para.props.space_after = Some(0.0);
                 }
@@ -6705,7 +6705,7 @@ fn at_least_rows(room: f32, rows: usize, build: impl Fn(&mut Table)) -> (DocLayo
     let mut t = Table::new(rows, 1, 468.0);
     build(&mut t);
     set_at_least_row_spacing(&mut t);
-    d.insert_block(StoryRef::Body, &Path::top(at), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(at), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     assert_pagination_fixture_font(&l);
     let trailing = at_least_rows_trailing(&l, at);
@@ -6718,13 +6718,13 @@ fn at_least_rows(room: f32, rows: usize, build: impl Fn(&mut Table)) -> (DocLayo
     (l, pages)
 }
 
-fn lines_in_cell(n: usize, what: &str) -> Vec<std::sync::Arc<localoffice_doc::Block>> {
-    (1..=n).map(|k| localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&format!("{what} {k}"), Default::default()))).collect()
+fn lines_in_cell(n: usize, what: &str) -> Vec<std::sync::Arc<localwriter_doc::Block>> {
+    (1..=n).map(|k| localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&format!("{what} {k}"), Default::default()))).collect()
 }
 
 #[test]
 fn an_at_least_row_with_no_room_starts_the_next_page_whole_either_way_breaking_is_set() {
-    use localoffice_doc::props::HeightRule;
+    use localwriter_doc::props::HeightRule;
     // Word for Mac 16.113, A4 with about 2.6 cm (74 pt) left: row 2, at least 8 cm (226.8 pt),
     // starts page 2 whole and row 1 stays on page 1, whether the row may break across pages or not.
     for cant_split in [false, true] {
@@ -6739,7 +6739,7 @@ fn an_at_least_row_with_no_room_starts_the_next_page_whole_either_way_breaking_i
 
 #[test]
 fn an_at_least_row_with_centred_lines_moves_whole_and_centres_them_in_its_height() {
-    use localoffice_doc::props::{HeightRule, VAlign};
+    use localwriter_doc::props::{HeightRule, VAlign};
     // Word: 10 short lines, centred vertically, in an "at least 8 cm" row with 2.6 cm left. The
     // lines would split there, but the whole row goes to page 2 and they sit in the middle of it.
     let (l, pages) = at_least_rows(74.0, 2, |t| {
@@ -6767,7 +6767,7 @@ fn an_at_least_row_with_centred_lines_moves_whole_and_centres_them_in_its_height
 
 #[test]
 fn an_at_least_row_taller_than_a_page_splits_from_the_top_of_the_next_page() {
-    use localoffice_doc::props::HeightRule;
+    use localwriter_doc::props::HeightRule;
     // A row at least 700 pt tall (the body is 648 pt) holding 80 lines: it can't fit on any page,
     // so it splits, but it starts on a fresh page rather than in the 200 pt left under the text.
     let (_, pages) = at_least_rows(200.0, 1, |t| {
@@ -6783,7 +6783,7 @@ fn an_at_least_row_taller_than_a_page_splits_from_the_top_of_the_next_page() {
 /// on, keeps all 80 cell paragraphs, and pagination terminates.
 #[test]
 fn an_at_least_row_at_the_top_of_a_page_splits_instead_of_moving_on() {
-    use localoffice_doc::props::HeightRule;
+    use localwriter_doc::props::HeightRule;
     // At the top of a page (or under the header rows repeated there) moving on gains nothing: a
     // row taller than the room splits, and pagination ends.
     let (l, pages) = at_least_rows(648.0, 1, |t| {
@@ -6842,7 +6842,7 @@ fn an_at_least_row_at_the_top_of_a_page_splits_instead_of_moving_on() {
 
 #[test]
 fn repeated_header_moves_with_a_first_row_that_moves_on_whole() {
-    use localoffice_doc::props::HeightRule;
+    use localwriter_doc::props::HeightRule;
     // A 20 pt header, then a row at least 200 pt holding eight lines, with 100 pt left: the row
     // moves on whole, so the header goes with it rather than staying alone at the foot of page 1.
     let (_, pages) = at_least_rows(100.0, 2, |t| {
@@ -6858,17 +6858,17 @@ fn repeated_header_moves_with_a_first_row_that_moves_on_whole() {
 
 #[test]
 fn text_overflowing_an_exact_row_is_clipped_to_it() {
-    use localoffice_doc::props::HeightRule;
+    use localwriter_doc::props::HeightRule;
     // An exactly 12 pt row holding three lines: Word shows what fits and cuts the rest at the row's
     // edge, rather than drawing it over the rows below.
     let mut t = Table::new(2, 1, 200.0);
     t.rows[0].props.height = Some(12.0);
     t.rows[0].props.height_rule = HeightRule::Exact;
     t.rows[0].cells[0].blocks =
-        ["one", "two", "three"].iter().map(|s| localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(s, Default::default()))).collect();
-    t.rows[1].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("below", Default::default()))];
+        ["one", "two", "three"].iter().map(|s| localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(s, Default::default()))).collect();
+    t.rows[1].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("below", Default::default()))];
     let mut d = Document::from_text("After");
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
     let draws = display::page_display(&d, &lay(&d).pages[0], &Default::default());
     let clipped = |want: &str| {
         draws.iter().any(|x| match x {
@@ -6890,10 +6890,10 @@ fn a_percentage_width_past_the_text_column_is_kept() {
     t.props.width_pct = Some(131.28);
     t.props.indent = Some(-72.0);
     for (c, s) in t.rows[0].cells.iter_mut().zip(["Left", "Right"]) {
-        c.blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(s, Default::default()))];
+        c.blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(s, Default::default()))];
     }
     let mut d = Document::from_text("After");
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
     let [(x, _, _)] = para_at(&lay(&d), &[0, 0, 1, 0])[..] else { panic!("second cell missing") };
     // Two equal columns of 614.4 pt from x = 0: the second starts past the middle of the page.
     assert!(x > 307.0, "the second column starts at {x}");
@@ -6901,20 +6901,20 @@ fn a_percentage_width_past_the_text_column_is_kept() {
 
 #[test]
 fn a_floating_table_in_the_footer_leaves_the_footer_where_it_is() {
-    use localoffice_doc::para::Anchor;
-    use localoffice_doc::props::TableFloat;
+    use localwriter_doc::para::Anchor;
+    use localwriter_doc::props::TableFloat;
     let footer_y = |float: bool| {
         let mut d = Document::from_text("Body");
         let mut t = Table::new(1, 1, 100.0);
-        t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Float", Default::default()))];
+        t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Float", Default::default()))];
         if float {
             t.props.float = Some(TableFloat { h_rel: Anchor::Page, v_rel: Anchor::Page, y: 720.0, ..Default::default() });
         }
         let blocks = vec![
-            localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Footer", Default::default())),
-            std::sync::Arc::new(localoffice_doc::Block::Table(t)),
+            localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Footer", Default::default())),
+            std::sync::Arc::new(localwriter_doc::Block::Table(t)),
         ];
-        let id = d.add_part(localoffice_doc::PartKind::Footer, blocks);
+        let id = d.add_part(localwriter_doc::PartKind::Footer, blocks);
         d.last_section.footers.default = Some(id);
         let l = lay(&d);
         l.pages[0].footer.iter().find_map(|it| if let Placed::Lines { y, path, .. } = it { (path.0 == [0]).then_some(*y) } else { None }).unwrap()
@@ -6934,7 +6934,7 @@ fn a_split_row_moves_shading_below_the_cut_with_it() {
         };
         Placed::Lines { story, path, para, l0: 0, l1: 1, x: 0.0, y, turn: TextDirection::Horizontal }
     };
-    let fill = |y: f32, h: f32| Placed::Fill { rect: localoffice_geom::Rect::new(0.0, y, 100.0, h), color: localoffice_doc::props::Rgb(200, 0, 0) };
+    let fill = |y: f32, h: f32| Placed::Fill { rect: localwriter_geom::Rect::new(0.0, y, 100.0, h), color: localwriter_doc::props::Rgb(200, 0, 0) };
     // The row's own shading (from its top) and a nested cell's shading starting below the cut.
     let row = RowLayout {
         edge: 0.0,
@@ -6960,7 +6960,7 @@ fn kinsoku_keeps_a_manual_line_break_before_a_closing_bracket() {
     // before one still ends the line there.
     let text = "日本語\n」テスト";
     let mut d = Document::from_text("");
-    d.body = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()))];
+    d.body = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()))];
     let l = lay(&d);
     let mut lines = Vec::new();
     for p in &l.pages {
@@ -6984,17 +6984,17 @@ fn rotated_float_wraps_around_its_rotated_bounds() {
     let text = "Words flow around the turned shape here. ".repeat(30);
     let place = |rot: f32| {
         let mut d = Document::from_text(&text);
-        let float = localoffice_doc::para::Float {
-            wrap: localoffice_doc::para::Wrap::Square,
-            h_rel: localoffice_doc::para::Anchor::Column,
-            v_rel: localoffice_doc::para::Anchor::Paragraph,
+        let float = localwriter_doc::para::Float {
+            wrap: localwriter_doc::para::Wrap::Square,
+            h_rel: localwriter_doc::para::Anchor::Column,
+            v_rel: localwriter_doc::para::Anchor::Paragraph,
             x: 0.0,
             y: 40.0,
             rot,
             ..Default::default()
         };
         let shape = InlineObject::Shape {
-            kind: localoffice_doc::para::ShapeKind::Rectangle,
+            kind: localwriter_doc::para::ShapeKind::Rectangle,
             w: 144.0,
             h: 40.0,
             fill: None,
@@ -7036,13 +7036,13 @@ fn rotated_float_wraps_around_its_rotated_bounds() {
 /// its page direction inside the turn; one that does turns with the shape.
 #[test]
 fn rotated_group_turns_its_members_and_their_shadows() {
-    use localoffice_doc::effects::{Shadow, ShapeEffects};
-    use localoffice_doc::para::{Anchor, Float, GroupChild, ShapeKind, Wrap};
+    use localwriter_doc::effects::{Shadow, ShapeEffects};
+    use localwriter_doc::para::{Anchor, Float, GroupChild, ShapeKind, Wrap};
     let member = |rot_with_shape: bool, rot: f32| InlineObject::Shape {
         kind: ShapeKind::Rectangle,
         w: 60.0,
         h: 40.0,
-        fill: Some(Fill::solid(localoffice_doc::props::Rgb(1, 2, 3))),
+        fill: Some(Fill::solid(localwriter_doc::props::Rgb(1, 2, 3))),
         stroke: None,
         stroke_width: 0.0,
         float: Float { rot, ..Default::default() },
@@ -7189,9 +7189,9 @@ fn footnote_longer_than_pages_ends() {
 
 /// A comment by `author` saying `text` on body paragraph `para`, bytes `a..b`; its id.
 fn comment_on(d: &mut Document, para: usize, a: usize, b: usize, author: &str, text: &str, parent: Option<u32>) -> u32 {
-    let part = d.add_part(localoffice_doc::PartKind::Comment, vec![localoffice_doc::para_block(Paragraph::with_text(text, CharProps::default()))]);
+    let part = d.add_part(localwriter_doc::PartKind::Comment, vec![localwriter_doc::para_block(Paragraph::with_text(text, CharProps::default()))]);
     let id = d.comments.keys().next_back().map_or(0, |k| k + 1);
-    d.comments.insert(id, localoffice_doc::Comment { author: author.into(), part, parent, ..Default::default() });
+    d.comments.insert(id, localwriter_doc::Comment { author: author.into(), part, parent, ..Default::default() });
     if parent.is_none() {
         let p = CharProps::default();
         d.insert_object(&Pos::body(para, b), InlineObject::CommentEnd { id }, &p).unwrap();
@@ -7292,11 +7292,11 @@ fn line_spans(l: &DocLayout) -> Vec<(f32, f32, f32, f32)> {
 }
 
 /// A shape floating at the column's top-left with `wrap`, beside a long paragraph.
-fn wrapped_shape_doc(kind: localoffice_doc::para::ShapeKind, w: f32, h: f32, float: localoffice_doc::para::Float) -> Document {
+fn wrapped_shape_doc(kind: localwriter_doc::para::ShapeKind, w: f32, h: f32, float: localwriter_doc::para::Float) -> Document {
     let mut d = Document::from_text(&"Words flow around the shape here. ".repeat(40));
-    let float = localoffice_doc::para::Float {
-        h_rel: localoffice_doc::para::Anchor::Column,
-        v_rel: localoffice_doc::para::Anchor::Paragraph,
+    let float = localwriter_doc::para::Float {
+        h_rel: localwriter_doc::para::Anchor::Column,
+        v_rel: localwriter_doc::para::Anchor::Paragraph,
         dist: 9.0,
         ..float
     };
@@ -7319,7 +7319,7 @@ fn wrapped_shape_doc(kind: localoffice_doc::para::ShapeKind, w: f32, h: f32, flo
 
 #[test]
 fn tight_wrap_follows_an_ellipse() {
-    use localoffice_doc::para::{Float, ShapeKind, Wrap};
+    use localwriter_doc::para::{Float, ShapeKind, Wrap};
     let spans = |wrap| {
         let mut d = wrapped_shape_doc(ShapeKind::Ellipse, 160.0, 160.0, Float { wrap, ..Default::default() });
         d.styles.default_chr.font = Some(WRAP_TEST_FONT.into());
@@ -7360,8 +7360,8 @@ fn tight_wrap_follows_an_ellipse() {
 
 #[test]
 fn contour_wrap_turns_with_the_object() {
-    use localoffice_doc::para::{Float, ShapeKind, Wrap};
-    use localoffice_doc::wrap::WrapPolygon;
+    use localwriter_doc::para::{Float, ShapeKind, Wrap};
+    use localwriter_doc::wrap::WrapPolygon;
     // A wrap polygon covering the left half of a 200 × 100 frame.
     let poly = WrapPolygon::new(true, [(0, 0), (10_800, 0), (10_800, 21_600), (0, 21_600)]).map(Arc::new);
     // Where text goes on the first row: (left, right) of each line there.
@@ -7387,7 +7387,7 @@ fn contour_wrap_turns_with_the_object() {
 /// symbol" a bigger shape around text at its own size. Plain `\o` overstrikes its arguments.
 #[test]
 fn enclosed_characters_draw_a_shape_around_the_text() {
-    use localoffice_doc::eq::{EncloseShape, EncloseStyle, Enclosure};
+    use localwriter_doc::eq::{EncloseShape, EncloseStyle, Enclosure};
     let draw = |shape: EncloseShape, style: EncloseStyle| {
         let mut d = Document::from_text("a  b");
         let e = Enclosure { shape, style, text: "A".into() };
@@ -7415,14 +7415,14 @@ fn enclosed_characters_draw_a_shape_around_the_text() {
         (shape.expect("a shape"), at("A"), at("b"))
     };
     let ((rect, kind, stroked), (size, gx), (base, bx)) = draw(EncloseShape::Circle, EncloseStyle::Shrink);
-    assert_eq!(kind, localoffice_doc::para::ShapeKind::Ellipse);
+    assert_eq!(kind, localwriter_doc::para::ShapeKind::Ellipse);
     assert!(stroked);
     assert!(size < base * 0.8, "the text shrinks: {size} vs {base}");
     assert!((rect.h - base * 1.05).abs() < 0.1 && (rect.w - rect.h).abs() < 0.1, "{rect:?}");
     assert!(gx > rect.x && gx < rect.x + rect.w, "the text is inside: {gx} {rect:?}");
     assert!(bx >= rect.x + rect.w, "the next text follows the shape: {bx} {rect:?}");
     let ((rect, kind, _), (size, _), (base, _)) = draw(EncloseShape::Diamond, EncloseStyle::Enlarge);
-    assert_eq!(kind, localoffice_doc::para::ShapeKind::Diamond);
+    assert_eq!(kind, localwriter_doc::para::ShapeKind::Diamond);
     assert!((size - base).abs() < 0.01 && rect.h > base * 1.5, "the shape grows: {rect:?}");
 
     // A general overstrike: both arguments at the same place, no shape.
@@ -7441,27 +7441,27 @@ fn enclosed_characters_draw_a_shape_around_the_text() {
 
 #[test]
 fn superscript_and_subscript_lines_are_as_tall_as_full_size_text() {
-    use localoffice_doc::props::VertAlign;
+    use localwriter_doc::props::VertAlign;
     // Word sizes the line at the full font size and leaves out the raise or drop (Word for Mac:
     // an 11pt subscript beside 11pt text keeps the 12.675pt line; 24pt subscript alone makes the
     // 27.6pt line of plain 24pt text). A `w:position` lowering still counts.
     let height = |runs: &[(&str, f32, VertAlign, f32)]| {
-        let mut p = localoffice_doc::Paragraph::new();
-        p.props.line_spacing = Some(localoffice_doc::props::LineSpacing::Multiple(1.0));
+        let mut p = localwriter_doc::Paragraph::new();
+        p.props.line_spacing = Some(localwriter_doc::props::LineSpacing::Multiple(1.0));
         for (text, size, vert_align, position) in runs {
-            let props = localoffice_doc::CharProps {
+            let props = localwriter_doc::CharProps {
                 font: Some("Source Sans 3".into()),
                 size: Some(*size),
                 vert_align: Some(*vert_align),
                 position: Some(*position),
                 ..Default::default()
             };
-            p.runs.push(localoffice_doc::para::Run { len: text.len(), props: props.clone() });
+            p.runs.push(localwriter_doc::para::Run { len: text.len(), props: props.clone() });
             p.text.push_str(text);
             p.mark = props;
         }
         let mut d = Document::new();
-        d.body = vec![localoffice_doc::para_block(p)];
+        d.body = vec![localwriter_doc::para_block(p)];
         let l = lay(&d);
         l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { para.lines.first().map(|x| x.height) } else { None }).unwrap()
     };
@@ -7477,7 +7477,7 @@ fn superscript_and_subscript_lines_are_as_tall_as_full_size_text() {
 
 #[test]
 fn ruby_text_sits_over_its_base_and_the_line_grows_to_fit() {
-    use localoffice_doc::para::RubyAlign;
+    use localwriter_doc::para::RubyAlign;
     let plain = Document::from_text("Plain words here");
     let mut d = Document::from_text("Plain  here");
     let ruby = InlineObject::Ruby {
@@ -7522,7 +7522,7 @@ fn ruby_text_sits_over_its_base_and_the_line_grows_to_fit() {
 /// only to its right; Largest: only on its wider side.
 #[test]
 fn wrap_text_keeps_text_on_one_side() {
-    use localoffice_doc::para::{Float, ShapeKind, Wrap, WrapText};
+    use localwriter_doc::para::{Float, ShapeKind, Wrap, WrapText};
     // A 100pt shape at `x` in the 468pt column; the lines beside it.
     let beside = |kind, wrap, x: f32, side| {
         let f = Float { wrap, wrap_text: side, x, ..Default::default() };
@@ -7551,17 +7551,17 @@ fn document_note_separators_and_continuation_notice() {
     let mut d = Document::from_text(&"Body text line.\n".repeat(16));
     let long = footnote(&mut d, &Pos::body(4, 4), &"A long footnote that runs on and on. ".repeat(100));
     let sep = |cont: bool| {
-        let mut p = localoffice_doc::Paragraph::new();
+        let mut p = localwriter_doc::Paragraph::new();
         p.props.space_after = Some(0.0);
         p.insert_object(0, InlineObject::note_separator(cont), &Default::default()).unwrap();
-        Some(vec![localoffice_doc::para_block(p)])
+        Some(vec![localwriter_doc::para_block(p)])
     };
-    let mut notice = localoffice_doc::Paragraph::with_text("(continued)", Default::default());
+    let mut notice = localwriter_doc::Paragraph::with_text("(continued)", Default::default());
     notice.props.space_after = Some(0.0);
-    d.footnote_separators = localoffice_doc::NoteSeparators {
+    d.footnote_separators = localwriter_doc::NoteSeparators {
         separator: sep(false),
         continuation_separator: sep(true),
-        continuation_notice: Some(vec![localoffice_doc::para_block(notice)]),
+        continuation_notice: Some(vec![localwriter_doc::para_block(notice)]),
     };
     let l = lay(&d);
     let pieces = note_pieces(&l, long);
@@ -7604,12 +7604,12 @@ fn document_note_separators_and_continuation_notice() {
 #[test]
 fn rotated_canvas_draws_its_clipped_members_inside_the_turn() {
     use crate::display::Draw;
-    use localoffice_doc::para::{Anchor, CanvasStyle, Float, GroupChild, ShapeKind, Wrap};
+    use localwriter_doc::para::{Anchor, CanvasStyle, Float, GroupChild, ShapeKind, Wrap};
     let member = InlineObject::Shape {
         kind: ShapeKind::Rectangle,
         w: 60.0,
         h: 40.0,
-        fill: Some(Fill::solid(localoffice_doc::props::Rgb(1, 2, 3))),
+        fill: Some(Fill::solid(localwriter_doc::props::Rgb(1, 2, 3))),
         stroke: None,
         stroke_width: 0.0,
         float: Float { rot: 10.0, ..Default::default() },
@@ -7625,7 +7625,7 @@ fn rotated_canvas_draws_its_clipped_members_inside_the_turn() {
         ch_w: 200.0,
         ch_h: 100.0,
         children: vec![GroupChild { x: 20.0, y: 30.0, obj: member.clone() }],
-        canvas: Some(CanvasStyle { fill: Some(Fill::solid(localoffice_doc::props::Rgb(0xF0, 0xF4, 0xFF))), stroke: None, stroke_width: 0.0 }),
+        canvas: Some(CanvasStyle { fill: Some(Fill::solid(localwriter_doc::props::Rgb(0xF0, 0xF4, 0xFF))), stroke: None, stroke_width: 0.0 }),
     };
     // Turned draws: (turn, background rect, clip rect, member rect and its own turn).
     let turned = |draws: &[Draw]| -> (Vec<f32>, Vec<Rect>, Vec<(Rect, Vec<(Rect, f32)>)>) {
@@ -7712,8 +7712,8 @@ fn mirror_indents_swap_sides_on_even_pages() {
 
 /// Ten short paragraphs in a two-column section (`widths`: unequal columns), then one paragraph
 /// in a one-column section starting `start`.
-fn two_column_section(start: localoffice_doc::section::SectionStart, widths: Vec<(f32, f32)>) -> Document {
-    use localoffice_doc::section::SectionProps;
+fn two_column_section(start: localwriter_doc::section::SectionStart, widths: Vec<(f32, f32)>) -> Document {
+    use localwriter_doc::section::SectionProps;
     let text: Vec<String> = (0..10).map(|i| format!("Short paragraph {i}")).chain(["After the break".to_string()]).collect();
     let mut d = Document::from_text(&text.join("\n"));
     let mut s = SectionProps::default();
@@ -7752,7 +7752,7 @@ fn column_bottoms(l: &DocLayout) -> (usize, f32, usize, f32, (usize, f32)) {
 
 #[test]
 fn columns_before_a_continuous_break_are_balanced() {
-    use localoffice_doc::section::SectionStart;
+    use localwriter_doc::section::SectionStart;
     for widths in [vec![], vec![(150.0, 36.0), (282.0, 0.0)]] {
         let l = lay(&two_column_section(SectionStart::Continuous, widths.clone()));
         let (nl, bl, nr, br, (page, after)) = column_bottoms(&l);
@@ -7767,7 +7767,7 @@ fn columns_before_a_continuous_break_are_balanced() {
 
 #[test]
 fn columns_before_a_page_break_or_a_column_break_are_not_balanced() {
-    use localoffice_doc::section::SectionStart;
+    use localwriter_doc::section::SectionStart;
     // Next-page break: the ten paragraphs fill the first column; the next section is on page 2.
     let l = lay(&two_column_section(SectionStart::NextPage, vec![]));
     let (nl, _, nr, _, (page, _)) = column_bottoms(&l);
@@ -7776,7 +7776,7 @@ fn columns_before_a_page_break_or_a_column_break_are_not_balanced() {
     let mut d = two_column_section(SectionStart::Continuous, vec![]);
     let p = d.para_mut(StoryRef::Body, &Path::top(1)).unwrap();
     let end = p.text.len();
-    p.insert_text(end, &localoffice_doc::para::COLUMN_BREAK.to_string(), &Default::default()).unwrap();
+    p.insert_text(end, &localwriter_doc::para::COLUMN_BREAK.to_string(), &Default::default()).unwrap();
     let l = lay(&d);
     let (nl, bl, nr, br, (page, after)) = column_bottoms(&l);
     assert_eq!((nl, nr, page), (2, 8, 0));
@@ -7800,7 +7800,7 @@ fn note_marks(l: &DocLayout) -> HashMap<u32, Vec<u32>> {
 
 #[test]
 fn footnotes_restart_on_each_page_and_section() {
-    use localoffice_doc::section::{NoteProps, NoteRestart};
+    use localwriter_doc::section::{NoteProps, NoteRestart};
     let mut d = Document::from_text(&"Body text line.\n".repeat(120));
     let a = footnote(&mut d, &Pos::body(2, 4), "First note.");
     let b = footnote(&mut d, &Pos::body(4, 4), "Second note.");
@@ -7825,15 +7825,15 @@ fn footnotes_restart_on_each_page_and_section() {
 
 #[test]
 fn endnotes_at_section_end_and_footnotes_below_text() {
-    use localoffice_doc::section::{NotePos, NoteProps};
+    use localwriter_doc::section::{NotePos, NoteProps};
     let mut d = Document::from_text("Alpha\nBeta\nGamma\nDelta");
     let eid = d.add_part(
-        localoffice_doc::PartKind::Endnote,
-        vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("An endnote.", Default::default()))],
+        localwriter_doc::PartKind::Endnote,
+        vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("An endnote.", Default::default()))],
     );
     d.insert_object(
         &Pos::body(0, 5),
-        InlineObject::NoteRef { kind: localoffice_doc::para::NoteKind::Endnote, id: eid, custom: String::new() },
+        InlineObject::NoteRef { kind: localwriter_doc::para::NoteKind::Endnote, id: eid, custom: String::new() },
         &Default::default(),
     )
     .unwrap();
@@ -7861,7 +7861,7 @@ fn endnotes_at_section_end_and_footnotes_below_text() {
 #[test]
 fn hyphenation_and_proofing_follow_each_runs_language() {
     // A tiny synthetic Polish dictionary (real ones are installed on the system, not bundled).
-    localoffice_proof::pl::install_dictionary("SET UTF-8\nSFX B Y 1\nSFX B y ego y\n", "2\nkonstytucyjny/B\npłynie\n").unwrap();
+    localwriter_proof::pl::install_dictionary("SET UTF-8\nSFX B Y 1\nSFX B y ego y\n", "2\nkonstytucyjny/B\npłynie\n").unwrap();
     let text = "Konstytucyjnego żeka typography beautifull";
     let mut d = Document::from_text(text);
     d.settings.auto_hyphenation = true;
@@ -7885,9 +7885,9 @@ fn hyphenation_and_proofing_follow_each_runs_language() {
     // The layout and the Review commands report the same issues.
     let p = d.para(StoryRef::Body, &Path::top(0)).unwrap();
     let issues = para::paragraph_issues(p, &para::proof_runs(&d, p, None), &Default::default(), true, false);
-    assert_eq!(issues.iter().map(|i| (i.start, i.end, i.kind == localoffice_proof::IssueKind::Grammar)).collect::<Vec<_>>(), para.issues);
-    assert_eq!(issues[0].lang, localoffice_proof::ProofLang::Pl);
-    assert_eq!(issues[1].lang, localoffice_proof::ProofLang::En);
+    assert_eq!(issues.iter().map(|i| (i.start, i.end, i.kind == localwriter_proof::IssueKind::Grammar)).collect::<Vec<_>>(), para.issues);
+    assert_eq!(issues[0].lang, localwriter_proof::ProofLang::Pl);
+    assert_eq!(issues[1].lang, localwriter_proof::ProofLang::En);
 }
 
 /// A list item may be a fragment: the drawn squiggles skip its first word's missing capital, a
@@ -7895,14 +7895,14 @@ fn hyphenation_and_proofing_follow_each_runs_language() {
 /// style's; a paragraph that switches the style's list off (`num: 0`) is plain again.
 #[test]
 fn list_item_first_word_gets_no_capital_squiggle() {
-    use localoffice_doc::props::NumRef;
+    use localwriter_doc::props::NumRef;
     let opts = LayoutOptions { proofing: true, ..LayoutOptions::default() };
     let grammar_squiggles = |d: &Document| -> usize {
         let l = layout(d, &mut LayoutCache::new(), &opts);
         l.pages[0].items.iter().map(|i| if let Placed::Lines { para, .. } = i { para.issues.iter().filter(|x| x.2).count() } else { 0 }).sum()
     };
     let mut d = Document::from_text("item one");
-    let id = d.numbering.add_list(localoffice_doc::ListKind::Bullet);
+    let id = d.numbering.add_list(localwriter_doc::ListKind::Bullet);
     assert_eq!(grammar_squiggles(&d), 1, "plain paragraph");
     // Direct numbering.
     d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 0), &|p| p.numbering = Some(NumRef { num: id, level: 0 })).unwrap();
@@ -7913,10 +7913,10 @@ fn list_item_first_word_gets_no_capital_squiggle() {
         p.style = Some("Bullets".into());
     })
     .unwrap();
-    d.styles.upsert(localoffice_doc::Style {
+    d.styles.upsert(localwriter_doc::Style {
         id: "Bullets".into(),
         name: "Bullets".into(),
-        kind: localoffice_doc::StyleKind::Paragraph,
+        kind: localwriter_doc::StyleKind::Paragraph,
         para: ParaProps { numbering: Some(NumRef { num: id, level: 0 }), ..Default::default() },
         ..Default::default()
     });
@@ -7926,12 +7926,12 @@ fn list_item_first_word_gets_no_capital_squiggle() {
     assert_eq!(grammar_squiggles(&d), 1, "list switched off");
 }
 
-/// Text in a language LocalOffice can't proof gets no spelling marks, and "Do not check spelling
+/// Text in a language LocalWriter can't proof gets no spelling marks, and "Do not check spelling
 /// or grammar" text none either; the document default language applies to text without its own.
 #[test]
 fn unproofed_languages_and_no_proof_runs_are_not_marked() {
     // A tiny synthetic Polish dictionary (real ones are installed on the system, not bundled).
-    localoffice_proof::pl::install_dictionary("SET UTF-8\nSFX B Y 1\nSFX B y ego y\n", "2\nkonstytucyjny/B\npłynie\n").unwrap();
+    localwriter_proof::pl::install_dictionary("SET UTF-8\nSFX B Y 1\nSFX B y ego y\n", "2\nkonstytucyjny/B\npłynie\n").unwrap();
     let opts = LayoutOptions { proofing: true, ..LayoutOptions::default() };
     let issues = |d: &Document| -> usize {
         let l = layout(d, &mut LayoutCache::new(), &opts);
@@ -7954,8 +7954,8 @@ fn unproofed_languages_and_no_proof_runs_are_not_marked() {
 /// ignored), on every page, like the same fields in the footer.
 #[test]
 fn shared_section_page_totals() {
-    use localoffice_doc::props::LineSpacing;
-    use localoffice_doc::section::{SectionProps, SectionStart};
+    use localwriter_doc::props::LineSpacing;
+    use localwriter_doc::section::{SectionProps, SectionStart};
     #[derive(Clone, Copy)]
     enum FieldPlace {
         BodyAndFooter,
@@ -7976,7 +7976,7 @@ fn shared_section_page_totals() {
         for instr in ["PAGE", "SECTIONPAGES"] {
             footer.insert_object(footer.len(), field(instr), &Default::default()).unwrap();
         }
-        let id = doc.add_part(localoffice_doc::PartKind::Footer, vec![localoffice_doc::para_block(footer)]);
+        let id = doc.add_part(localwriter_doc::PartKind::Footer, vec![localwriter_doc::para_block(footer)]);
         for index in 0..4 {
             let p = doc.para_mut(StoryRef::Body, &Path::top(index)).unwrap();
             p.props.line_spacing = Some(LineSpacing::Exactly(12.0));
@@ -8032,9 +8032,9 @@ fn body_page_totals_count_every_page() {
         let n = p.len();
         p.insert_object(n, field("SECTIONPAGES"), &Default::default()).unwrap();
     }
-    let mut fp = localoffice_doc::Paragraph::new();
+    let mut fp = localwriter_doc::Paragraph::new();
     fp.insert_object(0, field("NUMPAGES"), &Default::default()).unwrap();
-    let id = d.add_part(localoffice_doc::PartKind::Footer, vec![localoffice_doc::para_block(fp)]);
+    let id = d.add_part(localwriter_doc::PartKind::Footer, vec![localwriter_doc::para_block(fp)]);
     d.last_section.footers.default = Some(id);
     let l = lay(&d);
     assert_eq!(l.pages.len(), 3);
@@ -8060,7 +8060,7 @@ fn body_page_totals_count_every_page() {
 #[test]
 fn table_cell_footnotes_are_placed() {
     let mut d = Document::from_text("After the table.");
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(localoffice_doc::Table::new(1, 1, 300.0))).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(localwriter_doc::Table::new(1, 1, 300.0))).unwrap();
     let cell = Pos { story: StoryRef::Body, path: Path(vec![0, 0, 0, 0]), off: 0 };
     d.para_mut(StoryRef::Body, &cell.path).unwrap().insert_text(0, "Table reference", &Default::default()).unwrap();
     let id = footnote(&mut d, &Pos { off: "Table reference".len(), ..cell }, "Table note payload.");
@@ -8076,9 +8076,9 @@ fn table_cell_footnotes_are_placed() {
 fn east_asian_text_takes_the_asian_font_and_latin_text_the_latin_font() {
     // #505: one run with a Latin font and an Asian font (w:eastAsia) of its own sets each script in
     // its font. Prefer an installed CJK font other than the one fallback would pick anyway.
-    let resolve = |f: &str| localoffice_fonts::word::resolve(f, false, false);
-    let fallback = localoffice_fonts::FontDb::global().fallback_for('你', 0).map(|f| f.family.clone());
-    let mut fonts: Vec<String> = localoffice_fonts::FontDb::global()
+    let resolve = |f: &str| localwriter_fonts::word::resolve(f, false, false);
+    let fallback = localwriter_fonts::FontDb::global().fallback_for('你', 0).map(|f| f.family.clone());
+    let mut fonts: Vec<String> = localwriter_fonts::FontDb::global()
         .east_asian_families()
         .into_iter()
         .filter(|f| {
@@ -8091,7 +8091,7 @@ fn east_asian_text_takes_the_asian_font_and_latin_text_the_latin_font() {
         eprintln!("skipped: no Chinese font installed");
         return;
     };
-    let latin = localoffice_doc::styles::BODY_FONT;
+    let latin = localwriter_doc::styles::BODY_FONT;
     let text = "Hello 你好 World";
     let mut d = Document::from_text(text);
     d.format_range(&Pos::body(0, 0), &Pos::body(0, text.len()), &|c| {
@@ -8121,9 +8121,9 @@ fn footer_page_total_needs_one_body_pass() {
     for i in 1..3 {
         d.para_mut(StoryRef::Body, &Path::top(i)).unwrap().props.page_break_before = Some(true);
     }
-    let mut fp = localoffice_doc::Paragraph::new();
+    let mut fp = localwriter_doc::Paragraph::new();
     fp.insert_object(0, field(), &Default::default()).unwrap();
-    let id = d.add_part(localoffice_doc::PartKind::Footer, vec![localoffice_doc::para_block(fp)]);
+    let id = d.add_part(localwriter_doc::PartKind::Footer, vec![localwriter_doc::para_block(fp)]);
     d.last_section.footers.default = Some(id);
     let first = |d: &Document| {
         let totals = Totals::first_guess(d.sections().len());
@@ -8164,11 +8164,11 @@ fn bulgarian_text_is_hyphenated_by_its_own_rules() {
     d.format_range(&Pos::body(0, 0), &Pos::body(0, text.len()), &|c| c.lang = Some("bg-BG".into())).unwrap();
     let splits = hyphenated(&d);
     assert!(!splits.is_empty(), "no hyphenated lines");
-    let lim = localoffice_proof::hyphen::Limits::default();
+    let lim = localwriter_proof::hyphen::Limits::default();
     for (head, tail) in &splits {
         let word = format!("{head}{tail}");
         let at = head.chars().count();
-        assert!(localoffice_proof::hyphen::hyphen_points_in(&word, &lim, localoffice_proof::ProofLang::Bg).contains(&at), "{head}-{tail}");
+        assert!(localwriter_proof::hyphen::hyphen_points_in(&word, &lim, localwriter_proof::ProofLang::Bg).contains(&at), "{head}-{tail}");
     }
 }
 
@@ -8178,21 +8178,21 @@ fn bulgarian_text_is_hyphenated_by_its_own_rules() {
 /// grow it). Tables of contents with big tab runs were a third taller than Word's.
 #[test]
 fn spaces_and_tabs_do_not_make_a_line_taller() {
-    use localoffice_doc::props::CharProps;
+    use localwriter_doc::props::CharProps;
     let small = CharProps { size: Some(9.0), ..Default::default() };
     let big = CharProps { size: Some(20.0), ..Default::default() };
     let pitch = |middle: &str, middle_props: &CharProps| {
         let mut d = Document::new();
         d.body = (0..3)
             .map(|i| {
-                let mut p = localoffice_doc::Paragraph::with_text(&format!("L{i}A"), small.clone());
+                let mut p = localwriter_doc::Paragraph::with_text(&format!("L{i}A"), small.clone());
                 let n = p.len();
                 p.insert_text(n, middle, middle_props).unwrap();
                 let n = p.len();
                 p.insert_text(n, "B", &small).unwrap();
                 p.props = ParaProps { space_before: Some(0.0), space_after: Some(0.0), ..Default::default() };
                 p.mark = small.clone();
-                localoffice_doc::para_block(p)
+                localwriter_doc::para_block(p)
             })
             .collect();
         let l = lay(&d);
@@ -8215,18 +8215,18 @@ fn spaces_and_tabs_do_not_make_a_line_taller() {
 fn a_list_label_adds_ascent_but_not_descent() {
     let first_line = |label_size: Option<f32>| {
         let mut d = Document::new();
-        let num = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
+        let num = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
         for a in &mut d.numbering.abstracts {
             for l in &mut a.levels {
                 l.chr.size = label_size;
             }
         }
-        let ten = localoffice_doc::props::CharProps { size: Some(10.0), ..Default::default() };
-        let mut p = localoffice_doc::Paragraph::with_text("Item", ten.clone());
-        p.props.numbering = Some(localoffice_doc::props::NumRef { num, level: 0 });
+        let ten = localwriter_doc::props::CharProps { size: Some(10.0), ..Default::default() };
+        let mut p = localwriter_doc::Paragraph::with_text("Item", ten.clone());
+        p.props.numbering = Some(localwriter_doc::props::NumRef { num, level: 0 });
         p.mark = ten;
-        p.props.line_spacing = Some(localoffice_doc::props::LineSpacing::Multiple(1.0));
-        d.body = vec![localoffice_doc::para_block(p)];
+        p.props.line_spacing = Some(localwriter_doc::props::LineSpacing::Multiple(1.0));
+        d.body = vec![localwriter_doc::para_block(p)];
         let l = lay(&d);
         l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { para.lines.first().cloned() } else { None }).unwrap()
     };
@@ -8248,21 +8248,21 @@ fn a_hidden_cell_mark_takes_no_room() {
         let mut t = Table::new(3, 2, 300.0);
         for (r, text) in [(0, "R1"), (2, "R3")] {
             for cell in &mut t.rows[r].cells {
-                cell.blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()))];
+                cell.blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()))];
             }
         }
         for (cell, hide) in t.rows[1].cells.iter_mut().zip(hide) {
             cell.props.hide_mark = hide;
             let mut blocks = Vec::new();
             if let Some(text) = second {
-                blocks.push(localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default())));
+                blocks.push(localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default())));
             }
-            let mut mark = localoffice_doc::Paragraph::with_text("", Default::default());
+            let mut mark = localwriter_doc::Paragraph::with_text("", Default::default());
             mark.props.space_before = Some(10.0);
-            blocks.push(localoffice_doc::para_block(mark));
+            blocks.push(localwriter_doc::para_block(mark));
             cell.blocks = blocks;
         }
-        d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         let at = |r: u32| l.caret(&Pos { story: StoryRef::Body, path: Path(vec![1, r, 0, 0]), off: 0 }).unwrap().top;
         // Rows 1 and 2 together.
@@ -8273,9 +8273,9 @@ fn a_hidden_cell_mark_takes_no_room() {
         let both = row3_top([false, false], Some("Tx"));
         let mut d = Document::from_text("Above");
         let mut t = Table::new(2, 1, 300.0);
-        t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("R1", Default::default()))];
-        t.rows[1].cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("R3", Default::default()))];
-        d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+        t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("R1", Default::default()))];
+        t.rows[1].cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("R3", Default::default()))];
+        d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         let at = |r: u32| l.caret(&Pos { story: StoryRef::Body, path: Path(vec![1, r, 0, 0]), off: 0 }).unwrap().top;
         assert!(both > at(1) - at(0));
@@ -8293,14 +8293,14 @@ fn a_hidden_cell_mark_takes_no_room() {
 
 /// A text frame in a header, footer or cell (NIH's footers put the page number in one, centred,
 /// with the footer text wrapping around it) is placed apart: it takes no room in the flow, sits
-/// where its alignment says, and the text beside it keeps clear of it. LocalOffice laid it out as
+/// where its alignment says, and the text beside it keeps clear of it. LocalWriter laid it out as
 /// an ordinary paragraph, a line of its own above the footer text.
 #[test]
 fn a_text_frame_in_a_cell_floats_beside_the_text() {
-    use localoffice_doc::props::TextFrame;
+    use localwriter_doc::props::TextFrame;
     let mut d = Document::from_text("Above");
     let mut t = Table::new(1, 1, 300.0);
-    let mut framed = localoffice_doc::Paragraph::with_text("7", Default::default());
+    let mut framed = localwriter_doc::Paragraph::with_text("7", Default::default());
     framed.props.frame = Some(TextFrame {
         x_align: Some("right".into()),
         h_anchor: "text".into(),
@@ -8308,9 +8308,9 @@ fn a_text_frame_in_a_cell_floats_beside_the_text() {
         wrap: "around".into(),
         ..Default::default()
     });
-    let text = localoffice_doc::Paragraph::with_text("Cell text", Default::default());
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(framed), localoffice_doc::para_block(text)];
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    let text = localwriter_doc::Paragraph::with_text("Cell text", Default::default());
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(framed), localwriter_doc::para_block(text)];
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let at = |i: u32| l.caret(&Pos { story: StoryRef::Body, path: Path(vec![1, 0, 0, i]), off: 0 }).unwrap();
     let (frame, text) = (at(0), at(1));
@@ -8320,18 +8320,18 @@ fn a_text_frame_in_a_cell_floats_beside_the_text() {
 
 /// Word has no frames inside a text box: a paragraph there whose style carries a frame (a
 /// letterhead's "Weld" and "Governor" styles, framed at the page's left) runs in the box's text
-/// like any other. LocalOffice placed each one apart at the frame's offset, so two of them in a row
+/// like any other. LocalWriter placed each one apart at the frame's offset, so two of them in a row
 /// were drawn over each other (#2357).
 #[test]
 fn a_frame_inside_a_text_box_flows_with_its_text() {
-    use localoffice_doc::props::TextFrame;
+    use localwriter_doc::props::TextFrame;
     let mut d = Document::from_text("Body");
     let id = text_box(&mut d, 0, "", 150.0, 120.0, Default::default());
     let frame = TextFrame { x: 27.3, y: 7.05, h_anchor: "page".into(), v_anchor: "text".into(), wrap: "notBeside".into(), ..Default::default() };
     let para = |text: &str, framed: bool| {
-        let mut p = localoffice_doc::Paragraph::with_text(text, Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text(text, Default::default());
         p.props.frame = framed.then(|| frame.clone());
-        localoffice_doc::para_block(p)
+        localwriter_doc::para_block(p)
     };
     d.parts.get_mut(&id).unwrap().blocks = vec![para("Name", true), para("Secretary", true), para("Commissioner", false)];
     let l = lay(&d);
@@ -8349,11 +8349,11 @@ fn a_frame_inside_a_text_box_flows_with_its_text() {
 /// the list's 0.6", and its "sample text" paragraphs with the list off at 0.9" instead of the margin.
 #[test]
 fn list_indents_and_style_indents_combine_like_word() {
-    use localoffice_doc::props::NumRef;
-    use localoffice_doc::styles::{Style, StyleKind};
+    use localwriter_doc::props::NumRef;
+    use localwriter_doc::styles::{Style, StyleKind};
     let text_x = |style: &str, own: ParaProps| {
         let mut d = Document::new();
-        let num = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
+        let num = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
         let style_of = |id: &str, based: Option<&str>, para: ParaProps| Style {
             id: id.into(),
             name: id.into(),
@@ -8372,9 +8372,9 @@ fn list_indents_and_style_indents_combine_like_word() {
         d.styles.upsert(style_of("ListOnIndent", Some("IndentBase"), list.clone()));
         let own =
             ParaProps { style: Some(style.into()), numbering: own.numbering.map(|n| NumRef { num: if n.num == 0 { 0 } else { num }, ..n }), ..own };
-        let mut p = localoffice_doc::Paragraph::with_text("Text", Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text("Text", Default::default());
         p.props = own;
-        d.body = vec![localoffice_doc::para_block(p)];
+        d.body = vec![localwriter_doc::para_block(p)];
         lay(&d).caret(&Pos::body(0, 0)).unwrap().x
     };
     let listed = || ParaProps { numbering: Some(NumRef { num: 1, level: 0 }), ..Default::default() };
@@ -8406,13 +8406,13 @@ fn keep_with_next_moves_a_paragraph_only_when_it_would_fit() {
         let plain = ParaProps {
             space_before: Some(0.0),
             space_after: Some(0.0),
-            line_spacing: Some(localoffice_doc::props::LineSpacing::Multiple(1.0)),
+            line_spacing: Some(localwriter_doc::props::LineSpacing::Multiple(1.0)),
             ..Default::default()
         };
         let para = |text: &str, p: &ParaProps| {
-            let mut x = localoffice_doc::Paragraph::with_text(text, Default::default());
+            let mut x = localwriter_doc::Paragraph::with_text(text, Default::default());
             x.props = ParaProps { keep_next: p.keep_next, keep_lines: p.keep_lines, ..plain.clone() };
-            localoffice_doc::para_block(x)
+            localwriter_doc::para_block(x)
         };
         d.body = (0..fillers).map(|i| para(&format!("F{i}"), &plain)).collect();
         d.body.push(para("Ka\nKb\nKc\nKd\nKe", &kept));
@@ -8442,7 +8442,7 @@ fn keep_with_next_moves_a_paragraph_only_when_it_would_fit() {
 /// A kept heading goes with the paragraph after it when that paragraph cannot start on its
 /// page (#966): with widow/orphan control on, one line of it at the bottom of the page moves
 /// over with the rest, so only two lines below the heading hold it there. Word and LibreOffice
-/// both move the heading; LocalOffice left it alone. With the control off the single line stays,
+/// both move the heading; LocalWriter left it alone. With the control off the single line stays,
 /// and the heading keeps it company.
 #[test]
 fn keep_with_next_carries_the_heading_when_widow_control_moves_the_next_paragraph() {
@@ -8452,19 +8452,19 @@ fn keep_with_next_carries_the_heading_when_widow_control_moves_the_next_paragrap
         let plain = ParaProps {
             space_before: Some(0.0),
             space_after: Some(0.0),
-            line_spacing: Some(localoffice_doc::props::LineSpacing::Multiple(1.0)),
+            line_spacing: Some(localwriter_doc::props::LineSpacing::Multiple(1.0)),
             widow_control: Some(widow),
             ..Default::default()
         };
         let para = |text: &str, p: &ParaProps| {
-            let mut x = localoffice_doc::Paragraph::with_text(text, Default::default());
+            let mut x = localwriter_doc::Paragraph::with_text(text, Default::default());
             x.props = p.clone();
-            localoffice_doc::para_block(x)
+            localwriter_doc::para_block(x)
         };
         d.body = (0..fillers).map(|i| para(&format!("F{i}"), &plain)).collect();
-        let mut heading = localoffice_doc::Paragraph::with_text("HEADING", Default::default());
+        let mut heading = localwriter_doc::Paragraph::with_text("HEADING", Default::default());
         heading.props = ParaProps { keep_next: Some(true), ..plain.clone() };
-        d.body.push(localoffice_doc::para_block(heading));
+        d.body.push(localwriter_doc::para_block(heading));
         d.body.push(para("Bb\nBc\nBd\nBe\nBf", &plain));
         let l = lay(&d);
         [
@@ -8495,14 +8495,14 @@ fn keep_with_next_chain_carries_over_when_the_last_paragraph_cannot_start() {
         let plain = ParaProps {
             space_before: Some(0.0),
             space_after: Some(0.0),
-            line_spacing: Some(localoffice_doc::props::LineSpacing::Multiple(1.0)),
+            line_spacing: Some(localwriter_doc::props::LineSpacing::Multiple(1.0)),
             widow_control: Some(widow),
             ..Default::default()
         };
         let para = |text: &str, p: &ParaProps| {
-            let mut x = localoffice_doc::Paragraph::with_text(text, Default::default());
+            let mut x = localwriter_doc::Paragraph::with_text(text, Default::default());
             x.props = p.clone();
-            localoffice_doc::para_block(x)
+            localwriter_doc::para_block(x)
         };
         d.body = (0..fillers).map(|i| para(&format!("F{i}"), &plain)).collect();
         let kept = ParaProps { keep_next: Some(true), ..plain.clone() };
@@ -8537,19 +8537,19 @@ fn keep_with_next_carries_the_heading_when_keep_lines_moves_the_next_paragraph()
         let plain = ParaProps {
             space_before: Some(0.0),
             space_after: Some(0.0),
-            line_spacing: Some(localoffice_doc::props::LineSpacing::Multiple(1.0)),
+            line_spacing: Some(localwriter_doc::props::LineSpacing::Multiple(1.0)),
             widow_control: Some(false),
             ..Default::default()
         };
         let para = |text: &str, p: &ParaProps| {
-            let mut x = localoffice_doc::Paragraph::with_text(text, Default::default());
+            let mut x = localwriter_doc::Paragraph::with_text(text, Default::default());
             x.props = p.clone();
-            localoffice_doc::para_block(x)
+            localwriter_doc::para_block(x)
         };
         d.body = (0..fillers).map(|i| para(&format!("F{i}"), &plain)).collect();
-        let mut heading = localoffice_doc::Paragraph::with_text("HEADING", Default::default());
+        let mut heading = localwriter_doc::Paragraph::with_text("HEADING", Default::default());
         heading.props = ParaProps { keep_next: Some(true), ..plain.clone() };
-        d.body.push(localoffice_doc::para_block(heading));
+        d.body.push(localwriter_doc::para_block(heading));
         let body = ParaProps { keep_lines: Some(kept_lines), ..plain.clone() };
         d.body.push(para("Bb\nBc\nBd", &body));
         let l = lay(&d);
@@ -8570,9 +8570,9 @@ fn keep_with_next_carries_the_heading_when_keep_lines_moves_the_next_paragraph()
 
 #[test]
 fn section_mark_hidden_styles() {
-    use localoffice_doc::props::LineSpacing;
-    use localoffice_doc::section::{SectionProps, SectionStart};
-    use localoffice_doc::{CharProps, Style, StyleKind};
+    use localwriter_doc::props::LineSpacing;
+    use localwriter_doc::section::{SectionProps, SectionStart};
+    use localwriter_doc::{CharProps, Style, StyleKind};
 
     let position = |kind: Option<StyleKind>, show_hidden| {
         let mut doc = Document::from_text("\nAfter marker");
@@ -8615,11 +8615,11 @@ fn section_mark_hidden_styles() {
 
 #[test]
 fn empty_page_section_keeps_line() {
-    use localoffice_doc::section::{SectionProps, SectionStart};
+    use localwriter_doc::section::{SectionProps, SectionStart};
     let mut doc = Document::from_text("\nAfter empty section\n\nReference prefix\n\nAfter middle mark");
     for index in 0..6 {
         let para = doc.para_mut(StoryRef::Body, &Path::top(index)).unwrap();
-        para.props.line_spacing = Some(localoffice_doc::props::LineSpacing::Exactly(12.0));
+        para.props.line_spacing = Some(localwriter_doc::props::LineSpacing::Exactly(12.0));
         para.props.space_before = Some(0.0);
         para.props.space_after = Some(0.0);
     }
@@ -8644,7 +8644,7 @@ fn empty_page_section_keeps_line() {
 /// many continuous breaks.
 #[test]
 fn an_empty_continuous_section_mark_takes_no_room() {
-    use localoffice_doc::section::{SectionProps, SectionStart};
+    use localwriter_doc::section::{SectionProps, SectionStart};
     // "Pa", the section's last paragraph (`mark`), "Pb", "Pc" in the next section of `cols`
     // columns, then "Pd" after a second break.
     let tops = |mark: &str, cols: u32, start: SectionStart| {
@@ -8682,15 +8682,15 @@ fn an_empty_continuous_section_mark_takes_no_room() {
 #[test]
 fn paragraph_relative_floats_start_above_the_space_before() {
     let shape_top = |before: f32, prev_after: f32, y: f32| {
-        let float = localoffice_doc::para::Float {
-            wrap: localoffice_doc::para::Wrap::InFrontOfText,
-            h_rel: localoffice_doc::para::Anchor::Column,
-            v_rel: localoffice_doc::para::Anchor::Paragraph,
+        let float = localwriter_doc::para::Float {
+            wrap: localwriter_doc::para::Wrap::InFrontOfText,
+            h_rel: localwriter_doc::para::Anchor::Column,
+            v_rel: localwriter_doc::para::Anchor::Paragraph,
             y,
             ..Default::default()
         };
         let shape = InlineObject::Shape {
-            kind: localoffice_doc::para::ShapeKind::Rectangle,
+            kind: localwriter_doc::para::ShapeKind::Rectangle,
             w: 20.0,
             h: 20.0,
             fill: None,
@@ -8703,15 +8703,15 @@ fn paragraph_relative_floats_start_above_the_space_before() {
             extra: Default::default(),
         };
         let plain = ParaProps { space_before: Some(0.0), space_after: Some(prev_after), ..Default::default() };
-        let mut first = localoffice_doc::Paragraph::with_text("First", Default::default());
+        let mut first = localwriter_doc::Paragraph::with_text("First", Default::default());
         first.props = plain;
-        let mut p = localoffice_doc::Paragraph::with_text("Text ", Default::default());
-        p.text.push(localoffice_doc::para::OBJ);
+        let mut p = localwriter_doc::Paragraph::with_text("Text ", Default::default());
+        p.text.push(localwriter_doc::para::OBJ);
         p.objects = vec![shape];
-        p.runs = vec![localoffice_doc::Run { len: p.text.len(), props: Default::default() }];
+        p.runs = vec![localwriter_doc::Run { len: p.text.len(), props: Default::default() }];
         p.props = ParaProps { space_before: Some(before), space_after: Some(0.0), ..Default::default() };
         let mut d = Document::from_text("");
-        d.body = vec![localoffice_doc::para_block(first), localoffice_doc::para_block(p)];
+        d.body = vec![localwriter_doc::para_block(first), localwriter_doc::para_block(p)];
         let l = lay(&d);
         let first_bottom = l.pages[0]
             .items
@@ -8735,15 +8735,15 @@ fn paragraph_relative_floats_start_above_the_space_before() {
 }
 
 /// Unequal columns (a narrow label column and a wide text column, as in NIH's SARP form): text
-/// after a column break is broken for the column it lands in. LocalOffice broke it for the narrow
+/// after a column break is broken for the column it lands in. LocalWriter broke it for the narrow
 /// column it started in, so a paragraph took a dozen lines a word or two wide.
 #[test]
 fn text_after_a_column_break_takes_the_new_column_s_width() {
     let mut d = Document::new();
-    d.last_section.columns = localoffice_doc::section::Columns { count: 2, space: 36.0, separator: false, widths: vec![(67.0, 52.0), (348.0, 0.0)] };
-    let brk = localoffice_doc::para::COLUMN_BREAK;
+    d.last_section.columns = localwriter_doc::section::Columns { count: 2, space: 36.0, separator: false, widths: vec![(67.0, 52.0), (348.0, 0.0)] };
+    let brk = localwriter_doc::para::COLUMN_BREAK;
     let text = format!("Label{brk}Provide a description of the planned recruitment methods including use of contact lists and databases.");
-    d.body = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(&text, Default::default()))];
+    d.body = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(&text, Default::default()))];
     let l = lay(&d);
     let lines: Vec<(f32, usize)> =
         l.pages[0].items.iter().filter_map(|it| if let Placed::Lines { x, l0, l1, .. } = it { Some((*x, l1 - l0)) } else { None }).collect();
@@ -8760,11 +8760,11 @@ fn text_after_a_column_break_takes_the_new_column_s_width() {
 #[test]
 fn space_before_at_the_top_of_a_page_like_word() {
     let para = |text: &str, before: f32, pbb: bool| {
-        let mut p = localoffice_doc::Paragraph::with_text(text, Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text(text, Default::default());
         p.props = ParaProps { space_before: Some(before), space_after: Some(0.0), page_break_before: Some(pbb), ..Default::default() };
-        localoffice_doc::para_block(p)
+        localwriter_doc::para_block(p)
     };
-    let probe_top = |blocks: Vec<std::sync::Arc<localoffice_doc::Block>>, mode: u32| {
+    let probe_top = |blocks: Vec<std::sync::Arc<localwriter_doc::Block>>, mode: u32| {
         let mut d = Document::new();
         d.settings.compat_mode = mode;
         let n = blocks.len();
@@ -8774,7 +8774,7 @@ fn space_before_at_the_top_of_a_page_like_word() {
         (c.page, c.top)
     };
     let plain_top = probe_top(vec![para("first", 0.0, false), para("PROBE", 0.0, true)], 15).1;
-    let brk = localoffice_doc::para::PAGE_BREAK;
+    let brk = localwriter_doc::para::PAGE_BREAK;
     // A paragraph ending with a page break, then one with 24 pt before: no space, in both modes.
     for mode in [12, 15] {
         let (page, top) = probe_top(vec![para(&format!("first{brk}"), 0.0, false), para("PROBE", 24.0, false)], mode);
@@ -8784,14 +8784,14 @@ fn space_before_at_the_top_of_a_page_like_word() {
     // Its space after stays behind too (modes 12 to 15), also when it holds only the break: the next
     // paragraph, one with a page break before (no blank page) or a table starts at the top.
     let after = |text: &str| {
-        let mut p = localoffice_doc::Paragraph::with_text(text, Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text(text, Default::default());
         p.props = ParaProps { space_before: Some(0.0), space_after: Some(12.4), ..Default::default() };
-        localoffice_doc::para_block(p)
+        localwriter_doc::para_block(p)
     };
-    let table_top = |blocks: Vec<std::sync::Arc<localoffice_doc::Block>>| {
+    let table_top = |blocks: Vec<std::sync::Arc<localwriter_doc::Block>>| {
         let mut d = Document::new();
         d.body = blocks;
-        d.body.push(std::sync::Arc::new(localoffice_doc::Block::Table(Table::new(1, 1, 468.0))));
+        d.body.push(std::sync::Arc::new(localwriter_doc::Block::Table(Table::new(1, 1, 468.0))));
         let l = lay(&d);
         let page = l.pages.len() - 1;
         let y = l.pages[page].items.iter().find_map(|i| if let Placed::Cell { rect, .. } = i { Some(rect.y) } else { None });
@@ -8820,13 +8820,13 @@ fn space_before_at_the_top_of_a_page_like_word() {
     let (_, dropped) = probe_top(vec![para("first", 0.0, false), para("PROBE", 24.0, true)], 15);
     assert!((kept - plain_top - 24.0).abs() < 0.05 && (dropped - plain_top).abs() < 0.05, "{kept} {dropped} {plain_top}");
     // After a page break before (mode 14) the previous paragraph's space after comes off: 24 - 10.
-    let mut first = localoffice_doc::Paragraph::with_text("first", Default::default());
+    let mut first = localwriter_doc::Paragraph::with_text("first", Default::default());
     first.props = ParaProps { space_before: Some(0.0), space_after: Some(10.0), ..Default::default() };
-    let (_, top) = probe_top(vec![localoffice_doc::para_block(first.clone()), para("PROBE", 24.0, true)], 14);
+    let (_, top) = probe_top(vec![localwriter_doc::para_block(first.clone()), para("PROBE", 24.0, true)], 14);
     assert!((top - plain_top - 14.0).abs() < 0.05, "{top} vs {}", plain_top + 14.0);
     // More after than before: nothing left.
     first.props.space_after = Some(30.0);
-    let (_, top) = probe_top(vec![localoffice_doc::para_block(first), para("PROBE", 24.0, true)], 14);
+    let (_, top) = probe_top(vec![localwriter_doc::para_block(first), para("PROBE", 24.0, true)], 14);
     assert!((top - plain_top).abs() < 0.05, "{top} vs {plain_top}");
     // The caret can still reach the end of a paragraph whose mark stayed with its page break.
     let mut d = Document::new();
@@ -8836,16 +8836,16 @@ fn space_before_at_the_top_of_a_page_like_word() {
 }
 
 /// Word kerns a run only when Kerning for fonts (`w:kern`) is set and the font is at least that
-/// size; LocalOffice kerned everything, so its lines held more text than Word's (measured in Word for
+/// size; LocalWriter kerned everything, so its lines held more text than Word's (measured in Word for
 /// Windows with Calibri at 14 pt: no `w:kern`, `w:kern="0"` and a threshold above the size are
 /// all unkerned).
 #[test]
 fn kerning_follows_kerning_for_fonts_like_word() {
-    use localoffice_doc::props::CharProps;
+    use localwriter_doc::props::CharProps;
     let width = |kern: Option<f32>| {
         let mut d = Document::new();
         let chr = CharProps { size: Some(14.0), kern, ..Default::default() };
-        d.body = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("AVAVAV To Wo Ty Yo AWAY", chr))];
+        d.body = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("AVAVAV To Wo Ty Yo AWAY", chr))];
         let l = lay(&d);
         let end = d.para_at(&Pos::body(0, 0)).map_or(0, |p| p.len());
         l.caret(&Pos::body(0, end)).unwrap().x - l.caret(&Pos::body(0, 0)).unwrap().x
@@ -8863,14 +8863,14 @@ fn kerning_follows_kerning_for_fonts_like_word() {
 
 /// The ligatures a document asks for (`w14:ligatures`, Word's Font ▸ Advanced ▸ Ligatures) are
 /// the ones shaped: `none` draws every letter, `standard` turns them back on over a style that
-/// turned them off. Without a value LocalOffice keeps its default, standard and contextual.
+/// turned them off. Without a value LocalWriter keeps its default, standard and contextual.
 #[test]
 fn ligatures_follow_w14_ligatures() {
-    use localoffice_doc::props::{CharProps, Ligatures};
-    use localoffice_doc::styles::{Style, StyleKind};
+    use localwriter_doc::props::{CharProps, Ligatures};
+    use localwriter_doc::styles::{Style, StyleKind};
     let text = "office affinity";
-    let face = localoffice_fonts::word::resolve("Source Serif 4", false, false).face;
-    assert_eq!(localoffice_fonts::shape(&face, "fi", &[], |c| c).len(), 1, "the test font draws fi as one glyph");
+    let face = localwriter_fonts::word::resolve("Source Serif 4", false, false).face;
+    assert_eq!(localwriter_fonts::shape(&face, "fi", &[], |c| c).len(), 1, "the test font draws fi as one glyph");
     let glyphs = |style: Option<Ligatures>, run: Option<Ligatures>| {
         let mut d = Document::new();
         d.styles.upsert(Style {
@@ -8882,7 +8882,7 @@ fn ligatures_follow_w14_ligatures() {
         });
         let chr =
             CharProps { style: Some("Plain".into()), font: Some("Source Serif 4".into()), size: Some(14.0), ligatures: run, ..Default::default() };
-        d.body = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, chr))];
+        d.body = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, chr))];
         let l = lay(&d);
         l.pages
             .iter()
@@ -8893,7 +8893,7 @@ fn ligatures_follow_w14_ligatures() {
     let letters = text.chars().count();
     let none = Ligatures::from_ooxml("none");
     let standard = Ligatures::from_ooxml("standard");
-    assert!(glyphs(None, None) < letters, "LocalOffice's default draws ligatures");
+    assert!(glyphs(None, None) < letters, "LocalWriter's default draws ligatures");
     assert_eq!(glyphs(None, none), letters, "none: one glyph per letter");
     assert_eq!(glyphs(none, None), letters, "none from the character style");
     assert!(glyphs(none, standard) < letters, "standard over a style with none draws them again");
@@ -8904,8 +8904,8 @@ fn ligatures_follow_w14_ligatures() {
 /// historical `hlig`, discretional `dlig`.
 #[test]
 fn ligature_flags_map_to_opentype_features() {
-    use localoffice_doc::props::Ligatures;
-    let f = |t: &[u8; 4], v: u32| localoffice_fonts::feature_value(t, v);
+    use localwriter_doc::props::Ligatures;
+    let f = |t: &[u8; 4], v: u32| localwriter_fonts::feature_value(t, v);
     let hd = Ligatures { historical: true, discretional: true, ..Default::default() };
     assert_eq!(para::ligature_features(hd), [f(b"liga", 0), f(b"clig", 0), f(b"hlig", 1), f(b"dlig", 1)]);
     let sc = Ligatures { standard: true, contextual: true, ..Default::default() };
@@ -8931,9 +8931,9 @@ fn automatic_paragraph_spacing_like_word() {
             .iter()
             .zip(props)
             .map(|(t, p)| {
-                let mut para = localoffice_doc::Paragraph::with_text(t, Default::default());
+                let mut para = localwriter_doc::Paragraph::with_text(t, Default::default());
                 para.props = p;
-                localoffice_doc::para_block(para)
+                localwriter_doc::para_block(para)
             })
             .collect();
         let l = lay(&d);
@@ -8970,7 +8970,7 @@ fn automatic_paragraph_spacing_drops_at_cell_edges() {
         t.rows[0].cells[0].blocks = ["SECOND", "THIRD"]
             .iter()
             .map(|s| {
-                let mut p = localoffice_doc::Paragraph::with_text(s, Default::default());
+                let mut p = localwriter_doc::Paragraph::with_text(s, Default::default());
                 p.props = ParaProps {
                     space_before: Some(0.0),
                     space_after: Some(0.0),
@@ -8978,14 +8978,14 @@ fn automatic_paragraph_spacing_drops_at_cell_edges() {
                     space_after_auto: auto.then_some(true),
                     ..Default::default()
                 };
-                localoffice_doc::para_block(p)
+                localwriter_doc::para_block(p)
             })
             .collect();
-        d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
         d.insert_block(
             StoryRef::Body,
             &Path::top(2),
-            localoffice_doc::Block::Para(localoffice_doc::Paragraph::with_text("Below", Default::default())),
+            localwriter_doc::Block::Para(localwriter_doc::Paragraph::with_text("Below", Default::default())),
         )
         .unwrap();
         let l = lay(&d);
@@ -9006,7 +9006,7 @@ fn automatic_paragraph_spacing_drops_at_cell_edges() {
 /// (each item automatic before and after) were 14 pt apart instead of touching.
 #[test]
 fn automatic_spacing_drops_between_list_items() {
-    use localoffice_doc::props::NumRef;
+    use localwriter_doc::props::NumRef;
     let auto = ParaProps {
         space_before: Some(5.0),
         space_after: Some(5.0),
@@ -9017,8 +9017,8 @@ fn automatic_spacing_drops_between_list_items() {
     let plain = ParaProps { space_before: Some(0.0), space_after: Some(0.0), ..Default::default() };
     let tops = |items: [ParaProps; 3], in_cell: bool| {
         let mut d = Document::new();
-        let num = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
-        let other = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
+        let num = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
+        let other = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
         let fix = |p: ParaProps| ParaProps {
             numbering: p.numbering.map(|n| NumRef {
                 num: match n.num {
@@ -9035,15 +9035,15 @@ fn automatic_spacing_drops_between_list_items() {
             .chain(std::iter::once(plain.clone()))
             .enumerate()
             .map(|(i, p)| {
-                let mut para = localoffice_doc::Paragraph::with_text(&format!("P{i}"), Default::default());
+                let mut para = localwriter_doc::Paragraph::with_text(&format!("P{i}"), Default::default());
                 para.props = p;
-                localoffice_doc::para_block(para)
+                localwriter_doc::para_block(para)
             })
             .collect();
         if in_cell {
             let mut t = Table::new(1, 1, 300.0);
             t.rows[0].cells[0].blocks = paras;
-            d.body = vec![localoffice_doc::Block::Table(t).into()];
+            d.body = vec![localwriter_doc::Block::Table(t).into()];
         } else {
             d.body = paras;
         }
@@ -9098,21 +9098,21 @@ fn automatic_hyphenation_leaves_vietnamese_whole() {
 /// them), and so is the text drawn on them; a paragraph's shading is an ordinary fill.
 #[test]
 fn highlight_fill_is_marked_as_a_text_background() {
-    use localoffice_doc::props::Highlight;
-    let cp = localoffice_doc::CharProps { highlight: Some(Highlight::Yellow), ..Default::default() };
-    let mut p = localoffice_doc::Paragraph::with_text("Marked", cp);
-    p.props.shading = Some(localoffice_doc::Rgb(0xDD, 0xEE, 0xFF));
-    let plain = localoffice_doc::Paragraph::with_text("Plain", Default::default());
+    use localwriter_doc::props::Highlight;
+    let cp = localwriter_doc::CharProps { highlight: Some(Highlight::Yellow), ..Default::default() };
+    let mut p = localwriter_doc::Paragraph::with_text("Marked", cp);
+    p.props.shading = Some(localwriter_doc::Rgb(0xDD, 0xEE, 0xFF));
+    let plain = localwriter_doc::Paragraph::with_text("Plain", Default::default());
     let mut d = Document::from_text("x");
-    d.body = vec![localoffice_doc::para_block(p), localoffice_doc::para_block(plain)];
+    d.body = vec![localwriter_doc::para_block(p), localwriter_doc::para_block(plain)];
     let l = lay(&d);
     let items = display::page_display(&d, &l.pages[0], &display::DisplayOptions::default());
-    let fills: Vec<(localoffice_doc::Rgb, bool)> =
+    let fills: Vec<(localwriter_doc::Rgb, bool)> =
         items.iter().filter_map(|i| if let display::Draw::Fill { color, text_bg, .. } = i { Some((*color, *text_bg)) } else { None }).collect();
-    assert!(fills.contains(&(localoffice_doc::Rgb(255, 255, 0), true)), "highlight is a text background: {fills:?}");
-    assert!(fills.contains(&(localoffice_doc::Rgb(0xDD, 0xEE, 0xFF), false)), "paragraph shading is not: {fills:?}");
-    let yellow = Some(localoffice_doc::Rgb(255, 255, 0));
-    let glyphs: Vec<(String, Option<localoffice_doc::Rgb>)> = items
+    assert!(fills.contains(&(localwriter_doc::Rgb(255, 255, 0), true)), "highlight is a text background: {fills:?}");
+    assert!(fills.contains(&(localwriter_doc::Rgb(0xDD, 0xEE, 0xFF), false)), "paragraph shading is not: {fills:?}");
+    let yellow = Some(localwriter_doc::Rgb(255, 255, 0));
+    let glyphs: Vec<(String, Option<localwriter_doc::Rgb>)> = items
         .iter()
         .filter_map(|i| if let display::Draw::Glyphs { text, text_bg, .. } = i { Some((text.clone(), *text_bg)) } else { None })
         .collect();
@@ -9124,16 +9124,16 @@ fn highlight_fill_is_marked_as_a_text_background() {
 /// its glyphs; other lines (here a paragraph border) don't.
 #[test]
 fn underline_on_a_highlight_carries_the_text_background() {
-    use localoffice_doc::props::{Highlight, Underline};
+    use localwriter_doc::props::{Highlight, Underline};
     let cp =
-        localoffice_doc::CharProps { highlight: Some(Highlight::Teal), underline: Some(Underline::Single), strike: Some(true), ..Default::default() };
+        localwriter_doc::CharProps { highlight: Some(Highlight::Teal), underline: Some(Underline::Single), strike: Some(true), ..Default::default() };
     let mut d = Document::from_text("x");
-    d.body = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Marked", cp))];
+    d.body = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Marked", cp))];
     let l = lay(&d);
     let items = display::page_display(&d, &l.pages[0], &display::DisplayOptions::default());
-    let lines: Vec<Option<localoffice_doc::Rgb>> =
+    let lines: Vec<Option<localwriter_doc::Rgb>> =
         items.iter().filter_map(|i| if let display::Draw::Line { text_bg, .. } = i { Some(*text_bg) } else { None }).collect();
-    assert_eq!(lines, vec![Some(localoffice_doc::Rgb(0, 128, 128)); 2], "underline and strikethrough");
+    assert_eq!(lines, vec![Some(localwriter_doc::Rgb(0, 128, 128)); 2], "underline and strikethrough");
 }
 
 /// #1352 helpers: a body paragraph with a PAGE field after each piece of `pieces` (a piece may
@@ -9142,11 +9142,11 @@ fn page_field_doc(before: usize, pieces: &[&str]) -> Document {
     let mut d = Document::new();
     let mut body = Vec::new();
     for i in 0..before {
-        let mut q = localoffice_doc::Paragraph::with_text(&format!("Filler {i}"), Default::default());
+        let mut q = localwriter_doc::Paragraph::with_text(&format!("Filler {i}"), Default::default());
         q.props.page_break_before = Some(i > 0);
-        body.push(localoffice_doc::para_block(q));
+        body.push(localwriter_doc::para_block(q));
     }
-    let mut p = localoffice_doc::Paragraph::new();
+    let mut p = localwriter_doc::Paragraph::new();
     for piece in pieces {
         let n = p.len();
         p.insert_text(n, piece, &Default::default()).unwrap();
@@ -9159,7 +9159,7 @@ fn page_field_doc(before: usize, pieces: &[&str]) -> Document {
         .unwrap();
     }
     p.props.page_break_before = Some(before > 0);
-    body.push(localoffice_doc::para_block(p));
+    body.push(localwriter_doc::para_block(p));
     d.body = body;
     d
 }
@@ -9198,7 +9198,7 @@ fn assert_contiguous(ranges: &[std::ops::Range<usize>], len: usize) {
 /// #1352: a PAGE field after a page break inside its paragraph shows the page it is on.
 #[test]
 fn page_field_after_intra_paragraph_break_shows_its_page() {
-    let brk = localoffice_doc::para::PAGE_BREAK;
+    let brk = localwriter_doc::para::PAGE_BREAK;
     let d = page_field_doc(0, &["A", &format!("{brk}B")]);
     let l = lay(&d);
     assert_eq!(l.pages.len(), 2);
@@ -9261,10 +9261,10 @@ fn footnote_page_field_from_a_split_paragraph_shows_its_page() {
     let end = d.end_of(StoryRef::Body);
     // A custom mark, so the note marks aren't mistaken for page numbers.
     let id = d.add_part(
-        localoffice_doc::PartKind::Footnote,
-        vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("Note on page ", Default::default()))],
+        localwriter_doc::PartKind::Footnote,
+        vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("Note on page ", Default::default()))],
     );
-    d.insert_object(&end, InlineObject::NoteRef { kind: localoffice_doc::para::NoteKind::Footnote, id, custom: "*".into() }, &Default::default())
+    d.insert_object(&end, InlineObject::NoteRef { kind: localwriter_doc::para::NoteKind::Footnote, id, custom: "*".into() }, &Default::default())
         .unwrap();
     let note = d.para_mut(StoryRef::Part(id), &Path::top(0)).unwrap();
     let n = note.len();
@@ -9332,7 +9332,7 @@ fn equation_numbers(l: &DocLayout) -> Vec<String> {
 #[test]
 fn an_equations_box_spans_its_width_and_its_line() {
     let mut d = Document::from_text("Inline  and text after it.");
-    let math = localoffice_doc::math::Math { nodes: localoffice_doc::math::parse_linear("x=(a+b)/c"), ..Default::default() };
+    let math = localwriter_doc::math::Math { nodes: localwriter_doc::math::parse_linear("x=(a+b)/c"), ..Default::default() };
     let p = d.para_mut(StoryRef::Body, &Path::top(0)).unwrap();
     p.insert_object(7, InlineObject::Equation { linear: "x=(a+b)/c".into(), display: false, math }, &Default::default()).unwrap();
     let l = lay(&d);
@@ -9355,7 +9355,7 @@ fn relaid_paragraphs_keep_their_equation_numbers() {
     let eq = |s: &str| InlineObject::Equation {
         linear: s.into(),
         display: true,
-        math: localoffice_doc::math::Math { nodes: localoffice_doc::math::parse_linear(s), ..Default::default() },
+        math: localwriter_doc::math::Math { nodes: localwriter_doc::math::parse_linear(s), ..Default::default() },
     };
     let mut d = Document::from_text("Before\n\nTail");
     // Paragraph 1: a numbered equation on a new page (laid out again there).
@@ -9377,7 +9377,7 @@ fn relaid_paragraphs_keep_their_equation_numbers() {
     let n = p2.len();
     p2.insert_object(n, eq("c=d#"), &Default::default()).unwrap();
     // Paragraph 3: one more.
-    d.body.push(localoffice_doc::para_block(localoffice_doc::Paragraph::new()));
+    d.body.push(localwriter_doc::para_block(localwriter_doc::Paragraph::new()));
     let p3 = d.para_mut(StoryRef::Body, &Path::top(3)).unwrap();
     p3.insert_object(0, eq("e=f#"), &Default::default()).unwrap();
     let l = lay(&d);
@@ -9391,10 +9391,10 @@ fn space_after_doc(before: f32, note: bool) -> (Document, usize, Option<u32>) {
     let text = format!("Top.\n{}{}\nAfter.", "Body text line.\n".repeat(14), "Words in a paragraph that wraps. ".repeat(14));
     let mut d = Document::from_text(&text);
     let t = 15;
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(0).map(std::sync::Arc::make_mut) {
         p.props.space_before = Some(before);
     }
-    if let Some(localoffice_doc::Block::Para(p)) = d.body.get_mut(t).map(std::sync::Arc::make_mut) {
+    if let Some(localwriter_doc::Block::Para(p)) = d.body.get_mut(t).map(std::sync::Arc::make_mut) {
         p.props.space_after = Some(6.0);
         p.props.widow_control = Some(true);
     }
@@ -9499,7 +9499,7 @@ fn space_after_clear_with(tweak: impl Fn(&mut Document, usize), need: f32) {
 
 fn para_props(d: &mut Document, i: usize) -> &mut ParaProps {
     match d.body.get_mut(i).map(std::sync::Arc::make_mut) {
-        Some(localoffice_doc::Block::Para(p)) => &mut p.props,
+        Some(localwriter_doc::Block::Para(p)) => &mut p.props,
         _ => panic!("no paragraph {i}"),
     }
 }
@@ -9515,16 +9515,16 @@ fn space_after_stays_clear_when_only_the_next_paragraph_has_contextual_spacing()
 fn space_after_stays_clear_before_a_numbered_paragraph_without_a_label() {
     // Automatic spacing drops only between two list items with labels: before a paragraph whose
     // list doesn't exist (no label) a list item's automatic space after stays clear.
-    use localoffice_doc::props::NumRef;
+    use localwriter_doc::props::NumRef;
     space_after_clear_with(
         |d, t| {
-            let num = d.numbering.add_list(localoffice_doc::ListKind::Numbered);
+            let num = d.numbering.add_list(localwriter_doc::ListKind::Numbered);
             let p = para_props(d, t);
             p.numbering = Some(NumRef { num, level: 0 });
             p.space_after_auto = Some(true);
             para_props(d, t + 1).numbering = Some(NumRef { num: 9999, level: 0 });
         },
-        localoffice_doc::resolve::AUTO_SPACING,
+        localwriter_doc::resolve::AUTO_SPACING,
     );
 }
 
@@ -9533,8 +9533,8 @@ fn space_after_stays_clear_before_a_numbered_paragraph_without_a_label() {
 #[test]
 fn shape_fills_paint_their_frame() {
     use display::{Paint, paint_for};
-    use localoffice_doc::fill::{Gradient, GradientFlip, GradientKind, PathShape};
-    use localoffice_doc::wordart::GradStop;
+    use localwriter_doc::fill::{Gradient, GradientFlip, GradientKind, PathShape};
+    use localwriter_doc::wordart::GradStop;
     use std::sync::Arc;
     let frame = Rect::new(10.0, 20.0, 100.0, 50.0);
     let stops = vec![GradStop { pos: 0.0, color: Rgb::BLACK, transparency: 0.0 }, GradStop { pos: 100.0, color: Rgb::WHITE, transparency: 40.0 }];
@@ -9580,11 +9580,11 @@ fn cell_widths_override_grid() {
         for row in &mut t.rows {
             for (cell, width) in row.cells.iter_mut().zip([50.0, 60.0, 340.0]) {
                 cell.props.width = Some(width);
-                cell.blocks = vec![localoffice_doc::para_block(Paragraph::with_text("A", Default::default()))];
+                cell.blocks = vec![localwriter_doc::para_block(Paragraph::with_text("A", Default::default()))];
             }
         }
         let mut d = Document::from_text("After");
-        d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         let [(x0, _, _)] = para_at(&l, &[0, 0, 0, 0])[..] else { panic!("cell missing") };
         let [(x1, _, _)] = para_at(&l, &[0, 0, 1, 0])[..] else { panic!("cell missing") };
@@ -9601,7 +9601,7 @@ fn ambiguous_widths_keep_grid() {
     for row in &mut t.rows {
         for (cell, width) in row.cells.iter_mut().zip([50.0, 60.0, 340.0]) {
             cell.props.width = Some(width);
-            cell.blocks = vec![localoffice_doc::para_block(Paragraph::with_text("A", Default::default()))];
+            cell.blocks = vec![localwriter_doc::para_block(Paragraph::with_text("A", Default::default()))];
         }
     }
     let mut conflicting = t.clone();
@@ -9617,7 +9617,7 @@ fn ambiguous_widths_keep_grid() {
     spanned.rows[0].cells[0].props.span = 2;
     for table in [conflicting, percentage, invalid, different_total, spanned] {
         let mut d = Document::from_text("After");
-        d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(table)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(table)).unwrap();
         let l = lay(&d);
         let [(x0, _, _)] = para_at(&l, &[0, 1, 0, 0])[..] else { panic!("cell missing") };
         let [(x1, _, _)] = para_at(&l, &[0, 1, 1, 0])[..] else { panic!("cell missing") };
@@ -9627,7 +9627,7 @@ fn ambiguous_widths_keep_grid() {
 
 /// #1374 helpers: a page-anchored, square-wrapped rectangle `w`×`h` at (`x`, `y`) on the page.
 fn page_shape(x: f32, y: f32, w: f32, h: f32) -> InlineObject {
-    use localoffice_doc::para::{Anchor, Float, ShapeKind, Wrap};
+    use localwriter_doc::para::{Anchor, Float, ShapeKind, Wrap};
     let float = Float { wrap: Wrap::Square, h_rel: Anchor::Page, v_rel: Anchor::Page, x, y, dist: 9.0, ..Default::default() };
     InlineObject::Shape {
         kind: ShapeKind::Rectangle,
@@ -9756,7 +9756,7 @@ fn paragraph_continued_into_next_column_without_shapes_is_not_laid_out_again() {
 /// when its lines in column 2 are broken again around a shape there.
 #[test]
 fn paragraph_own_float_is_not_replaced_when_its_rest_wraps_in_the_next_column() {
-    use localoffice_doc::para::{Anchor, Float, ShapeKind, Wrap};
+    use localwriter_doc::para::{Anchor, Float, ShapeKind, Wrap};
     let r = Rect::new(340.0, 300.0, 100.0, 100.0);
     let mut d = column_wrap_doc(2, Some(page_shape(r.x, r.y, r.w, r.h)), 450);
     let own = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, dist: 9.0, ..Default::default() };
@@ -9798,7 +9798,7 @@ fn paragraph_own_float_is_not_replaced_when_its_rest_wraps_in_the_next_column() 
 }
 
 /// "Straße" laid out with `f` applied to all of it: its first line's layout.
-fn strasse_with(f: &dyn Fn(&mut localoffice_doc::props::CharProps)) -> ParaLayout {
+fn strasse_with(f: &dyn Fn(&mut localwriter_doc::props::CharProps)) -> ParaLayout {
     let mut d = Document::from_text("Straße");
     d.format_range(&Pos::body(0, 0), &Pos::body(0, "Straße".len()), f).unwrap();
     let l = lay(&d);
@@ -9829,8 +9829,8 @@ fn caps_draw_sharp_s_as_two_capitals_in_one_cluster() {
         let pl = l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { Some((**para).clone()) } else { None }).unwrap();
         width(&pl)
     };
-    let caps: &dyn Fn(&mut localoffice_doc::props::CharProps) = &|c| c.caps = Some(true);
-    let small: &dyn Fn(&mut localoffice_doc::props::CharProps) = &|c| c.small_caps = Some(true);
+    let caps: &dyn Fn(&mut localwriter_doc::props::CharProps) = &|c| c.caps = Some(true);
+    let small: &dyn Fn(&mut localwriter_doc::props::CharProps) = &|c| c.small_caps = Some(true);
     for (name, f) in [("All Caps", caps), ("Small Caps", small)] {
         let pl = strasse_with(f);
         let cl = text_clusters(&pl);
@@ -9886,11 +9886,11 @@ fn caps_in_a_symbol_font_never_expand_characters() {
 /// is the page's last block. A page with one block keeps it at the top.
 #[test]
 fn section_vertical_alignment_top_center_justify_bottom() {
-    use localoffice_doc::section::PageVAlign;
+    use localwriter_doc::section::PageVAlign;
     let para = |text: &str| {
-        let mut p = localoffice_doc::Paragraph::with_text(text, Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text(text, Default::default());
         p.props = ParaProps { space_before: Some(0.0), space_after: Some(0.0), ..Default::default() };
-        localoffice_doc::para_block(p)
+        localwriter_doc::para_block(p)
     };
     let laid = |texts: &[&str], va: PageVAlign| {
         let mut d = Document::new();
@@ -9921,7 +9921,7 @@ fn section_vertical_alignment_top_center_justify_bottom() {
     let one = para_boxes(&laid(&["Only"], PageVAlign::Justify));
     assert!((one[0].2 - body_top).abs() < 0.5, "a single block stays at the top: {one:?}");
     // A manual page break: its paragraph is page 1's last block; "Four" alone on page 2 stays up.
-    let brk = localoffice_doc::para::PAGE_BREAK.to_string();
+    let brk = localwriter_doc::para::PAGE_BREAK.to_string();
     let p = para_boxes(&laid(&["One", "Two", "Three", &brk, "Four"], PageVAlign::Justify));
     assert_eq!(p.iter().map(|e| e.0).collect::<Vec<_>>(), vec![0, 0, 0, 0, 1], "{p:?}");
     assert!((p[0].2 - body_top).abs() < 0.5, "{p:?}");
@@ -9935,11 +9935,11 @@ fn section_vertical_alignment_top_center_justify_bottom() {
 /// section's (Justified then Top: spread; Top then Justified: stays at the top).
 #[test]
 fn a_sections_last_page_keeps_its_own_vertical_alignment() {
-    use localoffice_doc::section::{PageVAlign, SectionProps};
+    use localwriter_doc::section::{PageVAlign, SectionProps};
     let para = |text: &str| {
-        let mut p = localoffice_doc::Paragraph::with_text(text, Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text(text, Default::default());
         p.props = ParaProps { space_before: Some(0.0), space_after: Some(0.0), ..Default::default() };
-        localoffice_doc::para_block(p)
+        localwriter_doc::para_block(p)
     };
     let laid = |first: PageVAlign, second: PageVAlign| {
         let mut d = Document::new();
@@ -9967,12 +9967,12 @@ fn justified_page_keeps_the_last_paragraphs_space_after() {
         .iter()
         .enumerate()
         .map(|(i, t)| {
-            let mut p = localoffice_doc::Paragraph::with_text(t, Default::default());
+            let mut p = localwriter_doc::Paragraph::with_text(t, Default::default());
             p.props = ParaProps { space_before: Some(0.0), space_after: Some(if i == 2 { 72.0 } else { 0.0 }), ..Default::default() };
-            localoffice_doc::para_block(p)
+            localwriter_doc::para_block(p)
         })
         .collect();
-    d.last_section.valign = localoffice_doc::section::PageVAlign::Justify;
+    d.last_section.valign = localwriter_doc::section::PageVAlign::Justify;
     let l = lay(&d);
     let body = l.pages[0].body;
     let b = para_boxes(&l);
@@ -9985,11 +9985,11 @@ fn justified_page_keeps_the_last_paragraphs_space_after() {
 #[test]
 fn justified_multi_column_pages_stay_at_the_top() {
     let laid = |va| {
-        let mut d = two_column_section(localoffice_doc::section::SectionStart::NextPage, Vec::new());
+        let mut d = two_column_section(localwriter_doc::section::SectionStart::NextPage, Vec::new());
         d.para_mut(StoryRef::Body, &Path::top(9)).unwrap().section.as_mut().unwrap().valign = va;
         para_boxes(&lay(&d))
     };
-    use localoffice_doc::section::PageVAlign;
+    use localwriter_doc::section::PageVAlign;
     assert_eq!(laid(PageVAlign::Justify), laid(PageVAlign::Top));
     // The document's last section in two columns.
     let last = |va| {
@@ -10029,7 +10029,7 @@ fn a_paragraph_left_out_whole_draws_no_borders_or_shading() {
     let line = Some(Border::single(1.0));
     d.format_paragraphs(&Pos::body(1, 0), &Pos::body(1, 0), &|p| {
         p.borders = Some(Borders { top: line, left: line, bottom: line, right: line, ..Borders::default() });
-        p.shading = Some(localoffice_doc::Rgb(0xEE, 0xEE, 0xEE));
+        p.shading = Some(localwriter_doc::Rgb(0xEE, 0xEE, 0xEE));
     })
     .unwrap();
     d.format_range(&Pos::body(1, 0), &Pos::body(2, 0), &|c| c.del = Some(0)).unwrap();
@@ -10047,9 +10047,9 @@ fn row_borders_stay_on_row() {
     let mut t = Table::new(2, 2, 200.0);
     t.props.style = None;
     t.rows[0].props.exceptions =
-        Some(Box::new(localoffice_doc::props::TableProps { borders: Some(Borders::all(Border::single(1.0))), ..Default::default() }));
+        Some(Box::new(localwriter_doc::props::TableProps { borders: Some(Borders::all(Border::single(1.0))), ..Default::default() }));
     t.rows[0].cells[0].props.borders = Some(Borders { top: Some(Border::single(2.0)), ..Default::default() });
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let rules = rules_on_page0(&lay(&d));
     assert_eq!(rules.len(), 8);
     assert_eq!(rules.iter().filter(|w| **w == 2.0).count(), 1);
@@ -10066,7 +10066,7 @@ fn triple_table_borders_draw_triple_lines() {
     let double = Border { style: BorderStyle::Double, width: 0.5, color: None, space: 0.0 };
     t.props.borders =
         Some(Borders { top: Some(triple), bottom: Some(double), left: Some(triple), right: Some(Border::single(0.5)), ..Default::default() });
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let items = display::page_display(&d, &l.pages[0], &display::DisplayOptions::default());
     let mut strokes: Vec<_> = items.iter().filter_map(|i| if let display::Draw::Line { stroke, .. } = i { Some(*stroke) } else { None }).collect();
@@ -10078,19 +10078,19 @@ fn triple_table_borders_draw_triple_lines() {
 fn row_nil_overrides_style() {
     let mut d = Document::from_text("before\nafter");
     let mut t = Table::new(1, 1, 200.0);
-    t.rows[0].props.exceptions = Some(Box::new(localoffice_doc::props::TableProps {
+    t.rows[0].props.exceptions = Some(Box::new(localwriter_doc::props::TableProps {
         borders: Some(Borders::all(Border { style: BorderStyle::None, width: 0.0, color: None, space: 0.0 })),
         ..Default::default()
     }));
     t.rows[0].cells[0].props.borders = Some(Borders { right: Some(Border::single(2.0)), ..Default::default() });
-    d.insert_block(StoryRef::Body, &Path::top(1), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), localwriter_doc::Block::Table(t)).unwrap();
     assert_eq!(rules_on_page0(&lay(&d)), vec![2.0]);
 }
 
 /// Continued text keeps the cell's border inset, as on its first fragment.
 #[test]
 fn split_cell_reuses_top_inset() {
-    use localoffice_doc::props::{HeightRule, LineSpacing};
+    use localwriter_doc::props::{HeightRule, LineSpacing};
     for (width, margin) in [(0.0, 0.0), (0.5, 0.0), (2.0, 0.0), (0.0, 6.0), (0.5, 6.0), (2.0, 6.0)] {
         for spacing in [LineSpacing::Exactly(10.0), LineSpacing::AtLeast(10.0)] {
             let mut d = Document::new();
@@ -10105,13 +10105,13 @@ fn split_cell_reuses_top_inset() {
             t.rows[0].props.height_rule = HeightRule::AtLeast;
             let mut p = Paragraph::with_text(
                 &["Line"; 35].join("\n"),
-                localoffice_doc::CharProps { font: Some("Arial".into()), size: Some(9.0), ..Default::default() },
+                localwriter_doc::CharProps { font: Some("Arial".into()), size: Some(9.0), ..Default::default() },
             );
             p.props.line_spacing = Some(spacing);
             p.props.space_before = Some(0.0);
             p.props.space_after = Some(0.0);
             p.props.widow_control = Some(false);
-            t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(p)];
+            t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(p)];
             d.body = vec![std::sync::Arc::new(Block::Table(t))];
             let l = lay(&d);
             assert_eq!(l.pages.len(), 2);
@@ -10142,7 +10142,7 @@ fn split_cell_reuses_top_inset() {
 #[test]
 fn split_cell_moves_image_frame() {
     use crate::table::{CellPart, RowLayout, split_row};
-    use localoffice_doc::para::Wrap;
+    use localwriter_doc::para::Wrap;
     for top in [0.0, 0.5, 6.5, 8.0] {
         let rect = Rect::new(7.0, 150.0, 20.0, 20.0);
         let image = Placed::Image {
@@ -10162,7 +10162,7 @@ fn split_cell_moves_image_frame() {
             off: 0,
             text_box: None,
             wrap: Wrap::Square,
-            origin: localoffice_geom::Point::new(3.0, 145.0),
+            origin: localwriter_geom::Point::new(3.0, 145.0),
         };
         let mut kept = image.clone();
         kept.translate(0.0, top - 150.0);
@@ -10199,7 +10199,7 @@ fn split_cell_moves_image_frame() {
 }
 
 fn row_keep_doc() -> Document {
-    use localoffice_doc::props::{HeightRule, LineSpacing};
+    use localwriter_doc::props::{HeightRule, LineSpacing};
     let plain = ParaProps {
         space_before: Some(0.0),
         space_after: Some(0.0),
@@ -10210,7 +10210,7 @@ fn row_keep_doc() -> Document {
     let para = |text: &str, props: ParaProps| {
         let mut p = Paragraph::with_text(text, Default::default());
         p.props = props;
-        localoffice_doc::para_block(p)
+        localwriter_doc::para_block(p)
     };
     let mut d = Document::new();
     d.last_section.page_w = 400.0;
@@ -10219,7 +10219,7 @@ fn row_keep_doc() -> Document {
     d.last_section.margin_bottom = 36.0;
     d.last_section.margin_left = 36.0;
     d.last_section.margin_right = 36.0;
-    d.styles.upsert(localoffice_doc::Style {
+    d.styles.upsert(localwriter_doc::Style {
         id: "KeptRow".into(),
         name: "Kept row".into(),
         para: ParaProps { keep_next: Some(true), keep_lines: Some(true), ..Default::default() },
@@ -10254,7 +10254,7 @@ fn row_keep_pages(d: &Document) -> Vec<usize> {
 
 #[test]
 fn kept_row_moves_with_next() {
-    for rule in [localoffice_doc::props::HeightRule::AtLeast, localoffice_doc::props::HeightRule::Exact] {
+    for rule in [localwriter_doc::props::HeightRule::AtLeast, localwriter_doc::props::HeightRule::Exact] {
         let mut d = row_keep_doc();
         d.table_mut(StoryRef::Body, &Path::top(1)).unwrap().rows[1].props.height_rule = rule;
         d.para_mut(StoryRef::Body, &Path(vec![1, 0, 0, 0])).unwrap().props.keep_next = Some(false);
@@ -10279,14 +10279,14 @@ fn kept_row_allows_next_split() {
 #[test]
 fn kept_rows_move_as_chain() {
     let mut d = row_keep_doc();
-    d.para_mut(StoryRef::Body, &Path::top(0)).unwrap().props.line_spacing = Some(localoffice_doc::props::LineSpacing::Exactly(170.0));
+    d.para_mut(StoryRef::Body, &Path::top(0)).unwrap().props.line_spacing = Some(localwriter_doc::props::LineSpacing::Exactly(170.0));
     let t = d.table_mut(StoryRef::Body, &Path::top(1)).unwrap();
     let mut middle = t.rows[0].clone();
     middle.props.height = Some(80.0);
-    middle.props.height_rule = localoffice_doc::props::HeightRule::AtLeast;
+    middle.props.height_rule = localwriter_doc::props::HeightRule::AtLeast;
     let mut p = Paragraph::with_text("Middle", Default::default());
     p.props = middle.cells[0].blocks[0].as_para().unwrap().props.clone();
-    middle.cells[0].blocks = vec![localoffice_doc::para_block(p)];
+    middle.cells[0].blocks = vec![localwriter_doc::para_block(p)];
     t.rows.insert(1, middle);
     assert_eq!(row_keep_pages(&d), [1, 1, 1]);
     d.para_mut(StoryRef::Body, &Path(vec![1, 0, 0, 0])).unwrap().props.keep_next = Some(false);
@@ -10307,7 +10307,7 @@ fn kept_row_can_split_itself() {
     let mut d = row_keep_doc();
     let t = d.table_mut(StoryRef::Body, &Path::top(1)).unwrap();
     t.rows[0].props.height = None;
-    t.rows[0].props.height_rule = localoffice_doc::props::HeightRule::Auto;
+    t.rows[0].props.height_rule = localwriter_doc::props::HeightRule::Auto;
     t.rows[1].props.height = Some(20.0);
     let p = d.para_mut(StoryRef::Body, &Path(vec![1, 0, 0, 0])).unwrap();
     let mut props = p.props.clone();
@@ -10329,7 +10329,7 @@ fn first_cell_controls_keep() {
                 let mut p = Paragraph::with_text("Cell", Default::default());
                 p.props = cell.blocks[0].as_para().unwrap().props.clone();
                 p.props.keep_next = Some(ri == 0 && if ci == 0 { first } else { last });
-                cell.blocks = vec![localoffice_doc::para_block(p)];
+                cell.blocks = vec![localwriter_doc::para_block(p)];
             }
         }
         assert_eq!(row_keep_pages(&d), pages, "first={first}, last={last}");
@@ -10342,7 +10342,7 @@ fn first_para_controls_row_keep() {
     let mut p = Paragraph::with_text("Last paragraph", Default::default());
     p.props = d.para(StoryRef::Body, &Path(vec![1, 0, 0, 0])).unwrap().props.clone();
     p.props.keep_next = Some(false);
-    d.table_mut(StoryRef::Body, &Path::top(1)).unwrap().rows[0].cells[0].blocks.push(localoffice_doc::para_block(p));
+    d.table_mut(StoryRef::Body, &Path::top(1)).unwrap().rows[0].cells[0].blocks.push(localwriter_doc::para_block(p));
     assert_eq!(row_keep_pages(&d), [1, 1], "Word honors the first paragraph even when the last opts out");
     d.para_mut(StoryRef::Body, &Path(vec![1, 0, 0, 0])).unwrap().props.keep_next = Some(false);
     d.para_mut(StoryRef::Body, &Path(vec![1, 0, 0, 1])).unwrap().props.keep_next = Some(true);
@@ -10358,7 +10358,7 @@ fn nested_keep_leaves_outer_row() {
     nested.rows[0].cells[0].blocks = vec![t.rows[0].cells[0].blocks[0].clone()];
     let mut p = Paragraph::with_text("Outer tail", Default::default());
     p.props.keep_next = Some(false);
-    t.rows[0].cells[0].blocks = vec![Arc::new(Block::Table(nested)), localoffice_doc::para_block(p)];
+    t.rows[0].cells[0].blocks = vec![Arc::new(Block::Table(nested)), localwriter_doc::para_block(p)];
     assert_eq!(row_keep_pages(&d), [0, 1]);
 }
 
@@ -10369,7 +10369,7 @@ fn kept_prefix_stays_together() {
     t.rows[1].props.height = Some(400.0);
     let mut middle = t.rows[0].clone();
     middle.props.height = Some(80.0);
-    middle.props.height_rule = localoffice_doc::props::HeightRule::AtLeast;
+    middle.props.height_rule = localwriter_doc::props::HeightRule::AtLeast;
     t.rows.insert(1, middle);
     assert_eq!(row_keep_pages(&d), [1, 1, 2], "an oversized follower cannot separate an already placed kept prefix");
 }
@@ -10378,8 +10378,8 @@ fn kept_prefix_stays_together() {
 /// even when its anchor paragraph has no inline picture (synthetic two-cell probe).
 #[test]
 fn cell_frame_centres_empty() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
-    use localoffice_doc::props::{HeightRule, VAlign};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::props::{HeightRule, VAlign};
     let mut d = Document::new();
     let mut t = Table::new(1, 2, 468.0);
     t.rows[0].props.height = Some(182.5);
@@ -10387,7 +10387,7 @@ fn cell_frame_centres_empty() {
     for (ci, cell) in t.rows[0].cells.iter_mut().enumerate() {
         cell.props.valign = Some(VAlign::Center);
         cell.props.margins = Some([0.0; 4]);
-        let mut p = localoffice_doc::Paragraph::with_text("", Default::default());
+        let mut p = localwriter_doc::Paragraph::with_text("", Default::default());
         p.props.space_before = Some(0.0);
         p.props.space_after = Some(0.0);
         let float = Float { wrap: Wrap::BehindText, h_rel: Anchor::Column, v_rel: Anchor::Paragraph, y: -12.75, ..Default::default() };
@@ -10395,9 +10395,9 @@ fn cell_frame_centres_empty() {
         if ci == 0 {
             p.insert_object(p.text.len(), picture(207.0, 155.25, Default::default()), &Default::default()).unwrap();
         }
-        cell.blocks = vec![localoffice_doc::para_block(p)];
+        cell.blocks = vec![localwriter_doc::para_block(p)];
     }
-    d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
     let l = lay(&d);
     let frames: Vec<_> = l.pages[0]
         .items
@@ -10443,10 +10443,10 @@ fn partial_margins_inherit() {
         cell.props.margins = None;
         cell.props.partial_margins = Some([None, Some(0.0), None, None]);
         let mut para = Paragraph::with_text("Point", Default::default());
-        para.props.line_spacing = Some(localoffice_doc::props::LineSpacing::Exactly(11.0));
+        para.props.line_spacing = Some(localwriter_doc::props::LineSpacing::Exactly(11.0));
         para.props.space_before = Some(0.0);
         para.props.space_after = Some(0.0);
-        cell.blocks = vec![localoffice_doc::para_block(para)];
+        cell.blocks = vec![localwriter_doc::para_block(para)];
         let mut doc = Document::new();
         doc.body = vec![std::sync::Arc::new(Block::Table(table))];
         let layout = lay(&doc);
@@ -10466,15 +10466,15 @@ fn partial_margins_inherit() {
 /// Exact line pitch keeps the text baseline even when an equation has a deep denominator.
 #[test]
 fn exact_math_keeps_run_baseline() {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     for display in [false, true] {
         for spacing in [LineSpacing::Exactly(12.0), LineSpacing::AtLeast(12.0), LineSpacing::Multiple(1.0)] {
             let mut baseline = Vec::new();
             let mut following = Vec::new();
             for equation in [None, Some("a/(b/c)")] {
                 let chr =
-                    localoffice_doc::CharProps { font: Some(localoffice_doc::styles::BODY_FONT.into()), size: Some(12.0), ..Default::default() };
-                let mut p = localoffice_doc::Paragraph::new();
+                    localwriter_doc::CharProps { font: Some(localwriter_doc::styles::BODY_FONT.into()), size: Some(12.0), ..Default::default() };
+                let mut p = localwriter_doc::Paragraph::new();
                 p.props.line_spacing = Some(spacing);
                 match equation {
                     None => {
@@ -10486,14 +10486,14 @@ fn exact_math_keeps_run_baseline() {
                             InlineObject::Equation {
                                 linear: text.into(),
                                 display,
-                                math: localoffice_doc::math::Math { nodes: localoffice_doc::math::parse_linear(text), ..Default::default() },
+                                math: localwriter_doc::math::Math { nodes: localwriter_doc::math::parse_linear(text), ..Default::default() },
                             },
                             &chr,
                         )
                         .unwrap(),
                 }
                 let mut d = Document::from_text("After");
-                d.body.insert(0, localoffice_doc::para_block(p));
+                d.body.insert(0, localwriter_doc::para_block(p));
                 let l = lay(&d);
                 let (y, para) = l.pages[0]
                     .items
@@ -10519,17 +10519,17 @@ fn exact_math_keeps_run_baseline() {
 
 #[test]
 fn float_font_keeps_line_height() {
-    use localoffice_doc::CharProps;
-    use localoffice_doc::para::{Float, Wrap};
+    use localwriter_doc::CharProps;
+    use localwriter_doc::para::{Float, Wrap};
 
     let pitch = |wrap, size| {
         let small = CharProps { size: Some(9.0), ..Default::default() };
-        let mut p = localoffice_doc::Paragraph::with_text("Anchor", small.clone());
+        let mut p = localwriter_doc::Paragraph::with_text("Anchor", small.clone());
         p.mark = small;
         p.props.space_after = Some(0.0);
         p.insert_object(0, picture(1.0, 1.0, Float { wrap, ..Default::default() }), &CharProps { size: Some(size), ..Default::default() }).unwrap();
         let mut d = Document::from_text("After");
-        d.body.insert(0, localoffice_doc::para_block(p));
+        d.body.insert(0, localwriter_doc::para_block(p));
         let l = lay(&d);
         l.caret(&Pos::body(1, 0)).unwrap().top - l.caret(&Pos::body(0, 0)).unwrap().top
     };
@@ -10544,8 +10544,8 @@ fn float_font_keeps_line_height() {
 #[test]
 fn ink_member_of_a_group_draws_its_fallback_picture() {
     use crate::display::Draw;
-    use localoffice_doc::graphic::{Graphic, GraphicItem, GraphicKind};
-    use localoffice_doc::para::{Float, GroupChild};
+    use localwriter_doc::graphic::{Graphic, GraphicItem, GraphicKind};
+    use localwriter_doc::para::{Float, GroupChild};
     use std::sync::Arc;
     let items = vec![GraphicItem::Image { rect: [0.0, 0.0, 60.0, 30.0], media: "preview".into() }];
     let ink = InlineObject::Graphic {
@@ -10629,7 +10629,7 @@ fn the_word_being_typed_has_no_spelling_squiggle() {
 }
 
 fn cell_break_doc(text: &str) -> Document {
-    use localoffice_doc::props::{HeightRule, LineSpacing, VAlign};
+    use localwriter_doc::props::{HeightRule, LineSpacing, VAlign};
     let mut d = Document::new();
     d.last_section.page_w = 344.0;
     d.last_section.margin_left = 72.0;
@@ -10638,14 +10638,14 @@ fn cell_break_doc(text: &str) -> Document {
     p.props.line_spacing = Some(LineSpacing::Exactly(12.0));
     p.props.space_before = Some(3.0);
     p.props.space_after = Some(3.0);
-    let prefix = text.bytes().take_while(|&c| c == localoffice_doc::para::PAGE_BREAK as u8 || c == b'\n').count();
+    let prefix = text.bytes().take_while(|&c| c == localwriter_doc::para::PAGE_BREAK as u8 || c == b'\n').count();
     p.format(0, prefix, &|props| props.size = Some(3.0)).unwrap();
     let mut t = Table::new(1, 1, 200.0);
     t.props.cell_margins = Some([0.0; 4]);
     t.rows[0].props.height = Some(20.0);
     t.rows[0].props.height_rule = HeightRule::AtLeast;
     t.rows[0].cells[0].props.valign = Some(VAlign::Center);
-    t.rows[0].cells[0].blocks = vec![localoffice_doc::para_block(p)];
+    t.rows[0].cells[0].blocks = vec![localwriter_doc::para_block(p)];
     d.body = vec![Arc::new(Block::Table(t))];
     d
 }
@@ -10825,16 +10825,16 @@ fn tiny_grid_scales_to_width() {
 }
 
 fn absolute_footer(text: &str, height: f32) -> Document {
-    use localoffice_doc::para::Anchor;
-    use localoffice_doc::props::TableFloat;
-    let para = |text| localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(text, Default::default()));
+    use localwriter_doc::para::Anchor;
+    use localwriter_doc::props::TableFloat;
+    let para = |text| localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(text, Default::default()));
     let mut table = Table::new(1, 1, 468.0);
     table.props.float = Some(TableFloat { y: 650.0, h_rel: Anchor::Page, v_rel: Anchor::Page, ..Default::default() });
     table.rows[0].props.height = Some(height);
-    table.rows[0].props.height_rule = localoffice_doc::props::HeightRule::AtLeast;
+    table.rows[0].props.height_rule = localwriter_doc::props::HeightRule::AtLeast;
     table.rows[0].cells[0].blocks = vec![para(text)];
     let mut doc = Document::from_text("Body");
-    let id = doc.add_part(localoffice_doc::PartKind::Footer, vec![para("Footer label"), Arc::new(Block::Table(table)), para("")]);
+    let id = doc.add_part(localwriter_doc::PartKind::Footer, vec![para("Footer label"), Arc::new(Block::Table(table)), para("")]);
     doc.last_section.footers.default = Some(id);
     doc
 }
@@ -10877,7 +10877,7 @@ fn footer_absolute_height() {
 
 #[test]
 fn footer_float_wraps_body() {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     const FLOAT_TOP: f32 = 100.0;
     const FLOAT_RIGHT: f32 = 468.0;
     for text in ["", "Decoration"] {
@@ -10890,14 +10890,14 @@ fn footer_float_wraps_body() {
             doc.body = (0..17)
                 .map(|i| {
                     let mut p =
-                        localoffice_doc::Paragraph::with_text(&format!("Body row {i:02}: original footer wrapping control."), Default::default());
+                        localwriter_doc::Paragraph::with_text(&format!("Body row {i:02}: original footer wrapping control."), Default::default());
                     p.props = ParaProps {
                         space_before: Some(0.0),
                         space_after: Some(0.0),
                         line_spacing: Some(LineSpacing::Exactly(24.0)),
                         ..Default::default()
                     };
-                    localoffice_doc::para_block(p)
+                    localwriter_doc::para_block(p)
                 })
                 .collect();
             let layout = lay(&doc);
@@ -10920,8 +10920,8 @@ fn footer_float_wraps_body() {
 
 #[test]
 fn footer_table_wrap_bounds() {
-    use localoffice_doc::para::Anchor;
-    use localoffice_doc::props::{HeightRule, LineSpacing, TableFloat};
+    use localwriter_doc::para::Anchor;
+    use localwriter_doc::props::{HeightRule, LineSpacing, TableFloat};
     const FLOAT_TOP: f32 = 100.0;
     const ROW_HEIGHT: f32 = 40.0;
     const TABLE_WIDTH: f32 = 468.0;
@@ -10939,7 +10939,7 @@ fn footer_table_wrap_bounds() {
     }
     table.rows[1].cells.truncate(1);
     table.rows[1].props.grid_after = 1;
-    let id = doc.add_part(localoffice_doc::PartKind::Footer, vec![Arc::new(Block::Table(table))]);
+    let id = doc.add_part(localwriter_doc::PartKind::Footer, vec![Arc::new(Block::Table(table))]);
     doc.last_section.footers.default = Some(id);
     let layout = lay(&doc);
     let lines = line_boxes(&layout, 0, 1, doc.last_section.margin_left);
@@ -10950,8 +10950,8 @@ fn footer_table_wrap_bounds() {
 
 #[test]
 fn header_table_collision() {
-    use localoffice_doc::para::Anchor;
-    use localoffice_doc::props::{HeightRule, TableFloat};
+    use localwriter_doc::para::Anchor;
+    use localwriter_doc::props::{HeightRule, TableFloat};
 
     for (overlap, expected) in [(false, 140.0), (true, 100.0)] {
         let mut doc = Document::new();
@@ -10964,7 +10964,7 @@ fn header_table_collision() {
             t.rows[0].props.height_rule = HeightRule::Exact;
             t
         };
-        let id = doc.add_part(localoffice_doc::PartKind::Header, vec![Arc::new(Block::Table(table(60.0, 80.0)))]);
+        let id = doc.add_part(localwriter_doc::PartKind::Header, vec![Arc::new(Block::Table(table(60.0, 80.0)))]);
         doc.last_section.headers.default = Some(id);
         doc.body = vec![Arc::new(Block::Table(table(100.0, 48.0)))];
         let laid = lay(&doc);
@@ -10994,7 +10994,7 @@ enum KeepAfter {
 }
 
 fn band_row_table(top: Option<Border>) -> Table {
-    use localoffice_doc::props::{HeightRule, LineSpacing};
+    use localwriter_doc::props::{HeightRule, LineSpacing};
     let line = Border { style: BorderStyle::Single, width: SHARED_BAND, color: None, space: 0.0 };
     let mut table = Table::new(4, 1, 200.0);
     table.props.style = None;
@@ -11008,7 +11008,7 @@ fn band_row_table(top: Option<Border>) -> Table {
         let mut para = Paragraph::with_text("Original cell", Default::default());
         para.props =
             ParaProps { space_before: Some(0.0), space_after: Some(0.0), line_spacing: Some(LineSpacing::Exactly(10.0)), ..Default::default() };
-        row.cells[0].blocks = vec![localoffice_doc::para_block(para)];
+        row.cells[0].blocks = vec![localwriter_doc::para_block(para)];
     }
     table
 }
@@ -11036,7 +11036,7 @@ fn shared_band_row_minimum() {
 
 #[test]
 fn shared_band_carries_heading() {
-    use localoffice_doc::props::{HeightRule, LineSpacing};
+    use localwriter_doc::props::{HeightRule, LineSpacing};
     for (page_height, heading_page) in [(150.0, 1), (156.0, 0)] {
         let mut doc = Document::new();
         doc.last_section.page_h = page_height;
@@ -11051,7 +11051,7 @@ fn shared_band_carries_heading() {
                 keep_next: Some(matches!(keep, KeepAfter::Next)),
                 ..Default::default()
             };
-            localoffice_doc::para_block(p)
+            localwriter_doc::para_block(p)
         };
         let mut next = Table::new(1, 1, 200.0);
         next.props.style = None;
@@ -11077,7 +11077,7 @@ fn shared_band_carries_heading() {
 fn shared_band_exact_rows() {
     let mut table = band_row_table(None);
     for row in &mut table.rows {
-        row.props.height_rule = localoffice_doc::props::HeightRule::Exact;
+        row.props.height_rule = localwriter_doc::props::HeightRule::Exact;
     }
     let mut doc = Document::new();
     doc.body = vec![std::sync::Arc::new(Block::Table(table))];
@@ -11116,7 +11116,7 @@ fn shared_band_borderless() {
 
 #[test]
 fn shared_band_merge_boundary() {
-    use localoffice_doc::props::VMerge;
+    use localwriter_doc::props::VMerge;
     let mut table = band_row_table(None);
     table.rows[0].cells[0].props.vmerge = VMerge::Restart;
     table.rows[1].cells[0].props.vmerge = VMerge::Continue;
@@ -11170,13 +11170,13 @@ fn shared_band_grid_spans() {
 #[test]
 fn caret_height_ignores_line_spacing() {
     // #2920: extra line spacing is leading below the text; the caret stays the height of the font.
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     let caret_height = |spacing: Option<LineSpacing>| {
         let mut d = Document::new();
-        let chr = localoffice_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() };
-        let mut p = localoffice_doc::Paragraph::with_text("Alpha probe", chr);
+        let chr = localwriter_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() };
+        let mut p = localwriter_doc::Paragraph::with_text("Alpha probe", chr);
         p.props = ParaProps { line_spacing: spacing, ..Default::default() };
-        d.body = vec![localoffice_doc::para_block(p)];
+        d.body = vec![localwriter_doc::para_block(p)];
         lay(&d).caret(&Pos::body(0, 3)).unwrap().height
     };
     let single = caret_height(Some(LineSpacing::Multiple(1.0)));
@@ -11191,7 +11191,7 @@ fn caret_height_ignores_line_spacing() {
 /// too, as in Word, not just its own paragraph's.
 #[test]
 fn a_float_placed_above_its_anchor_wraps_the_paragraphs_before_it() {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let text = "Earlier text flows beside the picture placed above its anchor. ".repeat(3);
     for (v_rel, y) in [(Anchor::Page, 72.0), (Anchor::Paragraph, -200.0)] {
         let mut d = Document::from_text(&format!("{text}\n{text}\n{text}\n\nThe anchor paragraph."));
@@ -11238,7 +11238,7 @@ fn text_under_shapes(l: &DocLayout) -> (Option<String>, usize) {
 /// A square-wrapped 150 x 260 picture fixed on the page at `y`, anchored in the last paragraph
 /// (at `anchor`) after paragraphs of `text`.
 fn picture_above_anchor(text: &str, anchor: usize, y: f32) -> Document {
-    use localoffice_doc::para::{Anchor, Float, Wrap};
+    use localwriter_doc::para::{Anchor, Float, Wrap};
     let mut d = Document::from_text(&format!("{}The anchor paragraph.", format!("{text}\n").repeat(anchor)));
     let f = Float { wrap: Wrap::Square, h_rel: Anchor::Column, v_rel: Anchor::Page, x: 0.0, y, dist: 9.0, ..Default::default() };
     d.insert_object(&Pos::body(anchor, 0), rect_shape(150.0, 260.0, f), &Default::default()).unwrap();
@@ -11292,9 +11292,9 @@ fn last_rewrap_pass_keeps_early_floats_clear_of_text() {
 /// ending in a column break first when `skip_first_column`, then an anchor paragraph holding a
 /// 100 x 200 picture (wrapped `wrap`) fixed on the page at the column's top, and a column break
 /// into the other column (#2048 review).
-fn early_float_with_column_break(skip_first_column: bool, wrap: localoffice_doc::para::Wrap) -> Document {
-    use localoffice_doc::para::{Anchor, Float};
-    let brk = localoffice_doc::para::COLUMN_BREAK;
+fn early_float_with_column_break(skip_first_column: bool, wrap: localwriter_doc::para::Wrap) -> Document {
+    use localwriter_doc::para::{Anchor, Float};
+    let brk = localwriter_doc::para::COLUMN_BREAK;
     let earlier = "Earlier text in this column flows beside the picture above its anchor. ".repeat(2);
     let after = "Text after the column break is broken for the width of its own column. ".repeat(4);
     let mut paras = Vec::new();
@@ -11305,7 +11305,7 @@ fn early_float_with_column_break(skip_first_column: bool, wrap: localoffice_doc:
     paras.push(format!("The anchor paragraph.{brk}{after}"));
     let anchor = paras.len() - 1;
     let mut d = Document::from_text(&paras.join("\n"));
-    d.last_section.columns = localoffice_doc::section::Columns { count: 2, space: 36.0, separator: false, widths: vec![(260.0, 36.0), (172.0, 0.0)] };
+    d.last_section.columns = localwriter_doc::section::Columns { count: 2, space: 36.0, separator: false, widths: vec![(260.0, 36.0), (172.0, 0.0)] };
     let f = Float { wrap, h_rel: Anchor::Column, v_rel: Anchor::Page, x: 0.0, y: 72.0, dist: 9.0, ..Default::default() };
     d.insert_object(&Pos::body(anchor, 0), rect_shape(100.0, 200.0, f), &Default::default()).unwrap();
     d
@@ -11330,7 +11330,7 @@ fn line_spots(l: &DocLayout, page: usize, min_x: f32) -> Vec<(i32, i32, usize)> 
 /// text on the picture's page clear of it, and wraps nothing around it where it isn't drawn.
 #[test]
 fn early_float_survives_a_column_break_into_another_width() {
-    use localoffice_doc::para::Wrap;
+    use localwriter_doc::para::Wrap;
     // (anchor in the second column, so the break goes onto the next page; where the text after the
     // break goes: page and the left of its column)
     for (skip, page, min_x) in [(false, 0, 72.0 + 260.0 + 36.0), (true, 1, 72.0)] {
@@ -11363,13 +11363,13 @@ fn early_float_survives_a_column_break_into_another_width() {
 /// without is still squeezed to the margins.
 #[test]
 fn table_with_its_own_width_is_not_squeezed_to_the_margins() {
-    let text = |s: &str| localoffice_doc::para_block(localoffice_doc::Paragraph::with_text(s, Default::default()));
+    let text = |s: &str| localwriter_doc::para_block(localwriter_doc::Paragraph::with_text(s, Default::default()));
     let second_column_x = |own: Option<f32>| {
         let mut t = Table::new(1, 3, 936.0);
         t.props.width = own;
         t.rows[0].cells[1].blocks = vec![text("Address")];
         let mut d = Document::from_text("After");
-        d.insert_block(StoryRef::Body, &Path::top(0), localoffice_doc::Block::Table(t)).unwrap();
+        d.insert_block(StoryRef::Body, &Path::top(0), localwriter_doc::Block::Table(t)).unwrap();
         let l = lay(&d);
         let [(x, _, _)] = para_at(&l, &[0, 0, 1, 0])[..] else { panic!("second cell missing") };
         x
@@ -11386,7 +11386,7 @@ fn table_with_its_own_width_is_not_squeezed_to_the_margins() {
 /// rectangle 0.25 pt high), and a flat `line` stays flat instead of running down a point.
 #[test]
 fn anchored_objects_thinner_than_a_point_keep_their_size() {
-    use localoffice_doc::para::{Anchor, Float, ShapeKind, Wrap};
+    use localwriter_doc::para::{Anchor, Float, ShapeKind, Wrap};
     let float = |y: f32| Float { wrap: Wrap::InFrontOfText, h_rel: Anchor::Page, v_rel: Anchor::Page, x: 72.0, y, ..Default::default() };
     let mut d = Document::from_text("Rules");
     for (i, h) in [0.25f32, 0.5, 1.0, 2.0].into_iter().enumerate() {
@@ -11428,7 +11428,7 @@ fn anchored_objects_thinner_than_a_point_keep_their_size() {
 
 #[test]
 fn keep_next_counts_list_indent() {
-    use localoffice_doc::props::{LineSpacing, NumRef};
+    use localwriter_doc::props::{LineSpacing, NumRef};
     let mut doc = Document::new();
     doc.last_section.page_w = 240.0;
     doc.last_section.page_h = 200.0;
@@ -11436,7 +11436,7 @@ fn keep_next_counts_list_indent() {
     doc.last_section.margin_bottom = 20.0;
     doc.last_section.margin_left = 20.0;
     doc.last_section.margin_right = 20.0;
-    let id = doc.numbering.add_list(localoffice_doc::ListKind::Numbered);
+    let id = doc.numbering.add_list(localwriter_doc::ListKind::Numbered);
     let level = &mut doc.numbering.abstracts[0].levels[0];
     level.indent = 100.0;
     level.hanging = 0.0;
@@ -11449,9 +11449,9 @@ fn keep_next_counts_list_indent() {
     };
     let para = |text: &str, props: ParaProps| {
         let mut p =
-            Paragraph::with_text(text, localoffice_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() });
+            Paragraph::with_text(text, localwriter_doc::CharProps { font: Some("Source Sans 3".into()), size: Some(12.0), ..Default::default() });
         p.props = props;
-        localoffice_doc::para_block(p)
+        localwriter_doc::para_block(p)
     };
     doc.body = vec![
         para("Filler", ParaProps { line_spacing: Some(LineSpacing::Exactly(136.0)), ..props.clone() }),
@@ -11555,7 +11555,7 @@ fn layout_cache_invalidates_on_changed_filename() {
         &Default::default(),
     )
     .unwrap();
-    doc.body = vec![localoffice_doc::para_block(p)];
+    doc.body = vec![localwriter_doc::para_block(p)];
 
     let shown = |l: &DocLayout| -> String {
         l.pages[0]
@@ -11587,7 +11587,7 @@ fn layout_cache_invalidates_on_changed_filepath() {
         &Default::default(),
     )
     .unwrap();
-    doc.body = vec![localoffice_doc::para_block(p)];
+    doc.body = vec![localwriter_doc::para_block(p)];
 
     let shown = |l: &DocLayout| -> String {
         l.pages[0]
@@ -11613,7 +11613,7 @@ fn layout_cache_invalidates_on_changed_filepath() {
 /// the next one's first line that fill the page to within it stay on the page.
 #[test]
 fn keep_with_next_fits_to_the_hundredth_of_a_point() {
-    use localoffice_doc::props::LineSpacing;
+    use localwriter_doc::props::LineSpacing;
     let exact =
         |h: f32| ParaProps { space_before: Some(0.0), space_after: Some(0.0), line_spacing: Some(LineSpacing::Exactly(h)), ..Default::default() };
     let mut d = Document::from_text("Filler\nKept\nNext");
@@ -11633,9 +11633,9 @@ fn ruled_table(fill: usize, rows: usize, border: f32) -> Document {
     t.props.style = None;
     t.props.borders = Some(Borders::all(Border::single(border)));
     for row in &mut t.rows {
-        row.cells[0].blocks = vec![localoffice_doc::para_block(localoffice_doc::Paragraph::with_text("row", Default::default()))];
+        row.cells[0].blocks = vec![localwriter_doc::para_block(localwriter_doc::Paragraph::with_text("row", Default::default()))];
     }
-    d.insert_block(StoryRef::Body, &Path::top(fill), localoffice_doc::Block::Table(t)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(fill), localwriter_doc::Block::Table(t)).unwrap();
     d
 }
 

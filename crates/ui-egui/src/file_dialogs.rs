@@ -47,9 +47,9 @@ const DOCUMENTS: &[&str] = &["docx", "docm", "dotx", "dotm", "doc", "dot", "odt"
 pub fn open_filters(purpose: &str) -> &'static [(&'static str, &'static [&'static str])] {
     match purpose {
         "picture" => &[("Pictures", PICTURES)],
-        "font" => &[("Fonts", localoffice_fonts::FONT_FILE_EXTS)],
+        "font" => &[("Fonts", localwriter_fonts::FONT_FILE_EXTS)],
         "sources" => &[("Word sources", &["xml"]), ("All files", &["*"])],
-        "recipients" => &[("Recipient lists", localoffice_engine::cmd::mailings::RECIPIENT_EXTENSIONS), ("All files", &["*"])],
+        "recipients" => &[("Recipient lists", localwriter_engine::cmd::mailings::RECIPIENT_EXTENSIONS), ("All files", &["*"])],
         _ => &[("Documents", DOCUMENTS), ("Word document", &["docx"]), ("All files", &["*"])],
     }
 }
@@ -384,7 +384,7 @@ impl WordApp {
         // app's own.
         let saved = self.session.prefs.user_templates_folder.as_deref().map(str::trim).filter(|f| !f.is_empty());
         match saved {
-            Some(f) if localoffice_engine::cmd::user_templates::check_dir(f).is_ok() && std::path::Path::new(f).is_dir() => {
+            Some(f) if localwriter_engine::cmd::user_templates::check_dir(f).is_ok() && std::path::Path::new(f).is_dir() => {
                 Some(std::path::PathBuf::from(f))
             }
             Some(f) => {
@@ -472,7 +472,7 @@ mod tests {
 
     use super::*;
     use crate::Services;
-    use localoffice_engine::Session;
+    use localwriter_engine::Session;
 
     const UNSAVED: &str = "My unsaved novel chapter";
 
@@ -516,7 +516,7 @@ mod tests {
             std::fs::write(&original, &bytes).unwrap();
             let (mut a, shown) = async_app();
             a.run("file.open", json!({"path": original.to_string_lossy()})).unwrap();
-            assert!(a.session.doc.plain_text(localoffice_doc::StoryRef::Body).contains("Legacy contract"));
+            assert!(a.session.doc.plain_text(localwriter_doc::StoryRef::Body).contains("Legacy contract"));
             a.run("text.insert", json!({"text": "Revised "})).unwrap();
             let draft = a.session.doc.clone();
             let revision = a.session.rev();
@@ -569,7 +569,7 @@ mod tests {
         assert!(a.has_document() && a.session.dirty && !a.quit_requested);
         assert_eq!(a.session.path.as_deref(), Some(original.as_path()));
         assert_eq!(std::fs::read(&original).unwrap(), bytes);
-        assert_eq!(a.session.doc.plain_text(localoffice_doc::StoryRef::Body), draft.plain_text(localoffice_doc::StoryRef::Body));
+        assert_eq!(a.session.doc.plain_text(localwriter_doc::StoryRef::Body), draft.plain_text(localwriter_doc::StoryRef::Body));
 
         a.run("ui.saveChanges", json!({"answer": "save"})).unwrap();
         answer(&shown, None);
@@ -706,7 +706,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        (WordApp::new(Session::new(localoffice_doc::Document::new()), services), shown)
+        (WordApp::new(Session::new(localwriter_doc::Document::new()), services), shown)
     }
 
     /// Answer the dialog the host is showing (the last one asked for).
@@ -726,18 +726,18 @@ mod tests {
     }
 
     fn body_text(a: &WordApp) -> String {
-        a.session.doc.plain_text(localoffice_doc::StoryRef::Body)
+        a.session.doc.plain_text(localwriter_doc::StoryRef::Body)
     }
 
     fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("localoffice-ui-dialogs-{name}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("localwriter-ui-dialogs-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
     }
 
     fn saved_text(path: &std::path::Path) -> String {
-        localoffice_engine::io::open_path(path).unwrap().plain_text(localoffice_doc::StoryRef::Body)
+        localwriter_engine::io::open_path(path).unwrap().plain_text(localwriter_doc::StoryRef::Body)
     }
 
     /// Save as Word Template (#2852) suggests a .dotx in the user templates folder, which is made
@@ -760,7 +760,7 @@ mod tests {
         ctx.run_ui(egui::RawInput::default(), |ui| a.logic(ui.ctx())).drop_without_applying_deltas();
         assert!(path.is_file(), "saved as a template");
         assert_eq!(saved_text(&path), UNSAVED);
-        let listed = localoffice_engine::cmd::user_templates::list_templates(&own.to_string_lossy()).unwrap();
+        let listed = localwriter_engine::cmd::user_templates::list_templates(&own.to_string_lossy()).unwrap();
         assert_eq!(listed.templates.iter().map(|t| t.label.as_str()).collect::<Vec<_>>(), ["Memo"]);
 
         // A folder chosen in Options wins.
@@ -806,7 +806,7 @@ mod tests {
         let opened = dir.join("one.docx");
         let picked = dir.join("sub").join("two.docx");
         std::fs::create_dir_all(dir.join("sub")).unwrap();
-        localoffice_engine::Session::new(localoffice_doc::Document::from_text("original"))
+        localwriter_engine::Session::new(localwriter_doc::Document::from_text("original"))
             .run("file.save", &json!({"path": opened.to_string_lossy()}))
             .unwrap();
         let (mut a, shown) = async_app();
@@ -1076,14 +1076,14 @@ mod tests {
         let called = Rc::new(Cell::new(false));
         let called2 = called.clone();
         let services = Services { load_system_fonts: Some(Box::new(move || called2.set(true))), ..Default::default() };
-        let mut a = WordApp::new(Session::new(localoffice_doc::Document::new()), services);
+        let mut a = WordApp::new(Session::new(localwriter_doc::Document::new()), services);
         a.run("font.loadSystem", json!({})).unwrap();
         assert!(called.get());
     }
 
     #[test]
     fn load_system_fonts_without_hook_reports_status() {
-        let mut a = WordApp::new(Session::new(localoffice_doc::Document::new()), Services::default());
+        let mut a = WordApp::new(Session::new(localwriter_doc::Document::new()), Services::default());
         a.run("font.loadSystem", json!({})).unwrap();
         assert_eq!(a.status_msg.as_ref().map(|(s, _)| s.as_str()), Some("All system fonts are already available."));
     }

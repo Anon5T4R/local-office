@@ -1,10 +1,10 @@
 [package]
-name = "localoffice-ui-egui"
+name = "localwriter-ui-egui"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word egui front end (Word-style ribbon UI); swappable: nothing below depends on it"
+description = "Local Writer egui front end (Word-style ribbon UI); swappable: nothing below depends on it"
 
 [lints]
 workspace = true
@@ -19,15 +19,15 @@ craft-i18n = { path = "../../libs/craft-libs/crates/i18n/" }
 
 # One native window per open document: the window list, the Window menu and the egui viewports.
 craft-window = { path = "../../libs/craft-libs/crates/window/", features = ["egui"] }
-localoffice-geom = { workspace = true, features = ["image"] }
-localoffice-doc = { workspace = true }
-localoffice-fonts = { workspace = true }
-localoffice-layout = { workspace = true }
-localoffice-render = { workspace = true }
-localoffice-engine = { workspace = true }
-localoffice-zotero = { workspace = true }
+localwriter-geom = { workspace = true, features = ["image"] }
+localwriter-doc = { workspace = true }
+localwriter-fonts = { workspace = true }
+localwriter-layout = { workspace = true }
+localwriter-render = { workspace = true }
+localwriter-engine = { workspace = true }
+localwriter-zotero = { workspace = true }
 # BYOK AI (the suite's shared client): connections panel, model picker and chat over the document.
-localoffice-ai = { workspace = true }
+localwriter-ai = { workspace = true }
 craft-icons = { workspace = true }
 egui = { workspace = true, features = ["default_fonts", "monochrome_emoji_fonts"] }
 egui_extras = { workspace = true }
@@ -51,7 +51,7 @@ cfb = { workspace = true }
 craft-desktop-theme = { workspace = true }
 # Producer tests simulate a globally exhausted IME revision allocator through the engine's
 # explicit test-support feature; production builds of this crate never enable it.
-localoffice-engine = { workspace = true, features = ["test-support"] }
+localwriter-engine = { workspace = true, features = ["test-support"] }
 # kittest's own dev-dependencies do not propagate their font features. Declare the fonts the
 # interface tests lay out explicitly: default faces plus monochrome emoji fallbacks.
 egui = { workspace = true, features = ["default_fonts", "monochrome_emoji_fonts"] }

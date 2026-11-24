@@ -4,8 +4,8 @@
 
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use localoffice_doc::para::{InlineObject, OBJ};
-use localoffice_doc::{Document, StoryRef};
+use localwriter_doc::para::{InlineObject, OBJ};
+use localwriter_doc::{Document, StoryRef};
 
 /// Longest quoted anchor text (characters).
 const MAX_QUOTE: usize = 200;

@@ -1,10 +1,10 @@
 [package]
-name = "localoffice-engine"
+name = "localwriter-engine"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "Local Word engine: session, selection, undo, the command registry (every action is a command), Word's command catalog, file I/O dispatch"
+description = "Local Writer engine: session, selection, undo, the command registry (every action is a command), Word's command catalog, file I/O dispatch"
 
 [lints]
 workspace = true
@@ -16,16 +16,16 @@ workspace = true
 test-support = []
 
 [dependencies]
-localoffice-geom = { workspace = true, features = ["image"] }
-localoffice-doc = { workspace = true }
-localoffice-fonts = { workspace = true }
-localoffice-layout = { workspace = true }
-localoffice-render = { workspace = true }
-localoffice-proof = { workspace = true }
-localoffice-docx = { workspace = true }
-localoffice-docbin = { workspace = true }
-localoffice-pdf = { workspace = true }
-localoffice-formats = { workspace = true }
+localwriter-geom = { workspace = true, features = ["image"] }
+localwriter-doc = { workspace = true }
+localwriter-fonts = { workspace = true }
+localwriter-layout = { workspace = true }
+localwriter-render = { workspace = true }
+localwriter-proof = { workspace = true }
+localwriter-docx = { workspace = true }
+localwriter-docbin = { workspace = true }
+localwriter-pdf = { workspace = true }
+localwriter-formats = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

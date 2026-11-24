@@ -3,10 +3,10 @@
 #
 # Exports:
 #   ROOT                    workspace root
-#   VERSION                 [workspace.package] version from Cargo.toml (override: LOCALOFFICE_VERSION)
+#   VERSION                 [workspace.package] version from Cargo.toml (override: LOCALWRITER_VERSION; the old LOCALOFFICE_VERSION still works)
 #   DIST                    output directory for release artifacts (default: $ROOT/dist/release)
-#   LOCALOFFICE_BUILD_SHA    git commit baked into the binaries (see crates/engine/src/build_info.rs)
-#   LOCALOFFICE_BUILD_DATE   UTC build date, YYYY-MM-DD
+#   LOCALWRITER_BUILD_SHA    git commit baked into the binaries (see crates/engine/src/build_info.rs)
+#   LOCALWRITER_BUILD_DATE   UTC build date, YYYY-MM-DD
 #   CARGO_TARGET_DIR        cargo's target dir (default: $ROOT/target)
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -22,7 +22,7 @@ workspace_version() {
   return $?
 }
 
-VERSION="${LOCALOFFICE_VERSION:-$(workspace_version)}"
+VERSION="${LOCALWRITER_VERSION:-${LOCALOFFICE_VERSION:-$(workspace_version)}}"
 if [[ -z "$VERSION" ]]; then
   echo "error: could not read [workspace.package] version from $ROOT/Cargo.toml" >&2
   exit 1
@@ -33,11 +33,11 @@ DIST="${DIST:-$ROOT/dist/release}"
 mkdir -p "$DIST"
 export DIST
 
-if [[ -z "${LOCALOFFICE_BUILD_SHA:-}" ]]; then
-  LOCALOFFICE_BUILD_SHA="$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || true)"
+if [[ -z "${LOCALWRITER_BUILD_SHA:-}" ]]; then
+  LOCALWRITER_BUILD_SHA="${LOCALOFFICE_BUILD_SHA:-$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || true)}"
 fi
-export LOCALOFFICE_BUILD_SHA
-export LOCALOFFICE_BUILD_DATE="${LOCALOFFICE_BUILD_DATE:-$(date -u +%Y-%m-%d)}"
+export LOCALWRITER_BUILD_SHA
+export LOCALWRITER_BUILD_DATE="${LOCALWRITER_BUILD_DATE:-${LOCALOFFICE_BUILD_DATE:-$(date -u +%Y-%m-%d)}}"
 export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT/target}"
 
 # Emit a GitHub Actions warning (plain stderr outside Actions).

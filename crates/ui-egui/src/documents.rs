@@ -8,7 +8,7 @@
 //! closes the shown one, and quitting asks about every document with unsaved changes, one after
 //! another, each in its window.
 
-use localoffice_engine::DocInfo;
+use localwriter_engine::DocInfo;
 use serde_json::{Value, json};
 
 use crate::{WordApp, panes};
@@ -218,14 +218,14 @@ pub(crate) fn switch_windows_menu(ui: &mut egui::Ui, app: &mut WordApp) {
 
 #[cfg(test)]
 mod tests {
-    use localoffice_doc::StoryRef;
-    use localoffice_engine::Session;
+    use localwriter_doc::StoryRef;
+    use localwriter_engine::Session;
     use serde_json::json;
 
     use crate::{Services, WordApp};
 
     fn app() -> WordApp {
-        WordApp::new(Session::new(localoffice_doc::Document::new()), Services::default())
+        WordApp::new(Session::new(localwriter_doc::Document::new()), Services::default())
     }
 
     fn harness(a: WordApp) -> egui_kittest::Harness<'static, WordApp> {

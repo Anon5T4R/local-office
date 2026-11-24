@@ -4,22 +4,23 @@
 use std::path::{Path, PathBuf};
 
 /// The app's settings folder (preferences, logs, key files): macOS
-/// `~/Library/Application Support/LocalOffice`, Windows `%APPDATA%\LocalOffice`, otherwise
-/// `$XDG_CONFIG_HOME/localoffice` or `~/.config/localoffice`.
-/// `LOCALOFFICE_PROFILE_DIR` overrides the entire folder for isolated runs.
+/// `~/Library/Application Support/LocalWriter`, Windows `%APPDATA%\LocalWriter`, otherwise
+/// `$XDG_CONFIG_HOME/localwriter` or `~/.config/localwriter`.
+/// `LOCALWRITER_PROFILE_DIR` overrides the entire folder for isolated runs.
 pub fn settings_dir() -> Option<PathBuf> {
-    if let Some(path) = std::env::var_os("LOCALOFFICE_PROFILE_DIR").filter(|p| !p.is_empty()) {
+    if let Some(path) = std::env::var_os("LOCALWRITER_PROFILE_DIR").or_else(|| std::env::var_os("LOCALOFFICE_PROFILE_DIR")).filter(|p| !p.is_empty())
+    {
         return Some(PathBuf::from(path));
     }
     if cfg!(target_os = "macos") {
-        std::env::var_os("HOME").map(|h| PathBuf::from(h).join("Library/Application Support/LocalOffice"))
+        std::env::var_os("HOME").map(|h| PathBuf::from(h).join("Library/Application Support/LocalWriter"))
     } else if cfg!(windows) {
-        std::env::var_os("APPDATA").map(|a| PathBuf::from(a).join("LocalOffice"))
+        std::env::var_os("APPDATA").map(|a| PathBuf::from(a).join("LocalWriter"))
     } else {
         std::env::var_os("XDG_CONFIG_HOME")
             .map(PathBuf::from)
             .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")))
-            .map(|c| c.join("localoffice"))
+            .map(|c| c.join("localwriter"))
     }
 }
 
@@ -63,12 +64,12 @@ mod tests {
         assert_eq!(parse_instance_id("instance-id=a b\n"), None);
         assert_eq!(parse_instance_id("instance-id=..\n"), None);
         assert_eq!(parse_instance_id("instance-id=\n"), None);
-        assert_eq!(parse_instance_id("app=com.local.localoffice\n"), None);
+        assert_eq!(parse_instance_id("app=com.local.localwriter\n"), None);
     }
 
     #[test]
     fn key_file_per_instance() {
-        let dir = Path::new("/settings/localoffice");
+        let dir = Path::new("/settings/localwriter");
         assert_eq!(key_path_for(dir, Some("1234"), 7981), dir.join("control-key.1234"));
         assert_eq!(key_path_for(dir, None, 7981), dir.join("control-key.local-7981"));
         assert_eq!(key_path_for(dir, None, 7982), dir.join("control-key.local-7982"));
@@ -81,7 +82,7 @@ mod tests {
     fn settings_dir_is_the_apps_folder() {
         if let Some(d) = settings_dir() {
             let name = d.file_name().and_then(|n| n.to_str()).unwrap_or("");
-            assert!(name == "localoffice" || name == "LocalOffice", "{}", d.display());
+            assert!(name == "localwriter" || name == "LocalWriter", "{}", d.display());
         }
     }
 }
