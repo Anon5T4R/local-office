@@ -798,13 +798,39 @@ fn long_word_beside_a_float(n: usize) -> Document {
     d
 }
 
+// Cluster visits while measuring words, for the complexity tests: a layout that measures
+// every word once visits a bounded number of clusters per paragraph, while one that
+// measures the word again for every row it is tried on visits it once per row.
+thread_local! {
+    static WORD_STEPS: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+/// Counts one cluster visit in a word measurement (see [`para::word_widths`]).
+pub(crate) fn count_word_step() {
+    WORD_STEPS.with(|s| s.set(s.get() + 1));
+}
+
+/// Clusters the word measurements of laying `doc` out visit: reset, lay out, read. Counting
+/// steps rather than the time keeps the growth a property of the layout alone, not of how
+/// loaded the machine running the test is.
+fn word_measure_steps(doc: &Document) -> u64 {
+    WORD_STEPS.with(|s| s.set(0));
+    lay(doc);
+    WORD_STEPS.with(|s| s.get())
+}
+
 /// A word with no break opportunity in it: measuring the word for every line it takes scanned
-/// the whole paragraph each time, so the layout was quadratic in the word's length.
+/// the whole paragraph each time, so the layout was quadratic in the word's length. Word
+/// measurement steps grow linearly now — 8x the word visits about 8x the clusters, where a
+/// scan per row would visit about 64x (#18, #3412).
 #[test]
 fn a_long_unbreakable_word_lays_out_in_linear_time() {
-    let (t1, tk, ratio) = layout_time_ratio(long_word_beside_a_float, 50_000, &LayoutOptions::default());
-    eprintln!("t(n) {t1:.4} s, t(8n) {tk:.4} s, ratio {ratio:.1}");
-    assert!(ratio < 24.0, "8x the word took {ratio:.1}x the time ({t1:.4} s → {tk:.4} s): not linear");
+    let (n, m) = (50_000, 50_000 * SCALE);
+    let (s, b) = (word_measure_steps(&long_word_beside_a_float(n)), word_measure_steps(&long_word_beside_a_float(m)));
+    let ratio = b as f64 / s.max(1) as f64;
+    eprintln!("steps(n) {s}, steps({}n) {b}, ratio {ratio:.1}", SCALE);
+    assert!(s > 0, "the word measurements were never counted");
+    assert!(ratio < 16.0, "{SCALE}x the word visited {ratio:.1}x the clusters ({s} -> {b}): not linear");
 }
 
 /// A word a megabyte long lays out in a fraction of a second: it used to take half a minute.

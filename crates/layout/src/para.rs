@@ -2010,6 +2010,8 @@ pub(crate) fn word_widths(clusters: &[Cluster], hyph_after: &[u32]) -> Vec<f32> 
     let n = clusters.len();
     let mut width = vec![0.0f32; n + 1];
     for k in (0..n).rev() {
+        #[cfg(test)]
+        crate::tests::count_word_step();
         let c = &clusters[k];
         let adv = if c.kind == ClKind::Space { 0.0 } else { c.adv };
         // The word ends at a break opportunity. A hyphenation point isn't one: the break there
