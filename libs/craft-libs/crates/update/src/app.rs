@@ -36,7 +36,7 @@ pub struct App {
 }
 
 /// The developer of every app in the Local suite.
-pub const DEVELOPER: &str = "Anon5T4R";
+pub const DEVELOPER: &str = "Styx Studios";
 
 /// Who the upstream suite's Windows Installer packages name as their publisher.
 pub const UPSTREAM_PUBLISHER: &str = "Learning Machines LLC";
@@ -70,7 +70,7 @@ impl App {
             "localpaint" | "localraster" => "com.localpaint.app".into(),
             "localphoto" => "com.localphoto.app".into(),
             "localobsidian" | "localnotebook" => "com.localobsidian.app".into(),
-            "localmind" => "com.localmind.app".into(),
+            "localmind" | "localmindmap" => "com.localmind.app".into(),
             _ => format!("ai.storyteller.{}", self.id),
         }
     }
@@ -127,6 +127,7 @@ mod tests {
             ("localobsidian", "com.localobsidian.app"),
             ("localnotebook", "com.localobsidian.app"),
             ("localmind", "com.localmind.app"),
+            ("localmindmap", "com.localmind.app"),
         ] {
             let app = App::new(id, id, "", "");
             assert_eq!(app.bundle_id(), bundle);
