@@ -16,7 +16,7 @@
   nenhum está presente.
 - O clone raso começa em `2c99a427` (pai de `6a2b520f`): commits anteriores a ele não são
   conferíveis ali, e nada entre os dois existe no `main`.
-- Fork: `Anon5T4R/local-office`, versão própria na linha `0.11.x`.
+- Fork: `Styx-Studios/Local-Writer`, versão própria na linha `0.11.x`.
 - Nada é lido de `C:\Dev\storytold` em build, teste ou release; a pasta é só referência local para a
   skill `sync-upstream`.
 
@@ -188,4 +188,4 @@ build-dependencies do download do PDFium opcionais atrás da feature `pdfium`), 
 
 `libs/craft-libs/crates/update` está **fora do escopo** deste sync com o upstream. É um crate nosso, hospedado no `craft-libs` da suíte Local, e um **fork permanente consciente** do `craft-update` upstream — unificado nos 10 apps em 2026-11-13, com um diff de milhares de linhas contra `storytold/craft-libs/crates/update` (MSI context/migrate, pins do launcher, `offers_update`, `desktop_register`, catálogo único de apps). Nenhum diff de sync encaixa nele.
 
-Bugfix e feature vão **direto na fonte única** — repo `Anon5T4R/local-libs` (crate `crates/update`) — e daí são replicados para os apps pelo script de sincronização (`sync.ps1 -Mode push`, guarda de hash ×10; a cópia vendored aqui é espelho). Nunca edite a cópia local diretamente: o próximo sync sobrescreve. Contribuições ao upstream só via **Issue/PR manual**, em inglês, quando o problema também existir lá - mesma política do `UPSTREAM-CONTRIBUTIONS.md` do local-office. O restante do `craft-libs` segue o fluxo normal deste documento.
+Bugfix e feature vão **direto na fonte única** — repo `Styx-Studios/local-libs` (crate `crates/update`) — e daí são replicados para os apps pelo script de sincronização (`sync.ps1 -Mode push`, guarda de hash ×10; a cópia vendored aqui é espelho). Nunca edite a cópia local diretamente: o próximo sync sobrescreve. Contribuições ao upstream só via **Issue/PR manual**, em inglês, quando o problema também existir lá - mesma política do `UPSTREAM-CONTRIBUTIONS.md` do local-office. O restante do `craft-libs` segue o fluxo normal deste documento.
