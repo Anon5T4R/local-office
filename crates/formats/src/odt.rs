@@ -2512,6 +2512,8 @@ impl Pictures {
             return None;
         }
         let mut out = Vec::new();
+        // `zip` 9 refuses an entry that delivers more than it declares, so the extra byte this cap
+        // can read is no longer reachable from a package; it stays as the last line of the budget.
         let read = f.take(room.saturating_add(1)).read_to_end(&mut out);
         self.room = room.saturating_sub(out.len() as u64);
         (read.is_ok() && out.len() as u64 <= room).then_some(out)
@@ -2791,12 +2793,18 @@ mod tests {
         z.finish().unwrap().into_inner()
     }
 
-    /// `bytes` (a package) with the size its central directory declares for `name` set to `size`.
+    /// `bytes` (a package) with the size it declares for `name` set to `size`: the entry claims to
+    /// inflate to less than its data does. Both the local and the central header are changed, the
+    /// only way left to reach the reader: `zip` 9 refuses an entry whose headers disagree, local
+    /// against central (the "zip cloaking" fix, GHSA-m665-v7pm-7grj, 9.0.5).
     fn declare_size(mut bytes: Vec<u8>, name: &str, size: u32) -> Vec<u8> {
         let at = (0..bytes.len())
             .find(|&i| bytes[i..].starts_with(b"PK\x01\x02") && bytes.get(i + 46..).is_some_and(|r| r.starts_with(name.as_bytes())))
             .unwrap();
         bytes[at + 24..at + 28].copy_from_slice(&size.to_le_bytes());
+        let local = u32::from_le_bytes(bytes[at + 42..at + 46].try_into().unwrap()) as usize;
+        assert!(bytes[local..].starts_with(b"PK\x03\x04"), "{name} has no local header at {local}");
+        bytes[local + 22..local + 26].copy_from_slice(&size.to_le_bytes());
         bytes
     }
 
@@ -2832,14 +2840,19 @@ mod tests {
         assert_eq!(pics.get(&mut z, "big.png"), None);
         assert_eq!(pics.room, 1000);
         assert_eq!(pics.get(&mut z, "ok.png").map(|d| d.len()), Some(300));
-        // One inflating to more than it declares stops a byte past the budget and uses it up:
-        // nothing is inflated after it.
+        // An entry holding more than it declares is refused by `zip` 9 before it delivers a byte
+        // ("File is larger than its declared uncompressed size"), so it costs nothing and the
+        // budget is still there for the next entry.
         let liar = declare_size(zip_of(&[("liar.png", &[0u8; 5000]), ("ok.png", &[5u8; 10])]), "liar.png", 10);
         let mut z = archive(&liar);
         let mut pics = Pictures::new(1000);
         assert_eq!(pics.get(&mut z, "liar.png"), None);
-        assert_eq!(pics.room, 0);
-        assert_eq!(pics.get(&mut z, "ok.png"), None);
+        assert_eq!(pics.room, 1000);
+        assert_eq!(pics.get(&mut z, "ok.png").map(|d| d.len()), Some(10));
+        // Nothing is inflated once the budget is gone.
+        let mut spent = Pictures::new(0);
+        assert_eq!(spent.get(&mut z, "ok.png"), None);
+        assert_eq!(spent.room, 0);
     }
 
     #[test]

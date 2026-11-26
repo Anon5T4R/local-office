@@ -220,7 +220,16 @@ impl Package {
             if f.is_dir() {
                 continue;
             }
-            let name = f.name().trim_start_matches('/').to_string();
+            let name = match f.name() {
+                Ok(name) => name.trim_start_matches('/').to_string(),
+                // `zip` 9 reports a failure instead of a name when an entry name decodes neither as
+                // UTF-8 nor as CP437 (practically unreachable): such an entry has no part name and
+                // stays out, as any other unreadable entry does.
+                Err(e) => {
+                    log::warn!("docx: skipping zip entry {i} with an unreadable name: {e}");
+                    continue;
+                }
+            };
             if f.size() > max_part {
                 return Err(DocxError::Limit(format!("part {name} declares {} bytes", f.size())));
             }

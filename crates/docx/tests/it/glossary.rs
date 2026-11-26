@@ -27,9 +27,10 @@ fn unzip(bytes: &[u8]) -> BTreeMap<String, Vec<u8>> {
     let mut out = BTreeMap::new();
     for i in 0..z.len() {
         let mut f = z.by_index(i).unwrap();
+        let name = f.name().expect("name").to_string();
         let mut b = Vec::new();
         f.read_to_end(&mut b).unwrap();
-        assert!(out.insert(f.name().to_string(), b).is_none(), "duplicate part {}", f.name());
+        assert!(out.insert(name.clone(), b).is_none(), "duplicate part {name}");
     }
     out
 }

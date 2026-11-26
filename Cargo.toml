@@ -84,7 +84,7 @@ craft-mcp = { path = "libs/craft-libs/crates/mcp/" }
 # LocalWriter's identity (config folder, keychain service, OpenRouter headers).
 local-ai = { path = "libs/local-ai" }
 quick-xml = "0.41"
-zip = { version = "3", default-features = false, features = ["deflate"] }
+zip = { version = "9", default-features = false, features = ["deflate"] }
 # zlib streams (compressed metafile pictures in `.doc` drawings); already in the lock as a dependency of other crates.
 miniz_oxide = "0.9"
 cfb = "0.15"

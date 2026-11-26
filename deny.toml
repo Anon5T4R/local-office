@@ -70,14 +70,5 @@ ignore = [
     { id = "RUSTSEC-2026-0370", reason = "zvariant unmaintained; pilha D-Bus do Linux (portal/acessibilidade)" },
     { id = "RUSTSEC-2026-0371", reason = "zbus_names unmaintained; pilha D-Bus do Linux (portal/acessibilidade)" },
     { id = "RUSTSEC-2026-0372", reason = "zvariant_derive unmaintained; pilha D-Bus do Linux (portal/acessibilidade)" },
-    # zip 3.0 lê os .docx/.xlsx/.odt: só as features `deflate` (sem AES/crypto) e o código nunca chama
-    # `ZipArchive::extract` nem `ZipStreamReader` (lê entradas por nome, em memória). Subir para o zip 9
-    # muda a API e é decisão de dependência separada.
-    { id = "RUSTSEC-2026-0367", reason = "zip 3.0: ZipArchive::extract nunca é chamado (só leitura de entradas em memória)" },
-    { id = "RUSTSEC-2026-0368", reason = "zip 3.0: ZipArchive::extract nunca é chamado" },
-    { id = "RUSTSEC-2026-0369", reason = "zip 3.0: ZipArchive::extract/ZipStreamReader nunca são chamados" },
-    { id = "RUSTSEC-2026-0429", reason = "zip 3.0: ZipArchive::extract nunca é chamado" },
-    { id = "RUSTSEC-2026-0545", reason = "zip 3.0: sem a feature de AES (só deflate)" },
-    { id = "RUSTSEC-2026-0548", reason = "zip 3.0: ZipStreamReader nunca é usado" },
     { id = "RUSTSEC-2024-0370", reason = "proc-macro-error unmaintained; proc macro só em tempo de compilação" },
 ]
